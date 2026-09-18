@@ -1,0 +1,65 @@
+{
+  "state": "顧客は有料プランを利用中。請求が二重になったと怒っており、返金を要求している。解決しなければ解約すると明言している。サービス自体は現在使えている。",
+  "questions": {
+    "retention_after_refund": {
+      "question": "返金が完了すれば、この顧客は利用を継続するか？",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "root_cause": {
+      "question": "二重請求の原因として最もありそうなのは？",
+      "choices": [
+        "決済システムの不具合",
+        "顧客の重複操作",
+        "請求表示の一時的な重複"
+      ]
+    },
+    "reply_channel": {
+      "question": "顧客が希望する返答方法は？",
+      "choices": [
+        "電話",
+        "メール",
+        "チャット"
+      ]
+    },
+    "refund_timing": {
+      "question": "顧客が許容できる返金までの待ち時間は？",
+      "choices": [
+        "当日中",
+        "3営業日以内",
+        "1週間以内"
+      ]
+    },
+    "priority": {
+      "question": "この問い合わせの対応優先度は？",
+      "choices": [
+        "通常",
+        "高",
+        "緊急"
+      ]
+    },
+    "compensation": {
+      "question": "返金に加えて、お詫びのクーポンも提供すべきか？",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "trust_recovery": {
+      "question": "返金と謝罪だけで顧客の信頼は回復するか？",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "refund_amount": {
+      "question": "顧客が求めている返金の範囲は？",
+      "choices": [
+        "重複請求分のみ",
+        "今回の請求全額"
+      ]
+    }
+  }
+}

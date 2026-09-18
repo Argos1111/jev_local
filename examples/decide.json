@@ -1,0 +1,59 @@
+{
+  "state": "顧客は有料プランを利用中。請求が二重になったと怒っており、返金を要求している。解決しなければ解約すると明言している。サービス自体は現在使えている。",
+  "questions": {
+    "refund_requested": {
+      "question": "返金を要求しているか？",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "sentiment": {
+      "question": "顧客の感情は？",
+      "choices": [
+        "positive",
+        "neutral",
+        "negative"
+      ]
+    },
+    "route": {
+      "question": "担当部署は？",
+      "choices": [
+        "billing",
+        "technical",
+        "sales"
+      ]
+    },
+    "churn_risk": {
+      "question": "解約リスクは？",
+      "choices": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "retention_after_refund": {
+      "question": "返金が完了すれば、この顧客は利用を継続するか？",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "reply_channel": {
+      "question": "顧客が希望する返答方法は？",
+      "choices": [
+        "電話",
+        "メール",
+        "チャット"
+      ]
+    },
+    "refund_timing": {
+      "question": "顧客が許容できる返金までの待ち時間は？",
+      "choices": [
+        "当日中",
+        "3営業日以内",
+        "1週間以内"
+      ]
+    }
+  }
+}

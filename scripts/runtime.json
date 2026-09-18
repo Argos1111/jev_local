@@ -1,0 +1,73 @@
+{
+  "llama": {
+    "version": "b11042",
+    "variants": {
+      "linux-x86_64-cpu": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-ubuntu-x64.tar.gz",
+            "sha256": "35bdefc2836e8403c9ab6a86b23189ca2c750e04e1a356567824d6408c130526"
+          }
+        ]
+      },
+      "linux-aarch64-cpu": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-ubuntu-arm64.tar.gz",
+            "sha256": "9f56880976369358d3e10f2c060d92f405850685f327e065e23dbf36d0a13583"
+          }
+        ]
+      },
+      "linux-x86_64-cuda": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-ubuntu-cuda-12.8-x64.tar.gz",
+            "sha256": "461164beeb85b2af49bf1e5f0255624846364766f6348ebf21ca1be3063491e7"
+          },
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/cudart-llama-b11042-bin-ubuntu-cuda-12.8-x64.tar.gz",
+            "sha256": "5be21a24b186ebc3cf1854990cf63421dcec2689fe3d5429ef52c8b058aa7926"
+          }
+        ]
+      },
+      "linux-x86_64-rocm": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-ubuntu-rocm-10.0-x64.tar.gz",
+            "sha256": "387861150c73609442e313aefb187278cb04ffe2890c7a025f5bacb2b9b739d9"
+          }
+        ]
+      },
+      "darwin-arm64-metal": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-macos-arm64.tar.gz",
+            "sha256": "899ac640477a6e6eb96557db7b8a94ada034ebe1a8ce77965f0c1c722f9db373"
+          }
+        ]
+      },
+      "darwin-arm64-cpu": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-macos-arm64.tar.gz",
+            "sha256": "899ac640477a6e6eb96557db7b8a94ada034ebe1a8ce77965f0c1c722f9db373"
+          }
+        ]
+      },
+      "darwin-x86_64-cpu": {
+        "assets": [
+          {
+            "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11042/llama-b11042-bin-macos-x64.tar.gz",
+            "sha256": "bc6676cefda42a996f21fc854fa581fc75694793921b793e5ef5dd482478cea6"
+          }
+        ]
+      }
+    }
+  },
+  "model": {
+    "filename": "LFM2.5-1.2B-Instruct-Q8_0.gguf",
+    "revision": "6767265158422fb8a19c62ceb45f16f05363615b",
+    "url": "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/6767265158422fb8a19c62ceb45f16f05363615b/LFM2.5-1.2B-Instruct-Q8_0.gguf",
+    "sha256": "f6b981dcb86917fa463f78a362320bd5e2dc45445df147287eedb85e5a30d26a"
+  }
+}

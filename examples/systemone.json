@@ -1,0 +1,101 @@
+{
+  "state": {
+    "message": "二重請求です。返金してください。解決しないなら解約します。"
+  },
+  "model": "jev-latest",
+  "questions": {
+    "refund": {
+      "type": "noul",
+      "instructions": "返金を要求しているか？"
+    },
+    "department": {
+      "type": "choice",
+      "instructions": "担当部署は？",
+      "criteria": {
+        "billing": "請求・返金",
+        "technical": "技術的な障害",
+        "sales": null
+      }
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "対応の緊急度は？",
+      "criteria": [
+        "急がない",
+        "早めに対応",
+        "即時対応が必要"
+      ]
+    },
+    "cancellation_warning": {
+      "type": "noul",
+      "instructions": "問題が解決しなければ解約すると明言しているか？"
+    },
+    "already_cancelled": {
+      "type": "noul",
+      "instructions": "顧客はすでに解約手続きを完了しているか？",
+      "criteria": {
+        "true": "解約が完了した事実が明記されている",
+        "false": "今後の解約予告にとどまる、または解約完了の記載がない"
+      }
+    },
+    "retention_after_refund": {
+      "type": "noul",
+      "instructions": "返金が完了すれば、この顧客は利用を継続するか？"
+    },
+    "tone": {
+      "type": "choice",
+      "instructions": "メッセージの主な口調は？",
+      "criteria": {
+        "calm": "冷静な事実確認",
+        "frustrated": "不満があり、改善を要求している",
+        "appreciative": "感謝や満足を伝えている"
+      }
+    },
+    "refund_scope": {
+      "type": "choice",
+      "instructions": "顧客が求めている返金の範囲は？",
+      "criteria": {
+        "duplicate_only": "重複して請求された分だけ",
+        "full_charge": "今回の請求全額",
+        "unspecified": "返金範囲を特定できない"
+      }
+    },
+    "reply_channel": {
+      "type": "choice",
+      "instructions": "顧客が希望する返答方法は？",
+      "criteria": {
+        "phone": "電話を希望している",
+        "email": "メールを希望している",
+        "chat": "チャットを希望している",
+        "unspecified": "返答方法の希望が記載されていない"
+      }
+    },
+    "frustration": {
+      "type": "score",
+      "instructions": "顧客の不満の強さは？",
+      "criteria": [
+        "不満はなく、確認や相談のみ",
+        "不満はあるが、利用継続を前提に改善を求めている",
+        "強い不満があり、解約や取引停止を示唆している"
+      ]
+    },
+    "churn_risk": {
+      "type": "score",
+      "instructions": "この問い合わせが未解決のままの場合、解約リスクはどの程度か？",
+      "criteria": [
+        "低い：解約を示す情報がない",
+        "中程度：不満はあるが解約の意向は曖昧",
+        "高い：解約を明言している"
+      ]
+    },
+    "investigation_readiness": {
+      "type": "score",
+      "instructions": "このstateだけで、担当者が個別の請求を特定して調査できるか？",
+      "criteria": [
+        "情報不足：顧客や請求を特定する情報がない",
+        "一部不足：顧客または請求を特定する情報の片方だけがある",
+        "調査可能：顧客と該当請求の両方を特定できる情報がある"
+      ]
+    }
+  }
+}
