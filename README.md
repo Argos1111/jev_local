@@ -1,10 +1,21 @@
 # Jev Local
 
-文章・JSON・画像に対する質問を、**Choice（選択肢）・Score（段階評価）・Noul（真偽）の確率**として返すローカルAPIです。推論には **llama.cpp** を使い、文章のみなら **LFM2.5-1.2B Instruct Q8_0**、画像も入力するなら **LFM2.5-VL-1.6B Q8_0** を選べます。
+文章・JSON・画像に対する質問を、**Choice（選択肢）・Score（段階評価）・Noul（真偽）の確率**として返すローカルAPIです。同じ`/v1/systemone`を、性質の違う2つのバックエンドで提供します。
+
+| | LFM（既定） | ModernBERT |
+|---|---|---|
+| モデル | LFM2.5-1.2B Instruct / LFM2.5-VL-1.6B（llama.cpp, Q8_0） | ModernBERT-Ja 310Mをcross-encoderとしてfine-tune |
+| 判定方式 | 回答先頭トークンのlogprob（zero-shot） | (質問＋State, 候補)ペアの採点（要学習、約40分） |
+| 入力 | 文章・JSON・画像 | 文章・JSON |
+| 強いところ | 知識・未知の分類体系・自由な指示文 | 日本語の意図・関係判定と速度。候補順に依存しない |
+| 追加依存 | なし（バイナリを自動取得） | torch＋transformers（別venv） |
+| JGLUE test | JNLI 17% / JComQA 69% | JNLI 93% / JComQA 92%（trainで学習） |
+
+クライアント・評価ツール・API仕橘は共通です。まずLFMで動かしてから、必要に応じて[ModernBERTバックエンド](docs/MODERNBERT.md)を追加する想定です。
 
 **Jev本体のモデル・学習・精度を再現するものではありません。** TypeSafeの`/v1/systemone`形式に合わせた非公式アダプターです。画像入力はローカル拡張で、公式SDKの画像互換を意味しません。[APIの互換範囲](docs/API.md)を参照してください。
 
-## セットアップと起動
+## セットアップと起動（LFM）
 
 Python **3.12以上**とBashが必要です。自動セットアップはLinux x86_64・arm64、macOS（Apple Silicon・Intel）に対応し、WindowsではWSL2を使用します。通常実行に追加Pythonパッケージやコンパイルは不要です。
 
@@ -90,6 +101,21 @@ Radeon AI PRO R9700・512×286 px画像・4問での測定例:
 
 モデルロードを除くHTTP応答時間です。1画像での実験値で、速度や正答率を保証するものではありません。[測定条件と精度上の制約](docs/VISION_EVALUATION.md)も参照してください。
 
+## ModernBERTバックエンド（文章のみ）
+
+LLMの先頭トークン判定ではなく、[sbintuitions/modernbert-ja-310m](https://huggingface.co/sbintuitions/modernbert-ja-310m)を「(質問＋State, 候補)ペアの採点器」としてfine-tuneし、同じAPIを提供する構成です。torch＋transformersを別のvenvに導入し、公開日本語データ（JGLUE train・JCoLA・JCommonsenseMorality・MASSIVE）で学習してから起動します。候補順への依存がなく、1リクエストの全質問を1回のバッチ推論で処理します。
+
+```bash
+./setup_modernbert.sh        # .venv-modernbert（torch/transformers）。GPUを自動検出
+./train_modernbert.sh        # models/modernbert-ja-310m-jev を作成（R9700で約40分）
+./run_modernbert.sh          # http://127.0.0.1:8080 で同じ /v1/systemone を提供
+python3 systemone_client.py  # クライアントは共通
+```
+
+学習にはGPU（bf16でVRAM約20 GB。`--pair-budget 64`で約10 GB）が必要です。推論は約2 GBで動き、CPUでも動作します（12問で約2秒）。画像入力は非対応で、`images`を含むリクエストは422を返します。学習済みモデルは配布していないため、各自で学習します。
+
+JGLUEの高い数値は同じデータのtrainで学習した結果です。学習に使っていないタスクでは特性が分かれます：知識を問うタスク（ニュース分類・JMMLU）はLFMの方が高く、短い日本語の意図判定（顧客対応の手作り16例）はModernBERTの方が高い結果でした。数値と条件、学習データとライセンス、OS別の対応状況は[ModernBERTバックエンド](docs/MODERNBERT.md)を参照してください。
+
 ## API
 
 ```bash
@@ -114,6 +140,7 @@ api_server.py / systemone.py       HTTP APIと型付き判断
 jev_local.py / state_cache.py      候補確率の計算・テキストStateの再利用
 image_input.py                    画像の検証・data URLへの変換
 systemone_client.py / display.py   クライアント・結果表示
+modernbert/                       ModernBERT cross-encoderの学習・推論・API
 scripts/                          セットアップ・起動・実験ビルド
 native/                           画像エンコードキャッシュとC++単体テスト
 examples/                         リクエストJSON
@@ -121,7 +148,7 @@ sample_pics/                      ローカル入力画像（画像はGit対象�
 tests/                            Python単体テスト
 tools/                            動作確認・評価・速度測定
 docs/                             詳細な設定・仕様・測定条件
-models/ .cache/ results/ .venv/    ローカル生成物（Git対象外）
+models/ .cache/ results/ .venv*/   ローカル生成物（Git対象外）
 ```
 
 モデル・画像・生ログ・計測結果・ビルド成果物はGitHubに含めません。公開する測定要約は`docs/`にまとめています。`results/`内のファイルを編集しても配布コードにはならないため、再利用するスクリプトは`tools/`で管理します。
@@ -132,9 +159,11 @@ models/ .cache/ results/ .venv/    ローカル生成物（Git対象外）
 python3 -m unittest discover -s tests -v  # モデル・ダウンロード不要
 python3 -m tools.verify_api              # 起動済みAPIの実通信確認
 python3 -m tools.verify_vision           # 合成画像で画像入力を確認
+python3 -m tools.benchmark_jglue --output results/jglue      # JGLUE test（どちらのバックエンドでも）
+python3 -m tools.evaluate_heldout_tasks --output results/ho  # 学習に使っていないタスクでの比較
 ```
 
-CIではPythonテスト・シェル構文と、モデル不要のC++キャッシュテストを実行します。GPU推論の確認はローカルで行います。
+CIではPythonテスト・シェル構文と、モデル不要のC++キャッシュテストを実行します。ModernBERTのテストも疑似エンコーダーで動くため、CIにtorchは不要です。GPU推論の確認はローカルで行います。
 
 - [セットアップ詳細](docs/SETUP.md)
 - [API・公式SDK接続](docs/API.md)
@@ -143,5 +172,6 @@ CIではPythonテスト・シェル構文と、モデル不要のC++キャッシ
 - [評価ツール・速度測定](docs/EVALUATION.md)
 - [共通Stateの再利用](docs/STATE_CACHE.md)
 - [JGLUE評価](docs/JGLUE.md)
+- [ModernBERTバックエンド](docs/MODERNBERT.md)
 
-依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)は、それぞれの配布元の利用条件に従います。本プロジェクトにバイナリ・モデル重みは同梱しません。
+依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)、[ModernBERT-Ja](https://huggingface.co/sbintuitions/modernbert-ja-310m)（MIT）は、それぞれの配布元の利用条件に従います。ModernBERTの学習に使う公開データセット（JGLUE・JCoLA・JMMLU: CC BY-SA 4.0、JCommonsenseMorality: MIT、MASSIVE: CC BY 4.0、livedoor: CC BY-ND 2.1 JP）は実行時に取得し、リポジトリには含めません。学習済みモデルを再配布する場合はCC BY-SAの継承条件に留意してください。本プロジェクトにバイナリ・モデル重みは同梱しません。

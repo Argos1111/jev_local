@@ -73,6 +73,24 @@ def to_spec(q):
     return spec
 
 
+def answer_for(question, spec, result):
+    """Typed answer from candidate probabilities; shared by every local backend."""
+    p = [v['probability'] for v in result['probabilities']]
+    if question['type'] == 'noul':
+        return {'type':'noul','noul':p[0]}
+    if question['type'] == 'choice':
+        return {'type':'choice','choice':result['value'],
+                'probabilities':dict(zip(spec['choices'],p)), 'confidence':result['confidence']}
+    return {'type':'score', 'score':sum(i*v for i,v in enumerate(p)),
+            'legend':{str(i):v for i,v in enumerate(question['criteria'])},
+            'probabilities':{str(i):v for i,v in enumerate(p)}, 'confidence':result['confidence']}
+
+
+def singleton_answer(spec):
+    # A singleton is deterministic by its schema; no inference needed.
+    return {'type':'choice','choice':spec['choices'][0], 'probabilities':{spec['choices'][0]:1.0},'confidence':1.0}
+
+
 class AdapterBackend(JevLocal):
     def prepare(self, payload):
         # Larger Choice sets use single numeric tokens; never truncate to 26 labels.
@@ -129,22 +147,12 @@ class SystemOne:
             for key,q in payload['questions'].items():
                 spec = specs[key]
                 if len(spec['choices']) == 1:
-                    # A singleton is deterministic by its schema; no inference needed.
-                    answers[key] = {'type':'choice','choice':spec['choices'][0], 'probabilities':{spec['choices'][0]:1.0},'confidence':1.0}
+                    answers[key] = singleton_answer(spec)
                     continue
                 result = results[key] if key in results else futures[key].result()
                 results[key] = result
-                p = [v['probability'] for v in result['probabilities']]
                 for field in usage: usage[field] += result['usage'][field]
-                if q['type'] == 'noul':
-                    answers[key] = {'type':'noul','noul':p[0]}
-                elif q['type'] == 'choice':
-                    answers[key] = {'type':'choice','choice':result['value'],
-                                    'probabilities':dict(zip(spec['choices'],p)), 'confidence':result['confidence']}
-                else:
-                    answers[key] = {'type':'score', 'score':sum(i*v for i,v in enumerate(p)),
-                                    'legend':{str(i):v for i,v in enumerate(q['criteria'])},
-                                    'probabilities':{str(i):v for i,v in enumerate(p)}, 'confidence':result['confidence']}
+                answers[key] = answer_for(q, spec, result)
         except Exception:
             for future in futures.values(): future.cancel()
             # Do not release request admission while its inference is still running.

@@ -35,7 +35,8 @@ python3 -m tools.evaluate --json-baseline --output results/with_json.json
 
 ## その他
 
-- [JGLUE評価](JGLUE.md): JNLI / JCommonsenseQAの固定splitをAPI経由で評価。
+- `python3 -m tools.evaluate_heldout_tasks --url ... --output results/heldout`: ModernBERTの学習に使っていないタスク（livedoorニュース分類・JMMLU・手作り顧客対応16例）をAPI経由で採点。LFMとModernBERTの汎化を同条件で比較します（[結果](MODERNBERT.md#学習に使っていないタスクでの汎化)）。
+- [JGLUE評価](JGLUE.md): JNLI / JCommonsenseQAの固定splitをAPI経由で評価。`--url`を変えれば[ModernBERTバックエンド](MODERNBERT.md)にも同じ手順で使えます。
 - [共通Stateの計測](STATE_CACHE.md): 専用バックエンドで保存・復元の効果を測定。
 - `python3 -m tools.probe_prefix`: 過去の回答prefix探索用ツール。
 

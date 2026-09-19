@@ -12,6 +12,8 @@ python3 -m tools.benchmark_jglue
 
 既定はtest全件（JNLI 2,508件、JCommonsenseQA 1,118件）、4並列、zero-shotです。データを`.cache/jglue`に取得し、結果を`results/jglue-test`へ保存します。既存結果の上書きは拒否するので、再実行では出力先を変えます。
 
+コンソールには1件ごとに「正誤・通番・予測確率・予測（誤答時は正解も）・設問の抜粋・累計正解率」を1行で流し、タスクの終わりに正解数・応答時間の要約を出します。端末では正答を緑・誤答を赤で表示します（`NO_COLOR`で無効化、パイプ時は自動で無色）。集計値は`summary.json`、表は`report.md`に保存します。
+
 ```bash
 python3 -m tools.benchmark_jglue --output results/jglue-test-rerun
 python3 -m tools.benchmark_jglue --split valid --output results/jglue-valid
@@ -19,7 +21,7 @@ python3 -m tools.benchmark_jglue --limit 10 --output results/jglue-smoke-10
 python3 -m tools.benchmark_jglue --tasks jnli --workers 1 --output results/jnli-serial
 ```
 
-接続先は`--url http://127.0.0.1:8080`、モデル指定は`--model jev-latest`、APIキーは環境変数`JEV_API_KEY`（既定`local-dev`）で設定します。実際の応答モデル名も記録します。
+接続先は`--url http://127.0.0.1:8080`、モデル指定は`--model jev-latest`、APIキーは環境変数`JEV_API_KEY`（既定`local-dev`）で設定します。実際の応答モデル名も記録します。`--method`はレポートに記す条件ラベルで、既定は`zero-shot`です。[ModernBERTバックエンド](MODERNBERT.md)はJGLUE trainで学習しているため、`--method "fine-tuned on JGLUE train ..."`のように明記してください。
 
 ## 評価方法
 

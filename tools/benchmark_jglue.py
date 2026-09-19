@@ -10,8 +10,13 @@ import math
 import os
 from pathlib import Path
 import statistics
+import sys
 import time
+import urllib.error
 import urllib.request
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from display import width  # noqa: E402
 
 REVISION = '6f071c09316baae89c3d083a90985b4b1cb9968c'
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,6 +51,36 @@ def load_data(task, split, directory):
         assert gold in (LABELS if task == 'jnli' else list('01234')), f'Invalid gold: {gold}'
     return rows, {'url': url, 'revision': REVISION, 'sha256': hashlib.sha256(data).hexdigest(), 'rows': len(rows)}
 
+def clip(text, columns):
+    """Truncate to a display width, counting East Asian characters as two columns."""
+    text = text.replace('\n', ' ')
+    if width(text) <= columns:
+        return text + ' ' * (columns - width(text))
+    out = ''
+    for ch in text:
+        if width(out + ch) > columns - 1:
+            break
+        out += ch
+    return out + '…' + ' ' * (columns - width(out) - 1)
+
+
+def describe(task, row, record):
+    """One console line per item; gold and prediction shown as short labels."""
+    if task == 'jnli':
+        short = {'entailment': '含意', 'contradiction': '矛盾', 'neutral': '中立'}
+        text = f"{row['sentence1']} ⇒ {row['sentence2']}"
+    else:
+        short = {str(i): row[f'choice{i}'] for i in range(5)}
+        text = row['question']
+    gold = short.get(record['gold'], record['gold'])
+    if 'error' in record:
+        return f"  !  {record['index']+1:>5}  {'エラー':>7}  {clip(record['error'], 44)}  {clip(text, 60)}"
+    pred = short.get(record['prediction'], record['prediction'])
+    mark = '✓' if record['correct'] else '✗'
+    verdict = clip(pred, 18) if record['correct'] else clip(f'{pred} (正解: {gold})', 40)
+    return f"  {mark}  {record['index']+1:>5}  {record['probabilities'][record['prediction']]*100:6.1f}%  {verdict}  {clip(text, 60)}"
+
+
 def summarize(records, elapsed):
     good = [r for r in records if 'error' not in r]
     n = len(records); correct = sum(r['correct'] for r in good)
@@ -78,11 +113,11 @@ def main():
     p.add_argument('--limit', type=int, default=0, help='0 means all rows; otherwise first N, for smoke tests only')
     p.add_argument('--data-dir', type=Path, default=ROOT/'.cache/jglue')
     p.add_argument('--output', type=Path, default=ROOT/'results/jglue-test')
+    p.add_argument('--method', default='zero-shot', help='Method label for the report, e.g. fine-tuned-on-train for the ModernBERT backend')
     args = p.parse_args()
     if args.workers < 1 or args.limit < 0: p.error('workers must be positive; limit must be non-negative')
     if args.output.exists(): p.error('Output already exists; choose a new --output directory')
     datasets = {t: load_data(t,args.split,args.data_dir) for t in args.tasks}
-    args.output.mkdir(parents=True)
     key = os.environ.get('JEV_API_KEY','local-dev')
     def call(payload):
         req = urllib.request.Request(args.url.rstrip('/')+'/v1/systemone', data=json.dumps(payload,ensure_ascii=False).encode(),
@@ -90,16 +125,30 @@ def main():
         with urllib.request.urlopen(req,timeout=120) as response:
             return json.load(response), {k:v for k,v in response.headers.items() if k.lower().startswith('x-jev-local-')}
     # Synthetic warm-up; excluded from scores and timing. Never use gold labels as input.
-    call({'model':args.model,'state':'空は青い。','questions':{'answer':{'type':'choice','instructions':'空の色は？','criteria':{'blue':'青','red':'赤'}}}})
+    try:
+        response,_ = call({'model':args.model,'state':'空は青い。','questions':{'answer':{'type':'choice','instructions':'空の色は？','criteria':{'blue':'青','red':'赤'}}}})
+    except urllib.error.URLError as exc:
+        p.exit(1, f'Cannot reach the API at {args.url} ({exc.reason}).\n'
+                  'Start a backend first in another terminal: ./run.sh (LFM) or ./run_modernbert.sh (ModernBERT), '
+                  'then rerun. Use --url if it listens on another port.\n')
+    except urllib.error.HTTPError as exc:
+        p.exit(1, f'API at {args.url} rejected the warm-up request: HTTP {exc.code} {exc.read().decode(errors="replace")[:300]}\n')
+    print(f'API: {args.url}  backend model: {response["model"]}', flush=True)
+    args.output.mkdir(parents=True)
     report = {'started_at':datetime.now(timezone.utc).isoformat(), 'api_url':args.url,
               'requested_model':args.model,'split':args.split,'workers':args.workers,'limit':args.limit,
-              'method':'zero-shot; fixed original choice order; first-answer-token API classification; no prompt tuning; one item per request',
+              'method':f'{args.method}; fixed original choice order; API classification; no prompt tuning on test; one item per request',
               'runner_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               'implementation_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ['jev_local.py','systemone.py','state_cache.py','api_server.py']},
               'datasets':{},'results':{}}
+    color = sys.stdout.isatty() and 'NO_COLOR' not in os.environ
+    def paint(line, ok):
+        if not color: return line
+        return f'\033[32m{line}\033[0m' if ok else f'\033[31m{line}\033[0m'
     for task,(rows,source) in datasets.items():
         report['datasets'][task]=source
         if args.limit: rows=rows[:args.limit]
+        print(f"\n{task}  {len(rows)}件  split={args.split}  並列={args.workers}\n" + '─'*100, flush=True)
         def evaluate(pair):
             index,row=pair
             payload=payload_for(task,row,args.model)
@@ -117,13 +166,19 @@ def main():
             return record
         records=[]; start=time.perf_counter()
         with (args.output/f'{task}.jsonl').open('w') as output, ThreadPoolExecutor(args.workers) as pool:
+            correct=0
             for record in pool.map(evaluate,enumerate(rows)):
                 records.append(record); output.write(json.dumps(record,ensure_ascii=False)+'\n'); output.flush()
-                if len(records)%200==0: print(f'{task}: {len(records)}/{len(rows)}',flush=True)
+                correct+=record.get('correct',False)
+                line=describe(task,rows[record['index']],record) + f"  累計 {correct/len(records):6.2%}"
+                print(paint(line, record.get('correct',False)), flush=True)
         report['results'][task]=summarize(records,time.perf_counter()-start)
         (args.output/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-        print(task,json.dumps(report['results'][task],ensure_ascii=False),flush=True)
-    lines=['# JGLUE API benchmark', '', f"Split: {args.split}; zero-shot; concurrency: {args.workers}", '',
+        r=report['results'][task]; l=r['latency_ms']
+        print('─'*100 + f"\n{task}: 正解 {r['correct']}/{r['total']} = {r['accuracy']:.2%}  エラー {r['errors']}  "
+              f"p50 {l.get('p50',0):.1f} ms  p95 {l.get('p95',0):.1f} ms  {r['examples_per_second']:.1f} 件/秒  所要 {r['wall_seconds']:.1f} 秒", flush=True)
+    print(f"\n保存先: {args.output}  (report.md / summary.json / *.jsonl)", flush=True)
+    lines=['# JGLUE API benchmark', '', f"Split: {args.split}; {args.method}; concurrency: {args.workers}", '',
            '| Task | Correct / Total | Accuracy | Errors | p50 / p95 ms | Examples/s |', '|---|---:|---:|---:|---:|---:|']
     for task,r in report['results'].items():
         l=r['latency_ms']; lines.append(f"| {task} | {r['correct']} / {r['total']} | {r['accuracy']:.2%} | {r['errors']} | {l.get('p50',0):.1f} / {l.get('p95',0):.1f} | {r['examples_per_second']:.2f} |")
