@@ -10,6 +10,7 @@ import sys
 from display import print_result
 import time
 import urllib.request
+from image_input import load_image, validate_images
 
 THINK_PREFILL = '<think>\n</think>\n\n'
 BASELINE_DEMO = {
@@ -64,6 +65,21 @@ class JevLocal:
         self.url, self.workers = url.rstrip('/'), workers
         self.ids = {}
         self.empty_think = empty_think
+        self.media_marker = None
+
+    def prepare_images(self, images):
+        validate_images(images)
+        if images and self.media_marker is None:
+            with urllib.request.urlopen(self.url + '/props', timeout=10) as response:
+                props = json.load(response)
+            if not props.get('modalities', {}).get('vision') or not props.get('media_marker'):
+                raise RuntimeError('Backend has no vision support. Restart with ./run.sh --model vision (custom models also need LFM_MMPROJ).')
+            self.media_marker = props['media_marker']
+
+    def image_prompt(self, state, spec, images):
+        self.prepare_images(images)
+        return {'prompt_string': self.score_prompt(self.media_marker * len(images) + '\n' + state, spec),
+                'multimodal_data': [url.split(',', 1)[1] for url in images]}
 
     def post(self, path, data):
         req = urllib.request.Request(self.url + path, json.dumps(data, ensure_ascii=False).encode(),
@@ -113,9 +129,13 @@ class JevLocal:
         instruction = 'Reply with exactly one option token, nothing else.' if 'tokens' in spec else 'Reply with exactly one option letter, nothing else.'
         return self.prompt(f'State:\n{state}\n\nQuestion: {spec["question"]}\n{options}\n{instruction}')
 
-    def score(self, state, spec, cache=False, *, prompt_tokens=None, slot=None, before_attempt=None):
+    def score(self, state, spec, cache=False, *, prompt_tokens=None, slot=None, before_attempt=None, images=None):
         letters = self.labels(spec)
-        prompt = self.score_prompt(state, spec) if prompt_tokens is None else prompt_tokens
+        if images and prompt_tokens is not None:
+            raise ValueError('Images cannot use text-only prompt tokens')
+        prompt = self.image_prompt(state, spec, images) if images else (self.score_prompt(state, spec) if prompt_tokens is None else prompt_tokens)
+        if images:
+            cache = False
         started = time.perf_counter()
         # Never silently treat a candidate missing from top-N as probability zero.
         usage = {'input_tokens': 0, 'output_tokens': 0}
@@ -163,25 +183,36 @@ class JevLocal:
         }
 
     def decide(self, payload, cache=False, workers=None):
+        images = payload.get('images', [])
+        self.prepare_images(images)
         self.prepare(payload)
         started = time.perf_counter()
         items = list(payload['questions'].items())
         with ThreadPoolExecutor(max_workers=workers or self.workers) as pool:
-            results = list(pool.map(lambda item: self.score(payload['state'], item[1], cache), items))
+            results = list(pool.map(lambda item: self.score(payload['state'], item[1], cache, images=images), items))
         return {'state': payload['state'],
                 'decisions': dict(zip((k for k,_ in items), results)),
                 'values': {k:r['value'] for (k,_),r in zip(items, results)},
                 'elapsed_ms': (time.perf_counter()-started)*1000,
-                'cache_prompt': cache, 'workers': workers or self.workers,
+                'cache_prompt': cache and not images, 'workers': workers or self.workers,
                 'probability_semantics': 'softmax over option-token logits; not calibrated confidence'}
 
     def generate_json(self, payload, cache=False):
+        images = payload.get('images', [])
+        self.prepare_images(images)
         schema = {'type': 'object', 'properties': {k: {'enum': s['choices']} for k,s in payload['questions'].items()},
                   'required': list(payload['questions']), 'additionalProperties': False}
-        prompt = self.prompt('Return a JSON object with one answer per question.\n' + json.dumps(payload, ensure_ascii=False))
+        text_payload = {k:v for k,v in payload.items() if k != 'images'}
+        text = 'Return a JSON object with one answer per question.\n' + json.dumps(text_payload, ensure_ascii=False)
+        prompt = self.prompt((self.media_marker * len(images) + '\n' if images else '') + text)
+        if images:
+            prompt = {'prompt_string': prompt, 'multimodal_data': [url.split(',', 1)[1] for url in images]}
+            cache = False
         started = time.perf_counter()
         raw = self.post('/completion', {'prompt': prompt, 'n_predict': 256, 'temperature': -1,
                                         'cache_prompt': cache, 'json_schema': schema, 'seed': 42})
+        if raw.get('truncated'):
+            raise RuntimeError('Prompt exceeded backend context; refusing truncated inference')
         elapsed = (time.perf_counter()-started)*1000
         if raw['stop_type'] == 'limit':
             raise RuntimeError('JSON baseline exhausted its token budget')
@@ -201,6 +232,7 @@ def main():
     parser.add_argument('--format', choices=['pretty','json'], default='pretty', help='Console format; --output always saves JSON')
     parser.add_argument('--url', default='http://127.0.0.1:8097')
     parser.add_argument('--input', type=Path)
+    parser.add_argument('--image', type=Path, action='append', default=[], help='Attach PNG/JPEG (repeatable, up to four)')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--rounds', type=int, default=3)
     parser.add_argument('--workers', type=int, default=4)
@@ -213,6 +245,8 @@ def main():
         return
     api = JevLocal(args.url, args.workers, args.empty_think)
     payload = json.loads(args.input.read_text()) if args.input else (BASELINE_DEMO if args.command == 'benchmark' else DEMO)
+    if args.image:
+        payload = dict(payload, images=payload.get('images', []) + [load_image(path) for path in args.image])
     if args.command == 'benchmark':
         if args.rounds < 1: parser.error('--rounds must be >= 1')
         api.prepare(payload)
@@ -228,7 +262,7 @@ def main():
             runs.append(run)
         medians = {k: statistics.median(r[k]['elapsed_ms'] for r in runs) for k in ('logprobs','json')}
         result = {'runs': runs, 'median_ms': medians, 'speedup': medians['json']/medians['logprobs'],
-                  'cache_prompt': args.cache, 'workers': args.workers,
+                  'cache_prompt': args.cache and not payload.get('images'), 'workers': args.workers,
                   'scope': 'Local synthetic demo, not Jev evaluation. JSON baseline returns values only.'}
     else:
         result = api.decide(payload, args.cache)

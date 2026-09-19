@@ -13,4 +13,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m unittest discover -s tests -v
-      - run: bash -n setup.sh run.sh run_server.sh run_server_gpu.sh run_api_server.sh
+      - run: bash -n setup.sh run.sh run_server.sh run_server_gpu.sh run_api_server.sh run_image_cache_gpu.sh
+  native-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test encoder cache without downloading a model
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -pthread native/test_vision_embedding_cache.cpp -o /tmp/test-vision-cache
+          /tmp/test-vision-cache

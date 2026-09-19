@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--format', choices=['pretty','json'], default='pretty')
     parser.add_argument('--url', default='http://127.0.0.1:8097')
-    parser.add_argument('--output', type=Path, default=Path('results/lfm1_2b/sanity.json'))
+    parser.add_argument('--output', type=Path, default=Path('results/sanity.json'))
     parser.add_argument('--json-baseline', action='store_true')
     parser.add_argument('--semantic-tokens', action='store_true')
     parser.add_argument('--empty-think', action='store_true')

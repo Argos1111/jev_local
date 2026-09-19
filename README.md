@@ -1,45 +1,96 @@
 # Jev Local
 
-Jevの型付き判断APIを、ローカルの小型LLMで試すための非公式実装です。文章やJSONを渡すと、**選択肢・スコア・真偽の確率**を返します。推論には **LFM2.5-1.2B-Instruct Q8_0 + llama.cpp** を使います。
+文章・JSON・画像に対する質問を、**Choice（選択肢）・Score（段階評価）・Noul（真偽）の確率**として返すローカルAPIです。推論には **llama.cpp** を使い、文章のみなら **LFM2.5-1.2B Instruct Q8_0**、画像も入力するなら **LFM2.5-VL-1.6B Q8_0** を選べます。
 
-**Jev本体のモデル・学習・精度を再現するものではありません。** TypeSafeの`/v1/systemone`形式に合わせたローカルアダプターです。APIの互換範囲は[APIガイド](docs/API.md)を参照してください。
+**Jev本体のモデル・学習・精度を再現するものではありません。** TypeSafeの`/v1/systemone`形式に合わせた非公式アダプターです。画像入力はローカル拡張で、公式SDKの画像互換を意味しません。[APIの互換範囲](docs/API.md)を参照してください。
 
-## クイックスタート
+## セットアップと起動
 
-自動セットアップの対象は **Linux x86_64・arm64 / macOS（Apple Silicon・Intel）**。Python 3.12以上とBashが必要です。GPUを検出し、NVIDIAはCUDA版、AMDはROCm版、Apple SiliconはMetal版を選びます。GPUを利用できない場合は理由を表示してCPU版に切り替えます。LM Studio・APIキーの取得・追加Pythonパッケージは不要です。WindowsではWSL2のLinux環境を使ってください。モデルのダウンロードは約1.25 GBで、初回のみネット接続が必要です。
-
-このリポジトリをクローンし、そのディレクトリで実行します。
+Python **3.12以上**とBashが必要です。自動セットアップはLinux x86_64・arm64、macOS（Apple Silicon・Intel）に対応し、WindowsではWSL2を使用します。通常実行に追加Pythonパッケージやコンパイルは不要です。
 
 ```bash
 git clone https://github.com/Argos1111/jev_local.git
 cd jev_local
-./setup.sh  # GPUを自動検出し、対応する推論サーバーとモデルを取得・SHA256検証
-./run.sh    # 推論サーバーと互換APIを起動。Ctrl-Cで両方停止
+./setup.sh --model text
+./run.sh --model text
 ```
 
-別のターミナルを開き、同じディレクトリで実行します。
+画像も入力する場合は、次の構成を選びます。
+
+```bash
+./setup.sh --model vision
+./run.sh --model vision
+```
+
+`text`は文章用モデルだけ、`vision`はVLモデルと画像エンコーダーを取得します。選択は保存され、以後の`./run.sh`はそのモデルを使います。両方を取得済みなら、`./run.sh --model text`／`--model vision`だけで切り替えられます。切り替える際は稼働中のサーバーをCtrl+Cで停止してから起動してください。未設定時の既定は`text`です。
+
+`setup.sh`はGPUを検出してCUDA・ROCm・Metal版のllama.cppを選択し、選択したモデルを取得・SHA256検証します。VL構成は画像エンコーダー（mmproj F16）込みで約2.1 GBです。GPUを利用できない場合は理由を表示してCPU版に切り替えます。初回のみGitHub・Hugging Faceへのネット接続が必要です。
+
+GPUドライバーやROCmの共有ライブラリは別途必要です。OSのパッケージは自動インストールしません。CPUに固定する場合は`./setup.sh --backend cpu`を使います。[対応環境・手動設定・トラブルシューティング](docs/SETUP.md)を参照してください。
+
+**`Ready: http://127.0.0.1:8080`が表示されたら、サーバーを動かしたまま別ターミナルから入力を送ります。** Ctrl+Cで推論サーバーとAPIの両方が停止します。`Connection refused`の場合は起動状態と送信先ポートを確認してください。
+
+ランタイムを変更せずモデルだけ追加する場合は`./setup.sh --model vision --model-only`（文章用は`--model text`）を使います。`LFM_MODEL`・`LFM_MMPROJ`を設定済みの場合はそれらが優先されるため、標準モデルの選択を使う前に`unset LFM_MODEL LFM_MMPROJ`で解除してください。
+
+## テキスト・JSONで試す
 
 ```bash
 python3 systemone_client.py
+python3 systemone_client.py --input examples/systemone.json --format json
+python3 systemone_client.py --input examples/systemone.json --output results/my_result.json
 ```
 
-顧客の問い合わせを入力に、返金要求・担当部署・緊急度など12問の結果が表で表示されます。推論結果はモデルの判断なので、回答や確率の一致を保証するデモではありません。
+既定のサンプルは顧客の問い合わせに対する12問です。`--format json`で生JSONを表示します。`--output`の保存内容は表示形式にかかわらずJSONです。自分の入力には[`examples/systemone.json`](examples/systemone.json)の`state`と`questions`を書き換えてください。
 
-GPU版には対応ドライバーが必要で、ROCm版には対応するROCmランタイムも必要です。OS側へのインストールは自動化しません。CPU版を指定する場合は`./setup.sh --backend cpu`を使います。
+## 画像で試す
 
-起動に失敗した場合や、既存のモデルを利用する場合は[セットアップ詳細](docs/SETUP.md)を参照してください。
-
-## 自分の入力で試す
-
-[入力例](examples/systemone.json)の`state`と`questions`を書き換えて渡します。
+`./run.sh --model vision`で起動します。画像を自分で用意し、[ローカルの画像フォルダ](sample_pics/README.md)などに置きます。画像はリポジトリに同梱していません。
 
 ```bash
-python3 systemone_client.py --input examples/systemone.json
-python3 systemone_client.py --input examples/systemone.json --format json
-python3 systemone_client.py --output results/my_result.json
+python3 systemone_client.py \
+  --input examples/vision.json \
+  --image sample_pics/photo.jpg
 ```
 
-HTTPからも利用できます。
+GSS資料向けの[12問](examples/vision_gss.json)と[4問](examples/vision_gss_4.json)もあります。対応する画像を用意した場合は次のように実行できます。
+
+```bash
+python3 systemone_client.py \
+  --input examples/vision_gss_4.json \
+  --image sample_pics/20260911_image_resized.png \
+  --format json \
+  --output results/my_vision_gss_4.json
+```
+
+**速度を優先する場合は、画像の縦横をともに512px以内に収め（縦横比を維持）、質問を4問に絞る構成を推奨します。** 今回の検証では、512×286px・4問・GPU・画像エンコード再利用の組み合わせが最も速く、同じ画像の再送は中央値約98msでした。4問は4並列の1回分に収まります。画像サイズや質問数を網羅的に比較した結果ではなく、1〜3問より4問が速いことを意味しません。縮小と質問の選定は入力前に行います（自動変換・4問制限はありません）。
+
+- PNG/JPEG、1枚4 MiB、最大4枚。複数枚は`--image`を繰り返します。
+- HTTPではトップレベルの`images`配列にbase64 data URLを渡します。[画像API仕様](docs/API.md#画像入力ローカル拡張)を参照してください。
+- 大きな画像・複数画像には`CTX_SIZE=32768 ./run.sh --model vision`などでコンテキストを増やします。既定は4 slots・合計8192トークンです。
+- 各質問は独立に推論し、最大4問を並列処理します。画像入力ではdecoder側の共通Stateキャッシュを使いません。
+
+## 画像エンコードの再利用（実験機能）
+
+同じ画像を複数質問に使う場合、画像エンコーダーの出力だけをメモリ内で再利用するオプションがあります。**Linux x86_64 / AMD ROCm向けの追加ビルド**が必要です。通常の`setup.sh`・`run.sh`だけでは有効になりません。[ビルドと起動手順](docs/IMAGE_CACHE.md)に従って準備してください。
+
+```bash
+# ビルド済みの場合。通常サーバーとは別ポートを使用する例
+./run_image_cache_gpu.sh --port 18080 --backend-port 18097
+```
+
+このサーバーに送るクライアントでは`--url http://127.0.0.1:18080`を追加します。画像＋stateを読み込むdecoderの処理と各質問の判定は、引き続き質問ごとに実行します。
+
+Radeon AI PRO R9700・512×286 px画像・4問での測定例:
+
+| 条件 | 応答時間 |
+|---|---:|
+| 再利用なし、10回の中央値 | 358 ms |
+| 初回の画像、1回計算＋3回再利用（2回測定） | 192〜212 ms |
+| 同じ画像を再送、10回の中央値 | 98 ms |
+
+モデルロードを除くHTTP応答時間です。1画像での実験値で、速度や正答率を保証するものではありません。[測定条件と精度上の制約](docs/VISION_EVALUATION.md)も参照してください。
+
+## API
 
 ```bash
 curl http://127.0.0.1:8080/v1/systemone \
@@ -56,31 +107,41 @@ curl http://127.0.0.1:8080/v1/systemone \
 
 確率は指定した候補の中で正規化した値です。`confidence`は分布の集中度で、正解率として校正された値ではありません。[仕組みと制約](docs/DESIGN.md)を参照してください。
 
-## 構成
+## フォルダ構成
 
 ```text
-api_server.py / systemone.py   HTTP APIと型付き判断
-jev_local.py / state_cache.py  推論・共通入力の再利用
-display.py / systemone_client.py  表示・サンプルクライアント
-scripts/                      セットアップと起動管理、取得物の固定情報
-examples/                     入力サンプル
-tests/                        モデル不要のユニットテスト
-tools/                        任意の評価・ベンチマーク
-docs/                         設定、API仕様、仕組み、評価方法
+api_server.py / systemone.py       HTTP APIと型付き判断
+jev_local.py / state_cache.py      候補確率の計算・テキストStateの再利用
+image_input.py                    画像の検証・data URLへの変換
+systemone_client.py / display.py   クライアント・結果表示
+scripts/                          セットアップ・起動・実験ビルド
+native/                           画像エンコードキャッシュとC++単体テスト
+examples/                         リクエストJSON
+sample_pics/                      ローカル入力画像（画像はGit対象外）
+tests/                            Python単体テスト
+tools/                            動作確認・評価・速度測定
+docs/                             詳細な設定・仕様・測定条件
+models/ .cache/ results/ .venv/    ローカル生成物（Git対象外）
 ```
 
-モデル、ダウンロードキャッシュ、実行結果、仮想環境はGit管理対象外です。クローンには実行コードと入力例だけが含まれ、モデル等は`setup.sh`が取得します。
+モデル・画像・生ログ・計測結果・ビルド成果物はGitHubに含めません。公開する測定要約は`docs/`にまとめています。`results/`内のファイルを編集しても配布コードにはならないため、再利用するスクリプトは`tools/`で管理します。
 
 ## 開発・検証
 
 ```bash
-python3 -m unittest discover -s tests -v  # ダウンロード・推論不要
-python3 -m tools.verify_api              # 起動済みAPIへの実通信テスト
+python3 -m unittest discover -s tests -v  # モデル・ダウンロード不要
+python3 -m tools.verify_api              # 起動済みAPIの実通信確認
+python3 -m tools.verify_vision           # 合成画像で画像入力を確認
 ```
 
+CIではPythonテスト・シェル構文と、モデル不要のC++キャッシュテストを実行します。GPU推論の確認はローカルで行います。
+
+- [セットアップ詳細](docs/SETUP.md)
 - [API・公式SDK接続](docs/API.md)
+- [画像エンコードキャッシュ](docs/IMAGE_CACHE.md)
+- [画像評価の記録](docs/VISION_EVALUATION.md)
+- [評価ツール・速度測定](docs/EVALUATION.md)
 - [共通Stateの再利用](docs/STATE_CACHE.md)
-- [評価ツール](docs/EVALUATION.md)
 - [JGLUE評価](docs/JGLUE.md)
 
-依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF)は、それぞれの配布元の利用条件に従います。本プロジェクトにバイナリ・重みは同梱しません。
+依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)は、それぞれの配布元の利用条件に従います。本プロジェクトにバイナリ・モデル重みは同梱しません。

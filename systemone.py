@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import json
 from state_cache import SharedStateCache, DEFAULT_CACHE_DIR
 from jev_local import JevLocal
+from image_input import validate_images
 
 ALIASES = ('jev-latest', 'jev-preview')
 
@@ -23,6 +24,10 @@ def validate(payload, model_id):
     require(isinstance(payload.get('model'), str), ['model'], 'model is required')
     require(payload['model'] in (*ALIASES, model_id), ['model'], 'Unknown model; see GET /v1/models')
     require(isinstance(payload.get('state'), (str,dict,list)), ['state'], 'Expected string, object or array')
+    try:
+        validate_images(payload.get('images', []))
+    except ValueError as exc:
+        raise ValidationError(['images'], str(exc)) from exc
     questions = payload.get('questions')
     require(isinstance(questions,dict) and bool(questions), ['questions'], 'Expected a nonempty question map')
     for key,q in questions.items():
@@ -81,7 +86,7 @@ class AdapterBackend(JevLocal):
 
 
 class SystemOne:
-    def __init__(self, backend_url='http://127.0.0.1:8097', model_id='lfm2.5-1.2b-instruct-q8_0', workers=4, backend_factory=None, state_cache='auto', cache_dir=DEFAULT_CACHE_DIR, cache_min_tokens=256):
+    def __init__(self, backend_url='http://127.0.0.1:8097', model_id='lfm2.5-vl-1.6b-q8_0', workers=4, backend_factory=None, state_cache='auto', cache_dir=DEFAULT_CACHE_DIR, cache_min_tokens=256):
         self.model_id = model_id
         self.backend_factory = backend_factory or (lambda: AdapterBackend(backend_url))
         mode = ('shared' if state_cache else 'off') if isinstance(state_cache,bool) else state_cache
@@ -103,7 +108,18 @@ class SystemOne:
         state = content(payload['state'])
         active = {k:s for k,s in specs.items() if len(s['choices']) > 1}
         results, profile, futures = {}, {'mode':'off'}, {}
-        if self.cache and active:
+        images = payload.get('images', [])
+        if images and active:
+            backend.prepare_images(images)
+            profile['mode'] = 'off-images'
+            def score_image(spec):
+                # Participate in the same slot leases as text snapshot requests.
+                if self.cache:
+                    with self.cache.lease() as slot:
+                        return backend.score(state, spec, images=images, slot=slot)
+                return backend.score(state, spec, images=images)
+            futures = {key:self.pool.submit(score_image,spec) for key,spec in active.items()}
+        elif self.cache and active:
             results, profile = self.cache.run(backend,state,active,self.pool,self.cache_min_tokens)
         else:
             futures = {key:self.pool.submit(backend.score,state,spec) for key,spec in active.items()}
@@ -137,7 +153,7 @@ class SystemOne:
                 except Exception: pass
             raise
         if diagnostics is not None:
-            if profile['mode'] == 'off':
+            if profile['mode'] in ('off', 'off-images'):
                 profile.update(cached_tokens=0, processed_tokens=sum(t.get('prompt_n',0) for r in results.values() for t in r.get('cache_attempts',[])))
             diagnostics.update(profile)
         return {'model':self.model_id,'answers':answers,'usage':usage}

@@ -53,7 +53,7 @@ curl http://127.0.0.1:8080/v1/models \
   -H 'Authorization: Bearer local-dev'
 ```
 
-`jev-latest`と`jev-preview`はこのローカルサービス内での別名として受け付けます。実際の返却モデル名は起動時にバックエンドのGGUF名から取得します。例: `lfm2.5-1.2b-instruct-q8_0`。公式のモデルバージョン名を実行したようには表示しません。モデル一覧のrelease_dateはローカルアダプターの提供日です。
+`jev-latest`と`jev-preview`はこのローカルサービス内での別名として受け付けます。実際の返却モデル名は起動時にバックエンドのGGUF名から取得します。例: `lfm2.5-vl-1.6b-q8_0`。公式のモデルバージョン名を実行したようには表示しません。モデル一覧のrelease_dateはローカルアダプターの提供日です。
 
 ## 公式SDK
 
@@ -109,7 +109,7 @@ python3 systemone_client.py --format json
 - 422: 不正なJSON・質問・モデル名。通常の入力検証は`detail`配列に対象フィールドを含みます。
 - 529 + Retry-After: 同時処理中のAPIリクエストが8件に達した場合。
 - 502 / 504: 推論バックエンドの障害／タイムアウト。
-- 413: 2MiB超のリクエスト。HTTP chunked uploadは非対応です。
+- 413: 24MiB超のリクエスト。HTTP chunked uploadは非対応です。
 
 エラーJSONの全フィールドまで公式サービスと同一であるとは保証しません。公式側の429課金レート制限や64k/32kコンテキスト契約も再現していません。ローカルの既定コンテキストは4 slotsに合計8192（各2048）です。多い候補や長い入力には、推論サーバーを例えば`CTX_SIZE=32768 ./run_server.sh`で起動してください。切り捨てられた入力から正常な回答を返さずエラーにします。
 
@@ -131,3 +131,29 @@ python3 systemone_client.py --format json
 ## 共通Stateの再利用
 
 既定の`--state-cache auto`では、2問以上の共通prefixが256トークン以上なら一度だけ評価して全質問へ復元します。短い入力は従来どおり処理します。JSONの入出力形は変更していません。既存環境では推論サーバーとAPIサーバーの両方を再起動してください。[設定・計測・制約](STATE_CACHE.md)を参照してください。
+
+## 画像入力（ローカル拡張）
+
+既定モデルはLFM2.5-VL-1.6B Q8_0とF16のmmprojです。`state`・`questions`に加えて、トップレベルに任意の`images`配列を指定できます。各画像は全質問へ、配列の順番で渡されます。これは独自拡張で、公式SDKの画像互換を意味しません。
+
+```json
+{
+  "model": "jev-latest",
+  "state": "添付画像を見て回答してください。",
+  "images": ["data:image/png;base64,<画像のbase64>"],
+  "questions": {
+    "person": {"type": "noul", "instructions": "人物が写っていますか？"}
+  }
+}
+```
+
+`<画像のbase64>`は実際のbase64に置き換えます。PNG/JPEGのみ、デコード後1枚4 MiB、最大4枚です。HTTPの画像URL・サーバー上のファイルパスは受け付けません。クライアントは指定ファイルをローカルで読み、data URLへ変換します。
+
+```bash
+python3 systemone_client.py --input examples/vision.json --image photo.jpg
+python3 systemone_client.py --input examples/vision.json --image first.png --image second.jpg
+# 直接llama-serverを使うCLIも同じ--imageオプションに対応
+python3 jev_local.py decide --input your-decide.json --image photo.jpg
+```
+
+回答形式と候補logprobの正規化方式はテキスト入力と同じです。画像を含むときはテキスト用prefix共有とprompt cacheを無効化し、`X-Jev-Local-State-Cache: off-images`を返します（単一Choiceだけなら推論不要）。画像は質問ごとに評価するため、画像サイズ・質問数に応じて処理量が増えます。画像がコンテキストに収まらなければ422になります。画像エンコーダー未設定のバックエンドでは502と設定方法を返します。

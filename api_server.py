@@ -13,7 +13,7 @@ import urllib.request
 from systemone import SystemOne, ValidationError
 from state_cache import DEFAULT_CACHE_DIR
 
-MAX_BODY = 2 * 1024 * 1024
+MAX_BODY = 24 * 1024 * 1024
 
 def parse_json(raw):
     def reject_constant(s): raise ValueError(f'Invalid JSON constant: {s}')
@@ -68,7 +68,7 @@ def make_handler(engine, api_key, max_requests=8):
             try:
                 length = int(self.headers.get('Content-Length','-1'))
                 if not 0 <= length <= MAX_BODY:
-                    self.send_json(413 if length > MAX_BODY else 411,{'detail':'Expected Content-Length within 2 MiB'});return
+                    self.send_json(413 if length > MAX_BODY else 411,{'detail':'Expected Content-Length within 24 MiB'});return
                 self.connection.settimeout(30)
                 raw = self.rfile.read(length)
                 if len(raw) != length: raise ValueError('Incomplete request body')

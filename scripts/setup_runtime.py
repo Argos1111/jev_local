@@ -162,8 +162,24 @@ def select_runtime(spec, options, automatic):
     raise RuntimeError('No usable runtime found')
 
 
+def model_profile(root, explicit=None):
+    """Resolve a CLI/environment override, then the last setup choice."""
+    saved = root/'.cache/runtime/model.json'
+    profile = explicit or os.environ.get('LFM_PROFILE')
+    if not profile:
+        profile = json.loads(saved.read_text())['profile'] if saved.exists() else 'text'
+    if profile not in ('text', 'vision'):
+        raise RuntimeError(f'Unknown model profile: {profile}; use text or vision')
+    return profile
+
+
+def model_specs(lock, profile):
+    return [lock['text_model']] if profile == 'text' else [lock['model'], lock['mmproj']]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--model', choices=['text', 'vision'], help='Model profile (saved for subsequent launches)')
     parser.add_argument('--model-only', action='store_true', help='Only download the model')
     parser.add_argument('--backend', choices=['auto', 'cpu', 'cuda', 'rocm', 'metal'], default='auto')
     parser.add_argument('--dry-run', action='store_true', help='Show detected runtime candidates without downloading')
@@ -171,13 +187,20 @@ def main():
     if sys.version_info < (3, 12):
         parser.error('Python 3.12 or newer is required')
     lock = json.loads((ROOT/'scripts/runtime.json').read_text())
+    profile = model_profile(ROOT, args.model)
+    print(f'Model profile: {profile}', flush=True)
     options = [] if args.model_only else candidates(platform.system(), platform.machine(), args.backend, gpu_vendors())
     print('Runtime candidates: ' + (', '.join(options) or 'model only'), flush=True)
     if args.dry_run:
         return
     selection = select_runtime(lock['llama'], options, args.backend == 'auto') if options else None
-    spec = lock['model']
-    download(spec['url'], ROOT/'models'/spec['filename'], spec['sha256'])
+    for spec in model_specs(lock, profile):
+        download(spec['url'], ROOT/'models'/spec['filename'], spec['sha256'])
+    profile_path = ROOT/'.cache/runtime/model.json'
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = profile_path.with_suffix('.tmp')
+    temporary.write_text(json.dumps({'profile': profile}) + '\n')
+    temporary.replace(profile_path)
     if selection:
         path = ROOT/'.cache/runtime/selected.json'
         temporary = path.with_suffix('.tmp')

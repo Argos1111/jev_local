@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 """Launch the selected runtime, allowing explicit environment overrides."""
+import argparse
 import json
 import os
 from pathlib import Path
 import sys
 
 if __package__:
-    from .setup_runtime import ROOT, runtime_env
+    from .setup_runtime import ROOT, runtime_env, model_profile, model_specs
 else:
-    from setup_runtime import ROOT, runtime_env
+    from setup_runtime import ROOT, runtime_env, model_profile, model_specs
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--model', choices=['text', 'vision'])
+    options, extra = parser.parse_known_args()
+    profile = model_profile(ROOT, options.model)
     selected = ROOT/'.cache/runtime/selected.json'
     selection = json.loads(selected.read_text()) if selected.exists() else {}
     explicit = os.environ.get('LLAMA_SERVER')
     server = Path(explicit) if explicit else ROOT/selection.get('server', '.cache/runtime/llama/llama-server')
-    model = Path(os.environ.get('LFM_MODEL', str(ROOT/'models/LFM2.5-1.2B-Instruct-Q8_0.gguf')))
+    lock = json.loads((ROOT/'scripts/runtime.json').read_text())
+    model = Path(os.environ.get('LFM_MODEL', str(ROOT/'models'/model_specs(lock, profile)[0]['filename'])))
+    # An explicit custom model needs its own projector; never pair it with ours.
+    projector = os.environ.get('LFM_MMPROJ', '' if 'LFM_MODEL' in os.environ or profile == 'text' else str(ROOT/'models'/lock['mmproj']['filename']))
     if not server.is_file() or not os.access(server, os.X_OK):
         sys.exit(f'llama-server not found: {server}. Run ./setup.sh or set LLAMA_SERVER.')
     if not model.is_file():
-        sys.exit(f'Model not found: {model}. Run ./setup.sh or set LFM_MODEL.')
+        sys.exit(f'Model not found: {model}. Run ./setup.sh --model {profile} --model-only or set LFM_MODEL.')
+    if projector and not Path(projector).is_file():
+        sys.exit(f'Projector not found: {projector}. Run ./setup.sh or set LFM_MMPROJ.')
     directory = server.parent if explicit else ROOT/selection.get('directory', '.cache/runtime/llama')
     env = runtime_env(directory)
     layers = os.environ.get('GPU_LAYERS', '0' if explicit else selection.get('gpu_layers', '0'))
@@ -31,7 +41,12 @@ def main():
             '-np', '4', '-t', env.get('THREADS', '8')]
     if env.get('GPU_DEVICE'):
         args.extend(['--device', env['GPU_DEVICE']])
-    args.extend(sys.argv[1:])
+    if projector:
+        args.extend(['--mmproj', projector])
+        if layers == '0':
+            args.append('--no-mmproj-offload')
+    args.extend(extra)
+    print(f'Model profile: {profile}; model: {model.name}', flush=True)
     print(f'Backend: {selection.get("variant", "manual") if not explicit else "manual"}; GPU layers: {layers}', flush=True)
     os.execve(server, args, env)
 

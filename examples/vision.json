@@ -1,0 +1,12 @@
+{
+  "model": "jev-latest",
+  "state": "添付画像を見て回答してください。",
+  "questions": {
+    "main_subject": {
+      "type": "choice",
+      "instructions": "画像の主な被写体はどれですか？",
+      "criteria": {"person": "人物", "animal": "動物", "food": "食べ物", "landscape": "風景", "other": "その他"}
+    },
+    "has_person": {"type": "noul", "instructions": "画像に人物が写っていますか？"}
+  }
+}

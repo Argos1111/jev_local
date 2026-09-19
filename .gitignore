@@ -15,3 +15,13 @@ models/
 .vscode/
 .agents/
 .codex/
+# User-provided evaluation inputs (keep instructions in the repository).
+sample_pics/*
+!sample_pics/README.md
+# Native build artifacts outside the normal .cache build directory.
+*.o
+*.a
+*.so
+*.so.*
+core
+core.*

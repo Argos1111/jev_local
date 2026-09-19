@@ -65,6 +65,18 @@
     }
   },
   "model": {
+    "filename": "LFM2.5-VL-1.6B-Q8_0.gguf",
+    "revision": "36fc16bc95133424921bcc3da009e83b2f23ffb5",
+    "url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/resolve/36fc16bc95133424921bcc3da009e83b2f23ffb5/LFM2.5-VL-1.6B-Q8_0.gguf",
+    "sha256": "a34bd1506a298d7ff07902e69baeac48c7c20bb85162e61218b743dc10be7c67"
+  },
+  "mmproj": {
+    "filename": "mmproj-LFM2.5-VL-1.6b-F16.gguf",
+    "revision": "36fc16bc95133424921bcc3da009e83b2f23ffb5",
+    "url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF/resolve/36fc16bc95133424921bcc3da009e83b2f23ffb5/mmproj-LFM2.5-VL-1.6b-F16.gguf",
+    "sha256": "2cddba98b98390c011c606c416de2e63dcfdd3b21452bf71ad6aab59fa52d2ee"
+  },
+  "text_model": {
     "filename": "LFM2.5-1.2B-Instruct-Q8_0.gguf",
     "revision": "6767265158422fb8a19c62ceb45f16f05363615b",
     "url": "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/6767265158422fb8a19c62ceb45f16f05363615b/LFM2.5-1.2B-Instruct-Q8_0.gguf",

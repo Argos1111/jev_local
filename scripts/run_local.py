@@ -32,6 +32,7 @@ def wait_ready(url, process, timeout=180):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--model', choices=['text', 'vision'], help='Override the model chosen at setup')
     parser.add_argument('--port', type=int, default=8080, help='Public local API port')
     parser.add_argument('--backend-port', type=int, default=int(os.environ.get('PORT', '8097')))
     parser.add_argument('--state-cache', choices=['auto', 'shared', 'off'], default='auto')
@@ -58,7 +59,10 @@ def main():
     try:
         with log_path.open('w') as log:
             env = dict(os.environ, PORT=str(args.backend_port), SLOT_CACHE_DIR=str(cache))
-            children.append(subprocess.Popen([str(ROOT/'run_server.sh')], env=env, stdout=log, stderr=log))
+            backend_command = [str(ROOT/'run_server.sh')]
+            if args.model:
+                backend_command.extend(['--model', args.model])
+            children.append(subprocess.Popen(backend_command, env=env, stdout=log, stderr=log))
             print(f'Loading model. Backend log: {log_path}', flush=True)
             wait_ready(backend_url, children[0])
             children.append(subprocess.Popen([

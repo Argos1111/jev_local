@@ -7,6 +7,7 @@ from pathlib import Path
 import time
 import urllib.request
 from display import table, percent, value, duration
+from image_input import load_image, validate_images
 
 def render_response(response, request, elapsed_ms):
     rows=[]
@@ -34,9 +35,13 @@ def main():
     p.add_argument('--url',default='http://127.0.0.1:8080')
     p.add_argument('--input',type=Path,default=Path(__file__).parent/'examples/systemone.json')
     p.add_argument('--output',type=Path)
+    p.add_argument('--image',type=Path,action='append',default=[],help='Attach PNG/JPEG (repeatable, up to four)')
     p.add_argument('--format',choices=['pretty','json'],default='pretty')
     args=p.parse_args()
     payload=json.loads(args.input.read_text())
+    if args.image:
+        payload['images']=payload.get('images',[])+[load_image(path) for path in args.image]
+    validate_images(payload.get('images',[]))
     req=urllib.request.Request(args.url.rstrip('/')+'/v1/systemone',json.dumps(payload,ensure_ascii=False).encode(),
                                {'Content-Type':'application/json','Authorization':'Bearer '+os.environ.get('JEV_API_KEY','local-dev')})
     start=time.perf_counter()

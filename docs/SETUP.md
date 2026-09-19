@@ -2,7 +2,7 @@
 
 ## 標準構成
 
-`./setup.sh`はGPUを検出し、対応するllama.cpp公式バイナリとLFM2.5-1.2B-Instruct Q8_0を取得します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
+`./setup.sh --model text`は文章用のLFM2.5-1.2B Instruct Q8_0、`./setup.sh --model vision`は画像対応のLFM2.5-VL-1.6B Q8_0とmmprojを取得します。GPUを検出して対応するllama.cpp公式バイナリも導入します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
 
 | 環境 | 自動選択 |
 |---|---|
@@ -29,14 +29,18 @@ GPUドライバーはインストール済みである必要があります。RO
 ```
 
 - llama.cpp: **b11042**（[公式リリース](https://github.com/ggml-org/llama.cpp/releases/tag/b11042)）
-- モデル: **LFM2.5-1.2B-Instruct-Q8_0.gguf**（約1.25 GB）
+- 文章モデル: **LFM2.5-1.2B-Instruct-Q8_0.gguf**
+- 画像対応モデル: **LFM2.5-VL-1.6B-Q8_0.gguf**（約1.25 GB）
+- 画像エンコーダー: **mmproj-LFM2.5-VL-1.6b-F16.gguf**（約0.85 GB）
 - 全配布物のURL・モデルリビジョン・SHA256: [`scripts/runtime.json`](../scripts/runtime.json)
 - 保存先: `.cache/runtime/b11042/<環境>/`、`models/`
-- 選択結果: `.cache/runtime/selected.json`。`run.sh`と`run_server.sh`が読み込み、GPU版では自動で全レイヤーをオフロードします。
+- ランタイム選択結果: `.cache/runtime/selected.json`。`run.sh`と`run_server.sh`が読み込み、GPU版では自動で全レイヤーをオフロードします。
 
 ダウンロード済みアーカイブとモデルはSHA256を検証して再利用します。展開済みランタイムは起動確認して再利用します。SHA256不一致の場合は自動上書きせず停止します。該当ファイルを別の場所に移して再実行してください。セットアップの同時実行は避けてください。
 
-モデルの約1.25 GBに加え、選択するランタイム（CUDA版は付属ライブラリ込みで約760 MBのダウンロード）、展開用ディスク、推論用メモリが必要です。初回はGitHubとHugging FaceへのHTTPSアクセスが必要で、取得完了後のデモ推論はローカルで動作します。
+VL構成ではモデル本体と画像エンコーダーの計約2.1 GBに加え、選択するランタイム（CUDA版は付属ライブラリ込みで約760 MBのダウンロード）、展開用ディスク、推論用メモリが必要です。初回はGitHubとHugging FaceへのHTTPSアクセスが必要で、取得完了後のデモ推論はローカルで動作します。
+
+モデルの選択は`.cache/runtime/model.json`に保存します。`--model`を省略すると`LFM_PROFILE`、保存した選択、`text`の順に解決します。両モデルを取得済みなら、サーバーを停止し`./run.sh --model text`または`./run.sh --model vision`で起動し直して切り替えます。起動時の指定は保存された選択を変更しません。`run_server.sh`でも同じオプションを使えます。
 
 ## 起動設定
 
@@ -51,7 +55,9 @@ python3 systemone_client.py --url http://127.0.0.1:8081
 | 設定 | 既定値 | 用途 |
 |---|---|---|
 | `LLAMA_SERVER` | 自動選択した実行ファイル | 別の推論バイナリ |
-| `LFM_MODEL` | `models/LFM2.5-1.2B-Instruct-Q8_0.gguf`の絶対パス | 既存GGUF |
+| `LFM_PROFILE` | 保存した選択、未設定なら`text` | `text` / `vision`。CLIの`--model`が優先 |
+| `LFM_MODEL` | 選択したモデルの絶対パス | 既存GGUF。標準モデル選択を上書き |
+| `LFM_MMPROJ` | `vision`のみ標準mmproj、`text`はなし | 画像エンコーダー。空文字で無効化 |
 | `THREADS` | `8` | CPUスレッド数 |
 | `CTX_SIZE` | `8192` | 全slotの合計コンテキスト |
 | `GPU_LAYERS` | GPU版は`all`、CPU版は`0` | 自動設定を上書き |
@@ -77,18 +83,22 @@ python3 systemone_client.py --url http://127.0.0.1:8081
 ```bash
 # 既存のバイナリとGGUFを使う場合、setup.shは不要
 export LLAMA_SERVER="/absolute/path/to/llama-server"
-export LFM_MODEL="/absolute/path/to/LFM2.5-1.2B-Instruct-Q8_0.gguf"
+export LFM_MODEL="/absolute/path/to/LFM2.5-VL-1.6B-Q8_0.gguf"
+export LFM_MMPROJ="/absolute/path/to/mmproj-LFM2.5-VL-1.6b-F16.gguf"
 GPU_LAYERS=all ./run.sh
 ```
 
-モデルだけ必要なら`./setup.sh --model-only`で取得できます。LM Studio同梱バイナリを使う場合も`LLAMA_SERVER`を明示します。必要な共有ライブラリは配布元の手順で設定してください。
+`LFM_MODEL`を明示すると既定mmprojの自動指定を止めます。画像を使う場合は、そのモデルに対応した`LFM_MMPROJ`も指定してください。CPU設定（`GPU_LAYERS=0`）では画像エンコーダーもCPUで実行します。
 
-macOS用の自動選択は実装済みですが、今回の実機検証対象外です。Windowsは`fcntl`によるファイルロックとBashを使用するため、ネイティブ実行ではなくWSL2を使用してください。検証環境はLinux x86_64（Ubuntu 26.04、Python 3.14）です。この環境ではAMD GPUを検出しましたが、必要な`libhipblas.so.3`がなく、配布ROCm版から利用可能なデバイスが報告されず、CPUへの自動切り替えを確認しました。CUDA・MetalのGPU実機検証は未実施です。
+モデル本体とmmprojだけ必要なら`./setup.sh --model vision --model-only`（文章モデルは`--model text`）で取得できます。LM Studio同梱バイナリを使う場合も`LLAMA_SERVER`を明示します。必要な共有ライブラリは配布元の手順で設定してください。
+
+macOS用の自動選択は実装済みですが、今回の実機検証対象外です。Windowsは`fcntl`によるファイルロックとBashを使用するため、ネイティブ実行ではなくWSL2を使用してください。検証環境はLinux x86_64（Ubuntu 26.04、Python 3.14）です。ROCm共有ライブラリ未設定時には`libhipblas.so.3`不足によるCPUへの自動切り替えを確認しました。その後、利用可能なROCmライブラリを`LD_LIBRARY_PATH`に設定し、Radeon AI PRO R9700でVLモデル本体・画像エンコーダーのGPU実行を確認しています。CUDA・MetalのGPU実機検証は未実施です。
 
 バックエンドは`/props`、`/apply-template`、`/tokenize`、`/completion`（`post_sampling_probs=false`のlogprob応答）に対応する必要があります。共通State再利用にはslot保存・復元も必要です。古いllama.cppとの互換性は保証しません。
 
 ## トラブルシューティング
 
+- **Connection refused**: 送信先APIのポートでサーバーが動いていません。`run.sh`の`Ready:`表示を待ち、そのターミナルを開いたまま送信してください。`--url`はAPIポート（既定8080）で、推論バックエンドの8097ではありません。
 - **起動できない**: `.cache/llama-server.log`を確認します。バイナリが見つからなければ`./setup.sh`を実行してください。
 - **GPUで動かない**: `./setup.sh --backend cuda`（または`rocm` / `metal`）でエラーを確認します。ドライバー・ROCmランタイム・デバイスアクセス権を確認してください。CPUに固定するには`./setup.sh --backend cpu`を実行します。
 - **共有ライブラリ／GLIBCのエラー**: 配布バイナリとOSの組み合わせが非対応です。対応するLinux環境を使うか、その環境向けにllama.cppをビルドし`LLAMA_SERVER`を指定します。
@@ -98,3 +108,5 @@ macOS用の自動選択は実装済みですが、今回の実機検証対象外
 - **401**: APIとクライアントに同じ`JEV_API_KEY`を設定します。
 
 APIは既定で`127.0.0.1`に待ち受けます。`/health`はAPIプロセスの生存確認で、推論の確認には`python3 -m tools.verify_api`を使います。
+
+画像の実行には`/props`のvision対応とmedia_marker、および`/completion`のmultimodal_data対応が必要です。b11042 + 上記モデルでPNG画像の実推論を確認しています。画像もコンテキストを消費するため、大きな画像・複数画像で422になる場合は画像を縮小するか`CTX_SIZE`を増やしてください。
