@@ -7,7 +7,7 @@ LFM（llama.cpp）の代わりに、[sbintuitions/modernbert-ja-310m](https://hu
 | | LFM 1.2B（既定） | ModernBERT-Ja 310M |
 |---|---|---|
 | 判定方法 | 回答先頭トークン（A/B/C…）のlogprob | (質問＋State, 候補) ペアごとに1つのlogit |
-| 学習 | zero-shot、プロンプトのみ | 公開日本語データでfine-tune必須 |
+| 学習 | zero-shot、プロンプトのみ | 公開日本語データでfine-tune（学習済み重みを配布） |
 | 候補順への依存 | あり（位置バイアス） | なし（各候補を独立に採点） |
 | 候補数の上限 | 26（英字）／255（数字トークン） | 制限なし（255はAPI側の上限） |
 | 1リクエストの推論 | 質問ごとに1回、最大4並列 | 全質問・全候補を1バッチで1回 |
@@ -114,10 +114,13 @@ JSTSは連続値ど0.5単位の丸めを使っているため完全一致は厳�
 ## 起動
 
 ```bash
-./run_modernbert.sh                     # http://127.0.0.1:8080、models/modernbert-ja-310m-jev
+./run_modernbert.sh                     # http://127.0.0.1:8080
 ./run_modernbert.sh --port 8081 --device cuda:0 --dtype bfloat16
-./run_modernbert.sh --checkpoint models/mb-nli-only
+./run_modernbert.sh --checkpoint models/mb-nli-only              # ローカルの別チェックポイント
+./run_modernbert.sh --checkpoint argos1111/modernbert-ja-310m-jev@main   # Hub id（@でリビジョン指定可）
 ```
+
+`--checkpoint`省略時は、`models/modernbert-ja-310m-jev/`があればそれを、なければHubの[argos1111/modernbert-ja-310m-jev](https://huggingface.co/argos1111/modernbert-ja-310m-jev)を使います（初回に約1.3 GBを`.cache/hf`へ取得）。Hub側にも`jev_modernbert.json`が含まれ、`format_version`の照合は同じです。
 
 llama.cppは起動しません。既存の`./run.sh`（LFM）と同時に動かす場合はポートを分けてください。クライアントは同じです。
 
@@ -130,6 +133,16 @@ python3 -m tools.benchmark_jglue --url http://127.0.0.1:8080 --output results/jg
 応答ヘッダー`X-Jev-Local-State-Cache`は`encoder-batch`固定、`X-Jev-Local-Processed-Tokens`はバッチ全体の入力トークン数です。`images`を含むリクエストは422を返します。
 
 未学習のベースモデルで起動する`--allow-untrained`は、ヘッドが乱数初期化のため出力に意味がありません。配線確認用です。
+
+## 公開済みの重み
+
+学習済みチェックポイントは[Hugging Face Hub](https://huggingface.co/argos1111/modernbert-ja-310m-jev)に**CC BY-SA 4.0**で公開しています。ベースモデル（MIT）と学習データ（CC BY-SA 4.0 / CC BY 4.0 / MIT）の条件を継承した保守的な選択です。モデルカード（[`modernbert/MODEL_CARD.md`](../modernbert/MODEL_CARD.md)）に学習設定・データ出典・評価値・transformersからの直接利用例を記載しています。
+
+自分の学習結果を公開するには、writeトークンを`HF_TOKEN`に設定して次を実行します。トークンは保存しません。
+
+```bash
+HF_TOKEN=hf_xxx .venv-modernbert/bin/python scripts/publish_modernbert.py --repo <user>/<name> --checkpoint models/<dir>
+```
 
 ## 評価
 
@@ -205,4 +218,4 @@ fine-tuneせず、事前学習済みのMasked LMヘッドで「答えの数字�
 - 1ペアあたり`max_length=512`トークン。長いStateは末尾を切り詰め、`diagnostics.truncated`で通知します（HTTPヘッダーには出ません）。
 - CPU推論はfloat32で動作しますが速度は未測定です。
 - Python 3.14での動作はROCm 10.0 wheel（cp314）で確認済み。CUDA・CPU wheelは`pip install --dry-run`で2.13.0の依存解決が通ることまで確認していますが、実機では未実行です。
-- 学習済みチェックポイント（1.26 GB）はリポジトリに含めません。利用者は`./train_modernbert.sh`で再学習します（データは自動取得、R9700で約41分）。学習結果は乱数シード固定でも、GPU・ドライバーの差で完全一致はしません。
+- 学習済みチェックポイント（1.26 GB）はGitリポジトリに含めず、Hugging Face Hubから取得します。`./train_modernbert.sh`で再学習した結果は、乱数シード固定でもGPU・ドライバーの差で完全一致はしません。

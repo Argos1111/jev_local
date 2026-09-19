@@ -5,7 +5,7 @@
 | | LFM（既定） | ModernBERT |
 |---|---|---|
 | モデル | LFM2.5-1.2B Instruct / LFM2.5-VL-1.6B（llama.cpp, Q8_0） | ModernBERT-Ja 310Mをcross-encoderとしてfine-tune |
-| 判定方式 | 回答先頭トークンのlogprob（zero-shot） | (質問＋State, 候補)ペアの採点（要学習、約40分） |
+| 判定方式 | 回答先頭トークンのlogprob（zero-shot） | (質問＋State, 候補)ペアの採点（学習済み重みを配布） |
 | 入力 | 文章・JSON・画像 | 文章・JSON |
 | 強いところ | 知識・未知の分類体系・自由な指示文 | 日本語の意図・関係判定と速度。候補順に依存しない |
 | 追加依存 | なし（バイナリを自動取得） | torch＋transformers（別venv） |
@@ -103,18 +103,19 @@ Radeon AI PRO R9700・512×286 px画像・4問での測定例:
 
 ## ModernBERTバックエンド（文章のみ）
 
-LLMの先頭トークン判定ではなく、[sbintuitions/modernbert-ja-310m](https://huggingface.co/sbintuitions/modernbert-ja-310m)を「(質問＋State, 候補)ペアの採点器」としてfine-tuneし、同じAPIを提供する構成です。torch＋transformersを別のvenvに導入し、公開日本語データ（JGLUE train・JCoLA・JCommonsenseMorality・MASSIVE）で学習してから起動します。候補順への依存がなく、1リクエストの全質問を1回のバッチ推論で処理します。
+LLMの先頭トークン判定ではなく、[sbintuitions/modernbert-ja-310m](https://huggingface.co/sbintuitions/modernbert-ja-310m)を「(質問＋State, 候補)ペアの採点器」としてfine-tuneし、同じAPIを提供する構成です。torch＋transformersを別のvenvに導入します。候補順への依存がなく、1リクエストの全質問を1回のバッチ推論で処理します。
 
 ```bash
 ./setup_modernbert.sh        # .venv-modernbert（torch/transformers）。GPUを自動検出
-./train_modernbert.sh        # models/modernbert-ja-310m-jev を作成（R9700で約40分）
-./run_modernbert.sh          # http://127.0.0.1:8080 で同じ /v1/systemone を提供
+./run_modernbert.sh          # 学習済み重み argos1111/modernbert-ja-310m-jev を取得して起動（初回約1.3 GB）
 python3 systemone_client.py  # クライアントは共通
 ```
 
-学習にはGPU（bf16でVRAM約20 GB。`--pair-budget 64`で約10 GB）が必要です。推論は約2 GBで動き、CPUでも動作します（12問で約2秒）。画像入力は非対応で、`images`を含むリクエストは422を返します。学習済みモデルは配布していないため、各自で学習します。
+学習済み重みは[Hugging Face Hub](https://huggingface.co/argos1111/modernbert-ja-310m-jev)で公開しています（CC BY-SA 4.0）。推論はVRAM約2 GB、CPUでも動作します（12問で約2秒）。
 
-JGLUEの高い数値は同じデータのtrainで学習した結果です。学習に使っていないタスクでは特性が分かれます：知識を問うタスク（ニュース分類・JMMLU）はLFMの方が高く、短い日本語の意図判定（顧客対応の手作り16例）はModernBERTの方が高い結果でした。数値と条件、学習データとライセンス、OS別の対応状況は[ModernBERTバックエンド](docs/MODERNBERT.md)を参照してください。
+自分で学習する場合は`./train_modernbert.sh`を実行します。公開日本語データ（JGLUE train・JCoLA・JCommonsenseMorality・MASSIVE）を自動取得し、R9700で約40分、bf16でVRAM約20 GB（`--pair-budget 64`で約10 GB）です。`models/modernbert-ja-310m-jev/`ができると`./run_modernbert.sh`はそちらを優先します。
+
+画像入力は非対応で、`images`を含むリクエストは422を返します。JGLUEの高い数値は同じデータのtrainで学習した結果です。学習に使っていないタスクでは特性が分かれます：知識を問うタスク（ニュース分類・JMMLU）はLFMの方が高く、短い日本語の意図判定（顧客対応の手作り16例）はModernBERTの方が高い結果でした。数値と条件、学習データとライセンス、OS別の対応状況は[ModernBERTバックエンド](docs/MODERNBERT.md)を参照してください。
 
 ## API
 

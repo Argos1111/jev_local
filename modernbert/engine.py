@@ -16,6 +16,9 @@ from .prompting import FORMAT_VERSION, render_candidates, render_context
 MODEL_ID = 'sbintuitions/modernbert-ja-310m'
 MODEL_REVISION = '77675fc96a7e445e982e2ba90246b816efc74ec6'
 MAX_LENGTH = 512
+# Published fine-tuned weights; used when no local checkpoint exists.
+HUB_CHECKPOINT = 'argos1111/modernbert-ja-310m-jev'
+META_FILE = 'jev_modernbert.json'
 
 
 def select_device(preference='auto'):
@@ -46,6 +49,36 @@ def encode_pairs(tokenizer, contexts, candidates, max_length=MAX_LENGTH):
                      max_length=max_length, return_tensors='pt')
 
 
+def resolve_checkpoint(checkpoint):
+    """Accept a local directory or a Hub repo id (optionally 'repo@revision').
+
+    Returns (source, from_pretrained kwargs, metadata). The metadata file is what
+    distinguishes a Jev checkpoint from an arbitrary ModernBERT classifier.
+    """
+    path = Path(checkpoint)
+    if path.is_dir():
+        meta_path = path/META_FILE
+        if not meta_path.is_file():
+            raise RuntimeError(f'Not a Jev ModernBERT checkpoint: {path}')
+        return str(path), {}, json.loads(meta_path.read_text())
+    text = str(checkpoint)
+    repo, _, revision = text.partition('@')
+    # Hub ids are exactly 'owner/name'; anything else is a missing local path.
+    if repo.count('/') != 1 or text.startswith(('.', '/', '~')) or repo.split('/')[0] in ('models', 'model'):
+        raise RuntimeError(f'Checkpoint not found: {checkpoint}. Train with ./train_modernbert.sh or pass a Hub id like {HUB_CHECKPOINT}')
+    from huggingface_hub import hf_hub_download
+    from huggingface_hub.errors import EntryNotFoundError, LocalEntryNotFoundError, RepositoryNotFoundError
+    try:
+        meta_path = hf_hub_download(repo, META_FILE, revision=revision or None)
+    except RepositoryNotFoundError as exc:
+        raise RuntimeError(f'Hub repository not found: {repo}') from exc
+    except LocalEntryNotFoundError as exc:
+        raise RuntimeError(f'{repo} is not cached and the Hub is unreachable (offline?). Unset HF_HUB_OFFLINE or check the network.') from exc
+    except EntryNotFoundError as exc:
+        raise RuntimeError(f'{repo} has no {META_FILE}; not a Jev ModernBERT checkpoint') from exc
+    return repo, {'revision': revision or None}, json.loads(Path(meta_path).read_text())
+
+
 class CrossEncoder:
     """Single logit per (context, candidate) pair. Untrained heads are refused at serve time."""
 
@@ -60,14 +93,9 @@ class CrossEncoder:
         source = base_model
         kwargs = {'revision': revision}
         if checkpoint is not None:
-            checkpoint = Path(checkpoint)
-            meta_path = checkpoint/'jev_modernbert.json'
-            if not meta_path.is_file():
-                raise RuntimeError(f'Not a Jev ModernBERT checkpoint: {checkpoint}')
-            self.meta = json.loads(meta_path.read_text())
+            source, kwargs, self.meta = resolve_checkpoint(checkpoint)
             if self.meta.get('format_version') != FORMAT_VERSION:
                 raise RuntimeError(f'Checkpoint format {self.meta.get("format_version")!r} does not match {FORMAT_VERSION!r}')
-            source, kwargs = str(checkpoint), {}
         elif not allow_untrained:
             raise RuntimeError('Base ModernBERT has a randomly initialized head. Train with '
                                'python -m modernbert.train or pass allow_untrained for smoke tests.')
