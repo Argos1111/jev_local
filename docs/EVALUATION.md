@@ -53,7 +53,7 @@ python3 -m tools.verify_vision --url http://127.0.0.1:8080
 
 赤・青のPNGをコードで生成して送り、画像に応じた回答と、テキストStateキャッシュとの同時実行を確認します。外部の画像ファイルは不要です。APIは`--state-cache auto`または`shared`で起動してください。
 
-Sarashinaはこの単色テストを参照クローンでも誤答します。専用の`tools.verify_sarashina_vision`は図形・画像順・再送・テキストとの同時実行を検証し、既知の失敗も記録して非ゼロ終了します。前処理/embeddingの数値照合は`tools.verify_sarashina_embeddings`、参照生成との比較は`tools.verify_sarashina_reference`。依存と許容誤差・実行許可の条件は[Sarashinaの再検証手順](SARASHINA.md#再検証コマンド)を参照してください。
+Sarashinaはこの単色テストを公式checkpoint＋AutoProcessorでも誤答しました。専用の`tools.verify_sarashina_vision`は図形・画像順・再送・テキストとの同時実行を検証し、既知の失敗も記録して非ゼロ終了します。前処理/embeddingの数値照合は`tools.verify_sarashina_embeddings`、公式参照生成との比較は`tools.verify_sarashina_reference`。後者は言語GGUFのtokenizerとの差も検出します。どちらの公式参照ツールもコードのレビューと`--allow-reviewed-code`が必要です。[Sarashinaの再検証手順](SARASHINA.md#再検証コマンド)を参照してください。
 
 ### 手元の画像で応答時間を測る
 

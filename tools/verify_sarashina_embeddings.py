@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare the patched native encoder with the Sarashina Transformers formula."""
+"""Compare native pixels/embeddings with the hash-checked official checkpoint and AutoProcessor."""
 import argparse
 import json
 import os
@@ -9,10 +9,12 @@ import subprocess
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--reference', type=Path, default=Path('.cache/sarashina-reference'))
-    p.add_argument('--native', type=Path, default=Path('.cache/sarashina-runtime/build-hip/bin/test_sarashina_embedding'))
-    p.add_argument('--mmproj', type=Path, default=Path('models/sarashina2.2-vision-3b.mmproj-jev-f16.gguf'))
-    p.add_argument('--output', type=Path, default=Path('results/sarashina-repair/embeddings'))
+    p.add_argument('--reference', type=Path, default=Path('.cache/sarashina-official'))
+    p.add_argument('--native', type=Path, default=Path('.cache/sarashina-official-runtime/build-hip/bin/test_sarashina_embedding'))
+    p.add_argument('--mmproj', type=Path, default=Path('models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf'))
+    p.add_argument('--output', type=Path, default=Path('results/sarashina-official/embeddings'))
+    p.add_argument('--allow-reviewed-code', action='store_true',
+                   help='Execute the hash-checked local official AutoProcessor Python')
     p.add_argument('--device', default='ROCm0')
     p.add_argument('--torch-device', default='cpu')
     p.add_argument('--reference-half-pixels', action='store_true', help='Diagnostic: match ggml Conv2D F16 im2col input rounding')
@@ -22,6 +24,10 @@ def main():
     p.add_argument('--pixels-only', action='store_true', help='Test resize/normalization boundaries without loading encoder weights')
     p.add_argument('--native-library-dir', help='Additional CUDA/HIP library path; otherwise use the build manifest/environment')
     args = p.parse_args()
+    if not args.allow_reviewed_code:
+        p.error('Review processing_sarashina2_vision.py locally, then pass --allow-reviewed-code')
+    from scripts.fetch_sarashina_reference import verify_reference
+    lock = verify_reference(args.reference)
     import numpy as np
     from importlib.metadata import version
     from scripts.build_sarashina import RUNTIME_VARS
@@ -29,7 +35,7 @@ def main():
     from PIL import Image, ImageDraw
     import torch
     from safetensors import safe_open
-    from transformers import Qwen2VLImageProcessor
+    from transformers import AutoProcessor
     from transformers.models.qwen2_vl.configuration_qwen2_vl import Qwen2VLVisionConfig
     from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VisionTransformerPretrainedModel
 
@@ -42,12 +48,13 @@ def main():
         cfg._attn_implementation = 'eager'
         visual = Qwen2VisionTransformerPretrainedModel(cfg).eval()
         norm = torch.nn.LayerNorm(2560).eval()
-        with safe_open(args.reference / 'model-00001-of-00008.safetensors', framework='pt') as f:
+        with safe_open(args.reference / lock['checkpoint_file'], framework='pt') as f:
             visual.load_state_dict({k.removeprefix('visual.'): f.get_tensor(k).float() for k in f.keys() if k.startswith('visual.')}, strict=True)
             norm.load_state_dict({k.removeprefix('norm.'): f.get_tensor(k).float() for k in f.keys() if k.startswith('norm.')}, strict=True)
         visual.to(args.torch_device)
         norm.to(args.torch_device)
-    processor = Qwen2VLImageProcessor(image_mean=[.5]*3, image_std=[.5]*3)
+    processor = AutoProcessor.from_pretrained(args.reference, trust_remote_code=True,
+                                              local_files_only=True, use_fast=False).image_processor
     args.output.mkdir(parents=True, exist_ok=True)
     images = {name: Image.new('RGB', (224, 224), name) for name in ('red', 'blue')}
     image = Image.new('RGB', (224, 224), 'white')
@@ -63,9 +70,13 @@ def main():
     if args.pixels_only:
         for name, size in {'half-even': (238, 182), 'half-odd': (266, 210), 'tiny': (7, 13),
                            'narrow': (14, 224), 'large': (2048, 1536), 'aspect-200': (2000, 10),
-                           'full-document-size': (1190, 665)}.items():
+                           'official-max-area': (1008, 1008), 'full-document-size': (1190, 665)}.items():
             y, x = np.mgrid[:size[1], :size[0]]
             images[name] = Image.fromarray(np.stack((x % 256, y % 256, (x+y) % 256), axis=-1).astype('uint8'))
+        y, x = np.mgrid[:61, :101]
+        checker = (((x//3 + y//3) % 2) * 255).astype('uint8')
+        images['checkerboard'] = Image.fromarray(np.stack([checker]*3, axis=-1))
+        images['noise'] = Image.fromarray(np.random.default_rng(0).integers(0, 256, (193, 317, 3), dtype='uint8'))
     native_env = dict(os.environ)
     manifest_path = args.native.parent.parent/'jev-build.json'
     if manifest_path.is_file():
@@ -81,9 +92,9 @@ def main():
     native_env['LD_LIBRARY_PATH'] = os.pathsep.join(library_dirs)
     native_env['JEV_IMAGE_CACHE_MIB'] = '0'
     report = {'transformers_dtype': 'float32', 'torch_device': args.torch_device,
+              'reference_lock': lock, 'scope': 'Official AutoProcessor and checkpoint; float32 encoder formula',
               'versions': {name: version(name) for name in ('torch', 'transformers', 'pillow', 'numpy')},
-              'input_sha256': {str(p): sha256(p) for p in (args.native, args.mmproj, args.reference/'config.json',
-                                                       args.reference/'model-00001-of-00008.safetensors')},
+              'input_sha256': {str(p): sha256(p) for p in (args.native, args.mmproj)},
               'native_device': args.device, 'native_fa': args.flash_attn, 'pixels_only': args.pixels_only,
               'reference_half_pixels': args.reference_half_pixels,
               'limits': {'min_cosine': args.min_cosine, 'max_rmse': args.max_rmse, 'pixel_max_abs': 1e-6},
@@ -107,7 +118,7 @@ def main():
                 reference = norm(projected).float().cpu().numpy()
             np.save(stem.with_suffix('.reference.npy'), reference)
             native = np.fromfile(str(stem)+'.embd.f32', dtype=np.float32).reshape(-1, 2560)
-        # Undo the Qwen processor's temporal duplication and patch ordering.
+        # Undo the official processor's temporal duplication and patch ordering.
         gh, gw = inputs['image_grid_thw'][0, 1:].cpu().tolist()
         pixels = inputs['pixel_values'].float().cpu().numpy()
         pixels = pixels.reshape(1, gh//2, gw//2, 2, 2, 3, 2, 14, 14)

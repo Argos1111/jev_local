@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """Convert Sarashina2.2 Vision's encoder, merger and final LayerNorm to F16 GGUF.
 
-Only the checkpoint shard containing visual.* and norm.* is needed. This file
-uses a private projector type and requires the matching patched b11042 runtime.
-It does not download weights or execute checkpoint-supplied Python code.
+The official single-file checkpoint contains visual.* and norm.*; LLM tensors
+are not loaded. This private projector needs the official-preprocessing update
+to the patched b11042 runtime. No download or checkpoint Python execution occurs.
 """
 import argparse
 import hashlib
 import json
 from pathlib import Path
+
+if __package__:
+    from .fetch_sarashina_reference import reference_lock
+else:
+    from fetch_sarashina_reference import reference_lock
+
+PREPROCESSING = 'sarashina_official_v1'
 
 
 def sha256(path):
@@ -31,6 +38,34 @@ def validate_config(config):
             or [config.get(k) for k in ('image_token_index', 'start_image_token_index', 'end_image_token_index')]
                != [14, 102397, 102398]):
         raise ValueError('Expected Sarashina2.2 Vision 3B configuration')
+
+
+def validate_preprocessor(config):
+    expected = {'image_processor_type': 'Sarashina2VisionImageProcessor',
+                'do_resize': True, 'do_rescale': True, 'do_normalize': True, 'do_convert_rgb': True,
+                'image_mean': [0.5]*3, 'image_std': [0.5]*3, 'rescale_factor': 1/255,
+                'patch_size': 14, 'temporal_patch_size': 2, 'merge_size': 2,
+                'min_pixels': 3136, 'max_pixels': 1016064}
+    if any(config.get(k) != value for k, value in expected.items()):
+        raise ValueError('Expected official Sarashina2.2 Vision 3B preprocessing configuration')
+    # The official Python uses F.interpolate(mode="bicubic"), ignoring resample.
+
+
+def source_metadata(config_path, checkpoint_path, preprocessor_path):
+    lock = reference_lock()
+    inputs = {'config.json': config_path, lock['checkpoint_file']: checkpoint_path,
+              'preprocessor_config.json': preprocessor_path}
+    hashes = {}
+    for name, path in inputs.items():
+        spec = lock['files'][name]
+        digest = sha256(path)
+        if path.stat().st_size != spec['size'] or digest != spec['sha256']:
+            raise ValueError(f'Expected checksum-pinned official reference input: {path}')
+        hashes[name] = digest
+    return {'source_repository': lock['repository'], 'source_revision': lock['revision'],
+            'checkpoint_file': lock['checkpoint_file'], 'config_sha256': hashes['config.json'],
+            'checkpoint_sha256': hashes[lock['checkpoint_file']],
+            'preprocessor_sha256': hashes['preprocessor_config.json'], 'preprocessing': PREPROCESSING}
 
 
 def tensor_layout():
@@ -56,25 +91,29 @@ def tensor_layout():
     return layout
 
 
-def convert(config_path, shard_path, output, outtype='f16'):
-    import gguf
-    import numpy as np
-    from safetensors import safe_open
-
-    config_path, shard_path, output = map(Path, (config_path, shard_path, output))
+def convert(config_path, checkpoint_path, output, outtype='f16', preprocessor_path=None):
+    config_path, checkpoint_path, output = map(Path, (config_path, checkpoint_path, output))
+    preprocessor_path = Path(preprocessor_path) if preprocessor_path else config_path.with_name('preprocessor_config.json')
     config = json.loads(config_path.read_text())
+    preprocessing = json.loads(preprocessor_path.read_text())
     validate_config(config)
+    validate_preprocessor(preprocessing)
     if outtype not in ('f16', 'f32'):
         raise ValueError('outtype must be f16 or f32')
     manifest = output.with_suffix(output.suffix + '.json')
     temporary = output.with_suffix(output.suffix + '.partial')
-    if any(p.exists() for p in (output, manifest, temporary)):
+    if any(p.exists() or p.is_symlink() for p in (output, manifest, temporary)):
         raise FileExistsError(f'Refusing to overwrite {output}, its manifest or partial output')
+    source = source_metadata(config_path, checkpoint_path, preprocessor_path)
+    import gguf
+    import numpy as np
+    from safetensors import safe_open
+
     output.parent.mkdir(parents=True, exist_ok=True)
     writer = gguf.GGUFWriter(temporary, 'clip')
     writer.add_type('mmproj')
     writer.add_name('Sarashina2.2 Vision 3B - complete projector')
-    writer.add_string('general.description', 'Includes post-merger LayerNorm; requires jev-sarashina runtime')
+    writer.add_string('general.description', 'Official checkpoint conversion with post-merger LayerNorm; requires jev-sarashina official preprocessing v1')
     writer.add_string('clip.projector_type', 'sarashina2vl')
     writer.add_bool('clip.has_vision_encoder', True)
     writer.add_vision_projection_dim(2560)
@@ -91,8 +130,11 @@ def convert(config_path, shard_path, output, outtype='f16'):
     writer.add_vision_spatial_merge_size(2)
     writer.add_file_type(gguf.LlamaFileType.MOSTLY_F16 if outtype == 'f16' else gguf.LlamaFileType.ALL_F32)
     writer.add_quantization_version(gguf.GGML_QUANT_VERSION)
-    writer.add_string('jev.source.config_sha256', sha256(config_path))
-    writer.add_string('jev.source.shard_sha256', sha256(shard_path))
+    writer.add_uint32('jev.sarashina.preprocess_version', 1)
+    writer.add_uint32('clip.vision.image_min_pixels', preprocessing['min_pixels'])
+    writer.add_uint32('clip.vision.image_max_pixels', preprocessing['max_pixels'])
+    for key, value in source.items():
+        writer.add_string('jev.source.' + key, value)
 
     layout = tensor_layout()
     names = set()
@@ -111,7 +153,7 @@ def convert(config_path, shard_path, output, outtype='f16'):
     # Reserve the temporary name only after metadata and input hashes are ready.
     temporary.touch(exist_ok=False)
     try:
-        with safe_open(shard_path, framework='pt', device='cpu') as checkpoint:
+        with safe_open(checkpoint_path, framework='pt', device='cpu') as checkpoint:
             relevant = {k for k in checkpoint.keys() if k.startswith(('visual.', 'norm.'))}
             if set(layout) != relevant:
                 raise ValueError(f'Incomplete/unexpected vision weights: {sorted(set(layout) ^ relevant)}')
@@ -145,8 +187,7 @@ def convert(config_path, shard_path, output, outtype='f16'):
     finally:
         writer.close()
         temporary.unlink(missing_ok=True)
-    report = {'config_sha256': sha256(config_path), 'shard_sha256': sha256(shard_path),
-              'output_sha256': sha256(output), 'tensors': len(names),
+    report = {**source, 'output_sha256': sha256(output), 'tensors': len(names),
               'projector_type': 'sarashina2vl', 'outtype': outtype}
     with manifest.open('x') as stream:
         stream.write(json.dumps(report, indent=2) + '\n')
@@ -156,11 +197,13 @@ def convert(config_path, shard_path, output, outtype='f16'):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
-    parser.add_argument('--shard', type=Path, required=True)
+    parser.add_argument('--checkpoint', '--shard', dest='checkpoint', type=Path, required=True,
+                        help='Official model.safetensors (--shard is a compatibility alias)')
+    parser.add_argument('--preprocessor', type=Path, help='Default: preprocessor_config.json next to --config')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--outtype', choices=('f16', 'f32'), default='f16', help='F32 is for numerical diagnostics')
     args = parser.parse_args()
-    print(json.dumps(convert(args.config, args.shard, args.output, args.outtype), indent=2))
+    print(json.dumps(convert(args.config, args.checkpoint, args.output, args.outtype, args.preprocessor), indent=2))
 
 
 if __name__ == '__main__':

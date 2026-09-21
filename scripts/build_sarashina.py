@@ -17,8 +17,9 @@ if __package__:
 else:
     from setup_runtime import ROOT, download, runtime_env, sha256
 
-BASE = ROOT/'.cache/sarashina-runtime'
-PATCHES = ('sarashina-vision-b11042.patch', 'sarashina-fa160-b11042.patch')
+BASE = ROOT/'.cache/sarashina-official-runtime'
+PATCHES = ('sarashina-vision-b11042.patch', 'sarashina-fa160-b11042.patch',
+           'sarashina-official-preprocess-b11042.patch')
 BACKENDS = ('cpu', 'stock-rocm', 'hip', 'cuda')
 GPU_PLUGINS = {'hip': 'libggml-hip.so', 'stock-rocm': 'libggml-hip.so', 'cuda': 'libggml-cuda.so'}
 DEFAULT_DEVICES = {'hip': 'ROCm0', 'stock-rocm': 'ROCm0', 'cuda': 'CUDA0'}
@@ -149,6 +150,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=BACKENDS, default='stock-rocm',
                         help='hip/cuda build FA160; stock-rocm reuses the unpatched official GPU plugin')
+    parser.add_argument('--base', type=Path, help='Isolated source/build directory (default: .cache/sarashina-official-runtime)')
     parser.add_argument('--jobs', type=int, default=min(8, os.cpu_count() or 1))
     parser.add_argument('--cuda-architectures', help='CMake CUDA targets, e.g. 89 (RTX 4090) or "86;89"; default: upstream selection')
     parser.add_argument('--hip-architectures', help='CMake HIP targets, e.g. gfx1100 or "gfx1100;gfx1201"; default: compiler detection')
@@ -174,8 +176,9 @@ def main():
     plugin = ROOT/'.cache/runtime/b11042/linux-x86_64-rocm/llama-b11042/libggml-hip.so'
     if args.backend == 'stock-rocm' and not plugin.is_file():
         parser.error('Pinned b11042 ROCm plugin is required; see docs/SARASHINA.md')
-    source, identity = prepare_source(base=BASE, patch_tool=patch_tool)
-    build = BASE/f'build-{args.backend}'
+    base = args.base.resolve() if args.base else BASE
+    source, identity = prepare_source(base=base, patch_tool=patch_tool)
+    build = base/f'build-{args.backend}'
     command = [cmake, '-S', str(source), '-B', str(build), '-G', 'Ninja',
                f'-DCMAKE_MAKE_PROGRAM={ninja}', f'-DCMAKE_C_COMPILER={cc}', f'-DCMAKE_CXX_COMPILER={cxx}',
                '-DCMAKE_BUILD_TYPE=Release', '-DGGML_BACKEND_DL=ON', '-DGGML_NATIVE=OFF', '-DGGML_OPENMP=OFF',
@@ -205,13 +208,14 @@ def main():
         tests = run_fa160_tests(build, args.test_device or DEFAULT_DEVICES[args.backend],
                                build/'fa160-test.log', args.test_timeout)
         print(f'FA160 check: {tests["status"]} ({tests["passed"]}/{tests["total"]}); see {tests["log"]}', flush=True)
-    files = ['llama-server', 'libllama-server-impl.so', 'libmtmd.so', 'libllama.so',
+    files = ['llama-server', 'libllama-server-impl.so', 'libllama-common.so', 'libmtmd.so', 'libllama.so',
              'libggml.so', 'libggml-base.so', 'libggml-cpu.so', 'test_sarashina_embedding']
     if args.backend in GPU_PLUGINS:
         files.append(GPU_PLUGINS[args.backend])
     if args.backend in ('hip', 'cuda'):
         files.append('test-backend-ops')
     manifest = {'identity': identity, 'backend': args.backend, 'configure': command, 'fa160_tests': tests,
+                'sarashina_preprocessing': ['legacy_pillow', 'sarashina_official_v1'],
                 'platform': {'system': platform.system(), 'machine': platform.machine(), 'python': platform.python_version()},
                 'toolchain_env': {k: os.environ[k] for k in ('CMAKE_PREFIX_PATH', 'ROCM_PATH', 'HIP_PATH', 'HIP_PLATFORM',
                                                           'CUDACXX', 'CUDAHOSTCXX', 'CUDAToolkit_ROOT')

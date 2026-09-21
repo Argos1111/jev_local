@@ -1,0 +1,1592 @@
+Attribution comments from the installed CCCL 3.2.0 headers (CUDA package 13.2.27).
+This is a conservative inventory; not all headers contribute code to the plugin.
+
+Files: cccl/cub/agent/agent_adjacent_difference.cuh, cccl/cub/agent/agent_merge_sort.cuh, cccl/cub/agent/agent_segmented_radix_sort.cuh, cccl/cub/agent/agent_sub_warp_merge_sort.cuh, cccl/cub/agent/agent_three_way_partition.cuh, cccl/cub/block/block_merge_sort.cuh, cccl/cub/block/block_run_length_decode.cuh, cccl/cub/device/device_adjacent_difference.cuh, cccl/cub/device/dispatch/dispatch_adjacent_difference.cuh, cccl/cub/device/dispatch/dispatch_merge_sort.cuh, cccl/cub/device/dispatch/dispatch_segmented_sort.cuh, cccl/cub/device/dispatch/dispatch_three_way_partition.cuh, cccl/cub/thread/thread_sort.cuh, cccl/cub/warp/warp_exchange.cuh, cccl/cub/warp/warp_load.cuh, cccl/cub/warp/warp_merge_sort.cuh, cccl/cub/warp/warp_store.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2021, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_batch_memcpy.cuh, cccl/cub/detail/uninitialized_copy.cuh, cccl/cub/device/device_memcpy.cuh, cccl/cub/device/device_merge_sort.cuh, cccl/cub/device/device_segmented_sort.cuh, cccl/cub/device/dispatch/dispatch_batch_memcpy.cuh, cccl/cub/version.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2022, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_for.cuh, cccl/cub/device/dispatch/kernels/kernel_reduce.cuh, cccl/cub/device/dispatch/tuning/tuning_adjacent_difference.cuh, cccl/cub/device/dispatch/tuning/tuning_batch_memcpy.cuh, cccl/cub/device/dispatch/tuning/tuning_for.cuh, cccl/cub/device/dispatch/tuning/tuning_merge.cuh, cccl/cub/device/dispatch/tuning/tuning_merge_sort.cuh, cccl/cub/device/dispatch/tuning/tuning_radix_sort.cuh, cccl/cub/device/dispatch/tuning/tuning_reduce.cuh, cccl/cub/device/dispatch/tuning/tuning_segmented_sort.cuh, cccl/cub/device/dispatch/tuning/tuning_transform.cuh, cccl/thrust/system/cuda/detail/core/triple_chevron_launch.h, cccl/thrust/system/cuda/detail/merge.h
+// SPDX-FileCopyrightText: Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_histogram.cuh, cccl/cub/agent/agent_radix_sort_downsweep.cuh, cccl/cub/agent/agent_radix_sort_upsweep.cuh, cccl/cub/agent/agent_rle.cuh, cccl/cub/agent/agent_select_if.cuh, cccl/cub/agent/single_pass_scan_operators.cuh, cccl/cub/block/block_discontinuity.cuh, cccl/cub/block/block_histogram.cuh, cccl/cub/block/block_radix_rank.cuh, cccl/cub/block/block_radix_sort.cuh, cccl/cub/block/block_raking_layout.cuh, cccl/cub/block/block_reduce.cuh, cccl/cub/block/block_scan.cuh, cccl/cub/block/block_shuffle.cuh, cccl/cub/block/block_store.cuh, cccl/cub/block/specializations/block_histogram_atomic.cuh, cccl/cub/block/specializations/block_histogram_sort.cuh, cccl/cub/block/specializations/block_reduce_raking.cuh, cccl/cub/block/specializations/block_reduce_raking_commutative_only.cuh, cccl/cub/block/specializations/block_scan_raking.cuh, cccl/cub/block/specializations/block_scan_warp_scans.cuh, cccl/cub/cub.cuh, cccl/cub/device/dispatch/dispatch_histogram.cuh, cccl/cub/device/dispatch/dispatch_radix_sort.cuh, cccl/cub/device/dispatch/dispatch_rle.cuh, cccl/cub/device/dispatch/dispatch_segmented_radix_sort.cuh, cccl/cub/device/dispatch/dispatch_select_if.cuh, cccl/cub/grid/grid_even_share.cuh, cccl/cub/grid/grid_mapping.cuh, cccl/cub/grid/grid_queue.cuh, cccl/cub/iterator/arg_index_input_iterator.cuh, cccl/cub/iterator/cache_modified_input_iterator.cuh, cccl/cub/iterator/cache_modified_output_iterator.cuh, cccl/cub/iterator/tex_obj_input_iterator.cuh, cccl/cub/thread/thread_load.cuh, cccl/cub/thread/thread_scan.cuh, cccl/cub/thread/thread_search.cuh, cccl/cub/thread/thread_store.cuh, cccl/cub/util_allocator.cuh, cccl/cub/util_ptx.cuh, cccl/cub/warp/specializations/warp_reduce_shfl.cuh, cccl/cub/warp/specializations/warp_scan_shfl.cuh, cccl/cub/warp/specializations/warp_scan_smem.cuh, cccl/cub/warp/warp_scan.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2018, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_merge.cuh, cccl/cub/device/device_merge.cuh, cccl/cub/device/device_transform.cuh, cccl/cub/device/dispatch/dispatch_merge.cuh, cccl/cub/device/dispatch/dispatch_streaming_reduce.cuh, cccl/cub/device/dispatch/dispatch_transform.cuh, cccl/cub/device/dispatch/kernels/kernel_transform.cuh, cccl/thrust/iterator/tabulate_output_iterator.h
+// SPDX-FileCopyrightText: Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/cub/agent/agent_radix_sort_histogram.cuh, cccl/cub/agent/agent_radix_sort_onesweep.cuh, cccl/cub/block/radix_rank_sort_operations.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2020, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_reduce.cuh, cccl/cub/agent/agent_reduce_by_key.cuh, cccl/cub/agent/agent_scan.cuh, cccl/cub/detail/strong_load.cuh, cccl/cub/detail/strong_store.cuh, cccl/cub/device/device_histogram.cuh, cccl/cub/device/device_partition.cuh, cccl/cub/device/device_run_length_encode.cuh, cccl/cub/device/device_scan.cuh, cccl/cub/device/device_segmented_radix_sort.cuh, cccl/cub/device/device_segmented_reduce.cuh, cccl/cub/device/device_select.cuh, cccl/cub/device/dispatch/dispatch_reduce_by_key.cuh, cccl/cub/device/dispatch/dispatch_scan.cuh, cccl/cub/util_debug.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2022, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_scan_by_key.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/agent/agent_topk.cuh, cccl/cub/detail/launcher/cuda_driver.cuh, cccl/cub/detail/launcher/cuda_runtime.cuh, cccl/cub/device/device_topk.cuh, cccl/cub/device/dispatch/dispatch_common.cuh, cccl/cub/device/dispatch/dispatch_copy_mdspan.cuh, cccl/cub/device/dispatch/dispatch_topk.cuh, cccl/cub/device/dispatch/kernels/kernel_three_way_partition.cuh, cccl/cub/device/dispatch/tuning/tuning_topk.cuh, cccl/thrust/iterator/offset_iterator.h
+// SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/cub/agent/agent_unique_by_key.cuh, cccl/cub/device/dispatch/dispatch_unique_by_key.cuh
+// SPDX-FileCopyrightText: Copyright (c), NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/block/block_adjacent_difference.cuh, cccl/cub/detail/detect_cuda_runtime.cuh, cccl/cub/util_namespace.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2021, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/block/block_exchange.cuh, cccl/cub/device/device_reduce.cuh, cccl/cub/device/dispatch/dispatch_fixed_size_segmented_reduce.cuh, cccl/cub/device/dispatch/dispatch_reduce.cuh, cccl/cub/device/dispatch/dispatch_segmented_reduce.cuh, cccl/cub/util_macro.cuh, cccl/cub/util_type.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2024, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/block/block_load.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2016, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/block/block_load_to_shared.cuh, cccl/thrust/detail/nvtx_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/cub/block/specializations/block_reduce_warp_reductions.cuh, cccl/cub/device/device_radix_sort.cuh, cccl/cub/thread/thread_operators.cuh, cccl/cub/thread/thread_reduce.cuh, cccl/cub/util_arch.cuh, cccl/cub/warp/specializations/warp_reduce_smem.cuh, cccl/cub/warp/warp_reduce.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/config.cuh, cccl/cub/util_cpp_dialect.cuh, cccl/cub/util_math.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/detail/array_utils.cuh, cccl/cub/detail/ptx-json/array.cuh, cccl/cub/detail/ptx-json/json.cuh, cccl/cub/detail/ptx-json/object.cuh, cccl/cub/detail/ptx-json/string.cuh, cccl/cub/detail/ptx-json/value.cuh, cccl/cub/detail/ptx-json-parser.cuh, cccl/cub/detail/rfa.cuh, cccl/cub/device/dispatch/dispatch_for.cuh, cccl/cub/device/dispatch/dispatch_reduce_deterministic.cuh, cccl/cub/device/dispatch/kernels/kernel_scan.cuh, cccl/cub/device/dispatch/kernels/kernel_segmented_reduce.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/detail/choose_offset.cuh, cccl/cub/detail/fast_modulo_division.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2024, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/detail/device_double_buffer.cuh, cccl/cub/detail/temporary_storage.cuh, cccl/thrust/detail/config/namespace.h, cccl/thrust/system/cuda/detail/binary_search.h
+/*
+ *  Copyright 2021 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/cub/detail/device_memory_resource.cuh, cccl/cub/device/dispatch/dispatch_streaming_reduce_by_key.cuh, cccl/cub/device/dispatch/kernels/kernel_histogram.cuh, cccl/cub/device/dispatch/kernels/kernel_merge_sort.cuh, cccl/cub/device/dispatch/kernels/kernel_radix_sort.cuh, cccl/cub/device/dispatch/kernels/kernel_segmented_radix_sort.cuh, cccl/cub/device/dispatch/kernels/kernel_segmented_sort.cuh, cccl/cub/device/dispatch/kernels/kernel_unique_by_key.cuh, cccl/thrust/system/cuda/detail/generate.h
+// SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause
+
+
+Files: cccl/cub/detail/integer_utils.cuh, cccl/cub/detail/mdspan_utils.cuh, cccl/cub/detail/type_traits.cuh, cccl/cub/device/device_copy.cuh, cccl/cub/device/device_for.cuh, cccl/cub/device/dispatch/dispatch_reduce_nondeterministic.cuh, cccl/cub/device/dispatch/kernels/kernel_for_each.cuh, cccl/cub/thread/thread_simd.cuh, cccl/cub/warp/warp_utils.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause
+
+
+Files: cccl/cub/detail/unsafe_bitcast.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2025, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/device/dispatch/dispatch_scan_by_key.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/device/dispatch/tuning/tuning_histogram.cuh, cccl/cub/device/dispatch/tuning/tuning_reduce_by_key.cuh, cccl/cub/device/dispatch/tuning/tuning_run_length_encode.cuh, cccl/cub/device/dispatch/tuning/tuning_scan.cuh, cccl/cub/device/dispatch/tuning/tuning_scan_by_key.cuh, cccl/cub/device/dispatch/tuning/tuning_select_if.cuh, cccl/cub/device/dispatch/tuning/tuning_three_way_partition.cuh, cccl/cub/device/dispatch/tuning/tuning_unique_by_key.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/util_device.cuh, cccl/cub/util_policy_wrapper_t.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2020, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/util_temporary_storage.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011, Duane Merrill. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2011-2023, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/util_vsmem.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2023-2024, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cub/warp/specializations/warp_exchange_shfl.cuh, cccl/cub/warp/specializations/warp_exchange_smem.cuh
+// SPDX-FileCopyrightText: Copyright (c) 2011-2023, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3
+
+
+Files: cccl/cuda/__algorithm/common.h, cccl/cuda/__algorithm/copy.h, cccl/cuda/__algorithm/fill.h, cccl/cuda/__annotated_ptr/access_property.h, cccl/cuda/__annotated_ptr/access_property_encoding.h, cccl/cuda/__annotated_ptr/annotated_ptr.h, cccl/cuda/__annotated_ptr/annotated_ptr_base.h, cccl/cuda/__annotated_ptr/apply_access_property.h, cccl/cuda/__annotated_ptr/associate_access_property.h, cccl/cuda/__annotated_ptr/createpolicy.h, cccl/cuda/__bit/bit_reverse.h, cccl/cuda/__bit/bitfield.h, cccl/cuda/__bit/bitmask.h, cccl/cuda/__cmath/fast_modulo_division.h, cccl/cuda/__cmath/ilog.h, cccl/cuda/__cmath/ipow.h, cccl/cuda/__cmath/isqrt.h, cccl/cuda/__cmath/mul_hi.h, cccl/cuda/__cmath/neg.h, cccl/cuda/__cmath/pow2.h, cccl/cuda/__cmath/round_down.h, cccl/cuda/__cmath/round_up.h, cccl/cuda/__cmath/uabs.h, cccl/cuda/__complex/complex.h, cccl/cuda/__complex/get_real_imag.h, cccl/cuda/__complex/traits.h, cccl/cuda/__complex_, cccl/cuda/__container/buffer.h, cccl/cuda/__device/all_devices.h, cccl/cuda/__device/arch_id.h, cccl/cuda/__device/arch_traits.h, cccl/cuda/__device/attributes.h, cccl/cuda/__device/compute_capability.h, cccl/cuda/__device/device_ref.h, cccl/cuda/__device/physical_device.h, cccl/cuda/__driver/driver_api.h, cccl/cuda/__event/event.h, cccl/cuda/__event/event_ref.h, cccl/cuda/__event/timed_event.h, cccl/cuda/__execution/determinism.h, cccl/cuda/__execution/output_ordering.h, cccl/cuda/__execution/require.h, cccl/cuda/__execution/tune.h, cccl/cuda/__functional/for_each_canceled.h, cccl/cuda/__functional/maximum.h, cccl/cuda/__functional/minimum.h, cccl/cuda/__functional/minimum_maximum_common.h, cccl/cuda/__fwd/complex.h, cccl/cuda/__fwd/devices.h, cccl/cuda/__fwd/get_stream.h, cccl/cuda/__fwd/zip_iterator.h, cccl/cuda/__hierarchy/block_level.h, cccl/cuda/__hierarchy/cluster_level.h, cccl/cuda/__hierarchy/get_launch_dimensions.h, cccl/cuda/__hierarchy/grid_level.h, cccl/cuda/__hierarchy/hierarchy_dimensions.h, cccl/cuda/__hierarchy/hierarchy_level_base.h, cccl/cuda/__hierarchy/hierarchy_levels.h, cccl/cuda/__hierarchy/hierarchy_query_result.h, cccl/cuda/__hierarchy/level_dimensions.h, cccl/cuda/__hierarchy/native_hierarchy_level_base.h, cccl/cuda/__hierarchy/thread_level.h, cccl/cuda/__hierarchy/traits.h, cccl/cuda/__hierarchy/warp_level.h, cccl/cuda/__iterator/constant_iterator.h, cccl/cuda/__iterator/counting_iterator.h, cccl/cuda/__iterator/discard_iterator.h, cccl/cuda/__iterator/permutation_iterator.h, cccl/cuda/__iterator/shuffle_iterator.h, cccl/cuda/__iterator/strided_iterator.h, cccl/cuda/__iterator/tabulate_output_iterator.h, cccl/cuda/__iterator/transform_input_output_iterator.h, cccl/cuda/__iterator/transform_iterator.h, cccl/cuda/__iterator/transform_output_iterator.h, cccl/cuda/__launch/configuration.h, cccl/cuda/__launch/host_launch.h, cccl/cuda/__launch/launch.h, cccl/cuda/__mdspan/host_device_accessor.h, cccl/cuda/__mdspan/host_device_mdspan.h, cccl/cuda/__mdspan/restrict_accessor.h, cccl/cuda/__mdspan/restrict_mdspan.h, cccl/cuda/__memcpy_async/check_preconditions.h, cccl/cuda/__memory/address_space.h, cccl/cuda/__memory/align_down.h, cccl/cuda/__memory/align_up.h, cccl/cuda/__memory/check_address.h, cccl/cuda/__memory/discard_memory.h, cccl/cuda/__memory/is_aligned.h, cccl/cuda/__memory/is_pointer_accessible.h, cccl/cuda/__memory/ptr_in_range.h, cccl/cuda/__memory/ptr_rebind.h, cccl/cuda/__memory/ranges_overlap.h, cccl/cuda/__memory_resource/get_memory_resource.h, cccl/cuda/__memory_resource/get_property.h, cccl/cuda/__memory_resource/properties.h, cccl/cuda/__memory_resource/resource.h, cccl/cuda/__memory_resource/synchronous_resource_adapter.h, cccl/cuda/__ptx/instructions/shfl_sync.h, cccl/cuda/__ptx/pragmas/enable_smem_spilling.h, cccl/cuda/__random/feistel_bijection.h, cccl/cuda/__random/random_bijection.h, cccl/cuda/__runtime/ensure_current_context.h, cccl/cuda/__runtime/types.h, cccl/cuda/__stream/internal_streams.h, cccl/cuda/__stream/invalid_stream.h, cccl/cuda/__stream/launch_transform.h, cccl/cuda/__stream/stream.h, cccl/cuda/__stream/stream_ref.h, cccl/cuda/__utility/__basic_any/access.h, cccl/cuda/__utility/__basic_any/any_cast.h, cccl/cuda/__utility/__basic_any/basic_any_base.h, cccl/cuda/__utility/__basic_any/basic_any_from.h, cccl/cuda/__utility/__basic_any/basic_any_fwd.h, cccl/cuda/__utility/__basic_any/basic_any_ptr.h, cccl/cuda/__utility/__basic_any/basic_any_ref.h, cccl/cuda/__utility/__basic_any/basic_any_value.h, cccl/cuda/__utility/__basic_any/conversions.h, cccl/cuda/__utility/__basic_any/dynamic_any_cast.h, cccl/cuda/__utility/__basic_any/interfaces.h, cccl/cuda/__utility/__basic_any/iset.h, cccl/cuda/__utility/__basic_any/overrides.h, cccl/cuda/__utility/__basic_any/rtti.h, cccl/cuda/__utility/__basic_any/semiregular.h, cccl/cuda/__utility/__basic_any/storage.h, cccl/cuda/__utility/__basic_any/tagged_ptr.h, cccl/cuda/__utility/__basic_any/virtcall.h, cccl/cuda/__utility/__basic_any/virtual_functions.h, cccl/cuda/__utility/__basic_any/virtual_ptrs.h, cccl/cuda/__utility/__basic_any/virtual_tables.h, cccl/cuda/__utility/basic_any.h, cccl/cuda/__utility/immovable.h, cccl/cuda/__utility/in_range.h, cccl/cuda/__utility/inherit.h, cccl/cuda/__warp/lane_mask.h, cccl/cuda/access_property, cccl/cuda/algorithm, cccl/cuda/annotated_ptr, cccl/cuda/bit, cccl/cuda/buffer, cccl/cuda/devices, cccl/cuda/hierarchy, cccl/cuda/iterator, cccl/cuda/mdspan, cccl/cuda/memory, cccl/cuda/pipeline, cccl/cuda/std/__bit/byteswap.h, cccl/cuda/std/__bit/countl.h, cccl/cuda/std/__bit/countr.h, cccl/cuda/std/__bit/has_single_bit.h, cccl/cuda/std/__bit/integral.h, cccl/cuda/std/__bit/popcount.h, cccl/cuda/std/__bit/rotate.h, cccl/cuda/std/__cccl/algorithm_wrapper.h, cccl/cuda/std/__cccl/architecture.h, cccl/cuda/std/__cccl/builtin.h, cccl/cuda/std/__cccl/extended_data_types.h, cccl/cuda/std/__cccl/host_std_lib.h, cccl/cuda/std/__cccl/memory_wrapper.h, cccl/cuda/std/__cccl/numeric_wrapper.h, cccl/cuda/std/__cccl/os.h, cccl/cuda/std/__cccl/unreachable.h, cccl/cuda/std/__cmath/abs.h, cccl/cuda/std/__cmath/copysign.h, cccl/cuda/std/__cmath/error_functions.h, cccl/cuda/std/__cmath/fdim.h, cccl/cuda/std/__cmath/fma.h, cccl/cuda/std/__cmath/fpclassify.h, cccl/cuda/std/__cmath/isfinite.h, cccl/cuda/std/__cmath/isinf.h, cccl/cuda/std/__cmath/isnan.h, cccl/cuda/std/__cmath/isnormal.h, cccl/cuda/std/__cmath/nan.h, cccl/cuda/std/__cmath/signbit.h, cccl/cuda/std/__complex/arg.h, cccl/cuda/std/__complex/complex.h, cccl/cuda/std/__complex/exponential_functions.h, cccl/cuda/std/__complex/hyperbolic_functions.h, cccl/cuda/std/__complex/inverse_hyperbolic_functions.h, cccl/cuda/std/__complex/inverse_trigonometric_functions.h, cccl/cuda/std/__complex/literals.h, cccl/cuda/std/__complex/logarithms.h, cccl/cuda/std/__complex/math.h, cccl/cuda/std/__complex/nvbf16.h, cccl/cuda/std/__complex/nvfp16.h, cccl/cuda/std/__complex/roots.h, cccl/cuda/std/__complex/trigonometric_functions.h, cccl/cuda/std/__complex/tuple.h, cccl/cuda/std/__complex/vector_support.h, cccl/cuda/std/__cstring/memcpy.h, cccl/cuda/std/__cstring/memset.h, cccl/cuda/std/__exception/cuda_error.h, cccl/cuda/std/__exception/exception_macros.h, cccl/cuda/std/__execution/env.h, cccl/cuda/std/__floating_point/arithmetic.h, cccl/cuda/std/__floating_point/cast.h, cccl/cuda/std/__floating_point/cccl_fp.h, cccl/cuda/std/__floating_point/common_type.h, cccl/cuda/std/__floating_point/constants.h, cccl/cuda/std/__floating_point/conversion_rank_order.h, cccl/cuda/std/__floating_point/cuda_fp_types.h, cccl/cuda/std/__floating_point/decompose.h, cccl/cuda/std/__floating_point/format.h, cccl/cuda/std/__floating_point/fp.h, cccl/cuda/std/__floating_point/mask.h, cccl/cuda/std/__floating_point/native_type.h, cccl/cuda/std/__floating_point/overflow_handler.h, cccl/cuda/std/__floating_point/properties.h, cccl/cuda/std/__floating_point/storage.h, cccl/cuda/std/__floating_point/traits.h, cccl/cuda/std/__format_, cccl/cuda/std/__fwd/allocator.h, cccl/cuda/std/__fwd/char_traits.h, cccl/cuda/std/__fwd/fp.h, cccl/cuda/std/__fwd/iterator.h, cccl/cuda/std/__mdspan/empty_base.h, cccl/cuda/std/__mdspan/submdspan_extents.h, cccl/cuda/std/__mdspan/submdspan_helper.h, cccl/cuda/std/__mdspan/submdspan_mapping.h, cccl/cuda/std/__memory/runtime_assume_aligned.h, cccl/cuda/std/__optional/bad_optional_access.h, cccl/cuda/std/__optional/hash.h, cccl/cuda/std/__optional/make_optional.h, cccl/cuda/std/__optional/nullopt.h, cccl/cuda/std/__optional/optional.h, cccl/cuda/std/__optional/optional_base.h, cccl/cuda/std/__optional/optional_ref.h, cccl/cuda/std/__random/philox_engine.h, cccl/cuda/std/__random/seed_seq.h, cccl/cuda/std/__random_, cccl/cuda/std/__ranges/compressed_movable_box.h, cccl/cuda/std/__string/constexpr_c_functions.h, cccl/cuda/std/__string_, cccl/cuda/std/__system_error_, cccl/cuda/std/__type_traits/always_false.h, cccl/cuda/std/__type_traits/is_corresponding_member.h, cccl/cuda/std/__type_traits/is_extended_arithmetic.h, cccl/cuda/std/__type_traits/is_fully_bounded_array.h, cccl/cuda/std/__type_traits/is_integer.h, cccl/cuda/std/__type_traits/is_layout_compatible.h, cccl/cuda/std/__type_traits/is_pointer_interconvertible_base_of.h, cccl/cuda/std/__type_traits/is_pointer_interconvertible_with_class.h, cccl/cuda/std/__type_traits/make_nbit_int.h, cccl/cuda/std/__type_traits/num_bits.h, cccl/cuda/std/__utility/pod_tuple.h, cccl/cuda/std/cstring, cccl/cuda/std/ctime, cccl/cuda/std/execution, cccl/cuda/type_traits, cccl/cuda/utility, cccl/cuda/warp, cccl/cuda/work_stealing
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__atomic/atomic.h, cccl/cuda/__latch/latch.h, cccl/cuda/__semaphore/counting_semaphore.h, cccl/cuda/std/__algorithm/swap_ranges.h, cccl/cuda/std/__functional/binary_negate.h, cccl/cuda/std/__functional/bind.h, cccl/cuda/std/__functional/bind_front.h, cccl/cuda/std/__functional/binder1st.h, cccl/cuda/std/__functional/binder2nd.h, cccl/cuda/std/__functional/default_searcher.h, cccl/cuda/std/__functional/function.h, cccl/cuda/std/__functional/invoke.h, cccl/cuda/std/__functional/is_transparent.h, cccl/cuda/std/__functional/mem_fn.h, cccl/cuda/std/__functional/mem_fun_ref.h, cccl/cuda/std/__functional/not_fn.h, cccl/cuda/std/__functional/pointer_to_binary_function.h, cccl/cuda/std/__functional/pointer_to_unary_function.h, cccl/cuda/std/__functional/unary_negate.h, cccl/cuda/std/__iterator/access.h, cccl/cuda/std/__iterator/advance.h, cccl/cuda/std/__iterator/bounded_iter.h, cccl/cuda/std/__iterator/concepts.h, cccl/cuda/std/__iterator/data.h, cccl/cuda/std/__iterator/default_sentinel.h, cccl/cuda/std/__iterator/empty.h, cccl/cuda/std/__iterator/erase_if_container.h, cccl/cuda/std/__iterator/iter_move.h, cccl/cuda/std/__iterator/iterator.h, cccl/cuda/std/__iterator/iterator_traits.h, cccl/cuda/std/__iterator/next.h, cccl/cuda/std/__iterator/prev.h, cccl/cuda/std/__iterator/readable_traits.h, cccl/cuda/std/__iterator/reverse_access.h, cccl/cuda/std/__iterator/reverse_iterator.h, cccl/cuda/std/__iterator/size.h, cccl/cuda/std/__iterator/wrap_iter.h, cccl/cuda/std/__memory/addressof.h, cccl/cuda/std/__ranges/access.h, cccl/cuda/std/__ranges/data.h, cccl/cuda/std/__ranges/empty.h, cccl/cuda/std/__ranges/enable_borrowed_range.h, cccl/cuda/std/__ranges/enable_view.h, cccl/cuda/std/__ranges/rbegin.h, cccl/cuda/std/__ranges/rend.h, cccl/cuda/std/__utility/auto_cast.h, cccl/cuda/std/__utility/forward.h, cccl/cuda/std/__utility/forward_like.h, cccl/cuda/std/__utility/move.h, cccl/cuda/std/__utility/to_underlying.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__barrier/async_contract_fulfillment.h, cccl/cuda/__barrier/barrier.h, cccl/cuda/__barrier/barrier_block_scope.h, cccl/cuda/__barrier/barrier_thread_scope.h, cccl/cuda/__cmath/ceil_div.h, cccl/cuda/__functional/proclaim_return_type.h, cccl/cuda/__fwd/barrier.h, cccl/cuda/__fwd/hierarchy.h, cccl/cuda/__fwd/pipeline.h, cccl/cuda/__memcpy_async/completion_mechanism.h, cccl/cuda/__memcpy_async/is_local_smem_barrier.h, cccl/cuda/__memcpy_async/memcpy_completion.h, cccl/cuda/__memcpy_async/try_get_barrier_handle.h, cccl/cuda/__memory/aligned_size.h, cccl/cuda/__memory/get_device_address.h, cccl/cuda/__runtime/api_wrapper.h, cccl/cuda/cmath, cccl/cuda/functional, cccl/cuda/std/__algorithm/unwrap_range.h, cccl/cuda/std/__atomic/functions/cuda_local.h, cccl/cuda/std/__atomic/functions/cuda_ptx_derived.h, cccl/cuda/std/__atomic/functions/cuda_ptx_generated.h, cccl/cuda/std/__barrier/barrier.h, cccl/cuda/std/__barrier/empty_completion.h, cccl/cuda/std/__barrier/poll_tester.h, cccl/cuda/std/__bit/bit_cast.h, cccl/cuda/std/__bit/endian.h, cccl/cuda/std/__cccl/assert.h, cccl/cuda/std/__cccl/attributes.h, cccl/cuda/std/__cccl/compiler.h, cccl/cuda/std/__cccl/cuda_capabilities.h, cccl/cuda/std/__cccl/cuda_toolkit.h, cccl/cuda/std/__cccl/diagnostic.h, cccl/cuda/std/__cccl/exceptions.h, cccl/cuda/std/__cccl/is_non_narrowing_convertible.h, cccl/cuda/std/__cccl/preprocessor.h, cccl/cuda/std/__cccl/ptx_isa.h, cccl/cuda/std/__cccl/rtti.h, cccl/cuda/std/__cccl/sequence_access.h, cccl/cuda/std/__cccl/system_header.h, cccl/cuda/std/__charconv_, cccl/cuda/std/__memory_, cccl/cuda/std/__new_, cccl/cuda/std/__system_error/errc.h, cccl/cuda/std/bit, cccl/cuda/std/cassert, cccl/cuda/std/cfloat, cccl/cuda/std/expected, cccl/cuda/std/functional, cccl/cuda/std/initializer_list, cccl/cuda/std/iterator, cccl/cuda/std/linalg, cccl/cuda/std/mdspan, cccl/cuda/std/memory, cccl/cuda/std/numeric, cccl/cuda/std/ranges, cccl/cuda/std/type_traits, cccl/cuda/std/utility, cccl/cuda/std/version
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__barrier/barrier_arrive_tx.h, cccl/cuda/__barrier/barrier_expect_tx.h, cccl/cuda/__memcpy_async/cp_async_bulk_shared_global.h, cccl/cuda/__memcpy_async/cp_async_fallback.h, cccl/cuda/__memcpy_async/cp_async_shared_global.h, cccl/cuda/__memcpy_async/dispatch_memcpy_async.h, cccl/cuda/__memcpy_async/memcpy_async.h, cccl/cuda/__memcpy_async/memcpy_async_barrier.h, cccl/cuda/__memcpy_async/memcpy_async_tx.h, cccl/cuda/__ptx/instructions/barrier_cluster.h, cccl/cuda/__ptx/instructions/bfind.h, cccl/cuda/__ptx/instructions/bmsk.h, cccl/cuda/__ptx/instructions/clusterlaunchcontrol.h, cccl/cuda/__ptx/instructions/cp_async_bulk.h, cccl/cuda/__ptx/instructions/cp_async_bulk_commit_group.h, cccl/cuda/__ptx/instructions/cp_async_bulk_tensor.h, cccl/cuda/__ptx/instructions/cp_async_bulk_wait_group.h, cccl/cuda/__ptx/instructions/cp_async_mbarrier_arrive.h, cccl/cuda/__ptx/instructions/cp_reduce_async_bulk.h, cccl/cuda/__ptx/instructions/cp_reduce_async_bulk_tensor.h, cccl/cuda/__ptx/instructions/exit.h, cccl/cuda/__ptx/instructions/fence.h, cccl/cuda/__ptx/instructions/get_sreg.h, cccl/cuda/__ptx/instructions/getctarank.h, cccl/cuda/__ptx/instructions/ld.h, cccl/cuda/__ptx/instructions/mbarrier_arrive.h, cccl/cuda/__ptx/instructions/mbarrier_expect_tx.h, cccl/cuda/__ptx/instructions/mbarrier_init.h, cccl/cuda/__ptx/instructions/mbarrier_wait.h, cccl/cuda/__ptx/instructions/multimem_ld_reduce.h, cccl/cuda/__ptx/instructions/multimem_red.h, cccl/cuda/__ptx/instructions/multimem_st.h, cccl/cuda/__ptx/instructions/prmt.h, cccl/cuda/__ptx/instructions/red_async.h, cccl/cuda/__ptx/instructions/setmaxnreg.h, cccl/cuda/__ptx/instructions/shl.h, cccl/cuda/__ptx/instructions/shr.h, cccl/cuda/__ptx/instructions/st.h, cccl/cuda/__ptx/instructions/st_async.h, cccl/cuda/__ptx/instructions/st_bulk.h, cccl/cuda/__ptx/instructions/tcgen05_alloc.h, cccl/cuda/__ptx/instructions/tcgen05_commit.h, cccl/cuda/__ptx/instructions/tcgen05_cp.h, cccl/cuda/__ptx/instructions/tcgen05_fence.h, cccl/cuda/__ptx/instructions/tcgen05_ld.h, cccl/cuda/__ptx/instructions/tcgen05_mma.h, cccl/cuda/__ptx/instructions/tcgen05_mma_ws.h, cccl/cuda/__ptx/instructions/tcgen05_shift.h, cccl/cuda/__ptx/instructions/tcgen05_st.h, cccl/cuda/__ptx/instructions/tcgen05_wait.h, cccl/cuda/__ptx/instructions/tensormap_cp_fenceproxy.h, cccl/cuda/__ptx/instructions/tensormap_replace.h, cccl/cuda/__ptx/instructions/trap.h, cccl/cuda/std/__cstddef/byte.h, cccl/cuda/std/__cstddef/types.h, cccl/cuda/std/__exception/terminate.h, cccl/cuda/std/__exception/throw_error.h, cccl/cuda/std/__memory/align.h, cccl/cuda/std/__memory/allocate_at_least.h, cccl/cuda/std/__memory/allocator.h, cccl/cuda/std/__memory/allocator_arg_t.h, cccl/cuda/std/__memory/allocator_destructor.h, cccl/cuda/std/__memory/builtin_new_allocator.h, cccl/cuda/std/__memory/compressed_pair.h, cccl/cuda/std/__memory/uninitialized_algorithms.h, cccl/cuda/std/__memory/unique_ptr.h, cccl/cuda/std/__memory/uses_allocator.h, cccl/cuda/std/__new/allocate.h, cccl/cuda/std/__new/bad_alloc.h, cccl/cuda/std/__new/launder.h, cccl/cuda/std/__numeric/accumulate.h, cccl/cuda/std/__numeric/adjacent_difference.h, cccl/cuda/std/__numeric/exclusive_scan.h, cccl/cuda/std/__numeric/gcd_lcm.h, cccl/cuda/std/__numeric/inclusive_scan.h, cccl/cuda/std/__numeric/inner_product.h, cccl/cuda/std/__numeric/iota.h, cccl/cuda/std/__numeric/partial_sum.h, cccl/cuda/std/__numeric/reduce.h, cccl/cuda/std/__numeric/transform_exclusive_scan.h, cccl/cuda/std/__numeric/transform_inclusive_scan.h, cccl/cuda/std/__numeric/transform_reduce.h, cccl/cuda/std/bitset
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__cccl_config, cccl/cuda/atomic, cccl/cuda/std/__type_traits/type_list.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023-24 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__container/heterogeneous_iterator.h, cccl/cuda/__container/uninitialized_async_buffer.h, cccl/cuda/__memory_pool/device_memory_pool.h, cccl/cuda/__memory_pool/managed_memory_pool.h, cccl/cuda/__memory_pool/memory_pool_base.h, cccl/cuda/__memory_pool/pinned_memory_pool.h, cccl/cuda/__memory_resource/legacy_managed_memory_resource.h, cccl/cuda/__memory_resource/legacy_pinned_memory_resource.h, cccl/cuda/__memory_resource/shared_resource.h
+//===----------------------------------------------------------------------===//
+//
+// Part of CUDA Experimental in CUDA C++ Core Libraries,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__functional/address_stability.h, cccl/cuda/__functional/call_or.h, cccl/cuda/std/__algorithm/binary_search.h, cccl/cuda/std/__algorithm/equal_range.h, cccl/cuda/std/__algorithm/includes.h, cccl/cuda/std/__algorithm/is_heap.h, cccl/cuda/std/__algorithm/is_heap_until.h, cccl/cuda/std/__algorithm/iter_swap.h, cccl/cuda/std/__algorithm/iterator_operations.h, cccl/cuda/std/__algorithm/lower_bound.h, cccl/cuda/std/__algorithm/make_heap.h, cccl/cuda/std/__algorithm/make_projected.h, cccl/cuda/std/__algorithm/max.h, cccl/cuda/std/__algorithm/max_element.h, cccl/cuda/std/__algorithm/merge.h, cccl/cuda/std/__algorithm/min.h, cccl/cuda/std/__algorithm/min_element.h, cccl/cuda/std/__algorithm/minmax.h, cccl/cuda/std/__algorithm/minmax_element.h, cccl/cuda/std/__algorithm/next_permutation.h, cccl/cuda/std/__algorithm/partial_sort.h, cccl/cuda/std/__algorithm/partial_sort_copy.h, cccl/cuda/std/__algorithm/partition.h, cccl/cuda/std/__algorithm/partition_copy.h, cccl/cuda/std/__algorithm/partition_point.h, cccl/cuda/std/__algorithm/pop_heap.h, cccl/cuda/std/__algorithm/prev_permutation.h, cccl/cuda/std/__algorithm/push_heap.h, cccl/cuda/std/__algorithm/ranges_iterator_concept.h, cccl/cuda/std/__algorithm/reverse.h, cccl/cuda/std/__algorithm/reverse_copy.h, cccl/cuda/std/__algorithm/rotate.h, cccl/cuda/std/__algorithm/rotate_copy.h, cccl/cuda/std/__algorithm/set_difference.h, cccl/cuda/std/__algorithm/set_intersection.h, cccl/cuda/std/__algorithm/set_symmetric_difference.h, cccl/cuda/std/__algorithm/set_union.h, cccl/cuda/std/__algorithm/shift_left.h, cccl/cuda/std/__algorithm/shift_right.h, cccl/cuda/std/__algorithm/sift_down.h, cccl/cuda/std/__algorithm/sort_heap.h, cccl/cuda/std/__algorithm/unique.h, cccl/cuda/std/__algorithm/unique_copy.h, cccl/cuda/std/__algorithm/upper_bound.h, cccl/cuda/std/__semaphore/atomic_semaphore.h, cccl/cuda/std/__semaphore/counting_semaphore.h, cccl/cuda/std/__tuple_dir/ignore.h, cccl/cuda/std/__tuple_dir/tuple_like_ext.h, cccl/cuda/std/__tuple_dir/vector_types.h, cccl/cuda/std/__type_traits/fold.h, cccl/cuda/std/__type_traits/is_extended_floating_point.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__internal/dlpack.h, cccl/cuda/std/__cccl/epilogue.h, cccl/cuda/std/__cccl/prologue.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__iterator/zip_common.h, cccl/cuda/__iterator/zip_function.h, cccl/cuda/__iterator/zip_iterator.h, cccl/cuda/__iterator/zip_transform_iterator.h, cccl/cuda/std/__iterator/counted_iterator.h, cccl/cuda/std/__ranges/all.h, cccl/cuda/std/__ranges/counted.h, cccl/cuda/std/__ranges/empty_view.h, cccl/cuda/std/__ranges/iota_view.h, cccl/cuda/std/__ranges/owning_view.h, cccl/cuda/std/__ranges/range_adaptor.h, cccl/cuda/std/__ranges/ref_view.h, cccl/cuda/std/__ranges/repeat_view.h, cccl/cuda/std/__ranges/single_view.h, cccl/cuda/std/__ranges/take_view.h, cccl/cuda/std/__ranges/take_while_view.h, cccl/cuda/std/__ranges/transform_view.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__memcpy_async/elect_one.h, cccl/cuda/__memcpy_async/group_traits.h, cccl/cuda/__ptx/instructions/elect_sync.h, cccl/cuda/__ptx/instructions/mbarrier_inval.h, cccl/cuda/std/__limits/numeric_limits_ext.h, cccl/cuda/std/__memory/assume_aligned.h, cccl/cuda/std/__memory/is_sufficiently_aligned.h, cccl/cuda/std/__new/device_new.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__memory_resource/any_resource.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA C++ Core Libraries,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__numeric/add_overflow.h, cccl/cuda/__numeric/div_overflow.h, cccl/cuda/__numeric/narrow.h, cccl/cuda/__numeric/overflow_cast.h, cccl/cuda/__numeric/overflow_result.h, cccl/cuda/__numeric/sub_overflow.h, cccl/cuda/__stream/get_stream.h, cccl/cuda/__tma/make_tma_descriptor.h, cccl/cuda/numeric, cccl/cuda/tma
+//===----------------------------------------------------------------------===//
+//
+// Part of the libcu++ Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__nvtx/nvtx.h, cccl/cuda/__type_traits/is_floating_point.h, cccl/cuda/__type_traits/is_specialization_of.h, cccl/cuda/__utility/static_for.h, cccl/cuda/std/__algorithm/inplace_merge.h, cccl/cuda/std/__algorithm/nth_element.h, cccl/cuda/std/__algorithm/sample.h, cccl/cuda/std/__algorithm/shuffle.h, cccl/cuda/std/__algorithm/sort.h, cccl/cuda/std/__algorithm/stable_partition.h, cccl/cuda/std/__algorithm/stable_sort.h, cccl/cuda/std/__bit/blsr.h, cccl/cuda/std/__charconv/chars_format.h, cccl/cuda/std/__charconv/from_chars.h, cccl/cuda/std/__charconv/from_chars_result.h, cccl/cuda/std/__charconv/to_chars.h, cccl/cuda/std/__charconv/to_chars_result.h, cccl/cuda/std/__format/buffer.h, cccl/cuda/std/__format/concepts.h, cccl/cuda/std/__format/format_arg.h, cccl/cuda/std/__format/format_arg_store.h, cccl/cuda/std/__format/format_args.h, cccl/cuda/std/__format/format_context.h, cccl/cuda/std/__format/format_error.h, cccl/cuda/std/__format/format_integral.h, cccl/cuda/std/__format/format_parse_context.h, cccl/cuda/std/__format/format_spec_parser.h, cccl/cuda/std/__format/formatter.h, cccl/cuda/std/__format/formatters/bool.h, cccl/cuda/std/__format/formatters/char.h, cccl/cuda/std/__format/formatters/fp.h, cccl/cuda/std/__format/formatters/int.h, cccl/cuda/std/__format/formatters/ptr.h, cccl/cuda/std/__format/formatters/str.h, cccl/cuda/std/__format/output_utils.h, cccl/cuda/std/__format/parse_arg_id.h, cccl/cuda/std/__functional/unwrap_ref.h, cccl/cuda/std/__fwd/format.h, cccl/cuda/std/__fwd/string.h, cccl/cuda/std/__fwd/string_view.h, cccl/cuda/std/__fwd/variant.h, cccl/cuda/std/__limits/numeric_limits.h, cccl/cuda/std/__random/bernoulli_distribution.h, cccl/cuda/std/__random/generate_canonical.h, cccl/cuda/std/__random/is_seed_sequence.h, cccl/cuda/std/__random/is_valid.h, cccl/cuda/std/__random/linear_congruential_engine.h, cccl/cuda/std/__random/uniform_int_distribution.h, cccl/cuda/std/__random/uniform_real_distribution.h, cccl/cuda/std/__string/char_traits.h, cccl/cuda/std/__string/helper_functions.h, cccl/cuda/std/__tuple_dir/apply.h, cccl/cuda/std/__tuple_dir/get.h, cccl/cuda/std/__tuple_dir/tie.h, cccl/cuda/std/__tuple_dir/tuple.h, cccl/cuda/std/__tuple_dir/tuple_cat.h, cccl/cuda/std/__tuple_dir/tuple_constraints.h, cccl/cuda/std/__tuple_dir/tuple_leaf.h, cccl/cuda/std/__type_traits/is_comparable.h, cccl/cuda/std/__type_traits/is_one_of.h, cccl/cuda/std/__type_traits/is_unsigned_integer.h, cccl/cuda/std/__type_traits/reference_constructs_from_temporary.h, cccl/cuda/std/__type_traits/reference_converts_from_temporary.h, cccl/cuda/std/__utility/ctad_support.h, cccl/cuda/std/__utility/delegate_constructors.h, cccl/cuda/std/__utility/undefined.h, cccl/cuda/std/__variant/bad_variant_access.h, cccl/cuda/std/__variant/comparison.h, cccl/cuda/std/__variant/get.h, cccl/cuda/std/__variant/hash.h, cccl/cuda/std/__variant/variant.h, cccl/cuda/std/__variant/variant_access.h, cccl/cuda/std/__variant/variant_base.h, cccl/cuda/std/__variant/variant_constraints.h, cccl/cuda/std/__variant/variant_match.h, cccl/cuda/std/__variant/variant_traits.h, cccl/cuda/std/__variant/variant_visit.h, cccl/cuda/std/__variant/visit.h, cccl/cuda/std/numbers, cccl/cuda/std/string_view
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__nvtx/nvtx3.h
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2020-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Licensed under the Apache License v2.0 with LLVM Exceptions.
+ * See https://nvidia.github.io/NVTX/LICENSE.txt for license information.
+ */
+
+Files: cccl/cuda/__ptx/ptx_dot_variants.h, cccl/cuda/__ptx/ptx_helper_functions.h, cccl/cuda/ptx, cccl/cuda/std/__memory/allocation_guard.h, cccl/cuda/std/__memory/allocator_traits.h, cccl/cuda/std/__memory/destruct_n.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__type_traits/is_instantiable_with.h, cccl/cuda/__type_traits/vector_type.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/__warp/warp_match_all.h, cccl/cuda/__warp/warp_shuffle.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPO__RATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/barrier, cccl/cuda/discard_memory, cccl/cuda/latch, cccl/cuda/launch, cccl/cuda/semaphore, cccl/cuda/std/__algorithm/unwrap_iter.h, cccl/cuda/std/__atomic/api/common.h, cccl/cuda/std/__atomic/api/owned.h, cccl/cuda/std/__atomic/api/reference.h, cccl/cuda/std/__atomic/functions/common.h, cccl/cuda/std/__atomic/functions/cuda_ptx_generated_helper.h, cccl/cuda/std/__atomic/functions/host.h, cccl/cuda/std/__atomic/functions.h, cccl/cuda/std/__atomic/order.h, cccl/cuda/std/__atomic/platform/msvc_to_builtins.h, cccl/cuda/std/__atomic/platform.h, cccl/cuda/std/__atomic/scopes.h, cccl/cuda/std/__atomic/types/base.h, cccl/cuda/std/__atomic/types/common.h, cccl/cuda/std/__atomic/types/locked.h, cccl/cuda/std/__atomic/types/reference.h, cccl/cuda/std/__atomic/types/small.h, cccl/cuda/std/__atomic/types.h, cccl/cuda/std/__atomic/wait/notify_wait.h, cccl/cuda/std/__atomic/wait/polling.h, cccl/cuda/std/__cccl/deprecated.h, cccl/cuda/std/__cccl/dialect.h, cccl/cuda/std/__cccl/execution_space.h, cccl/cuda/std/__cccl/visibility.h, cccl/cuda/std/barrier, cccl/cuda/std/chrono, cccl/cuda/std/climits, cccl/cuda/std/cstddef, cccl/cuda/std/cstdint, cccl/cuda/std/cstdlib, cccl/cuda/std/detail/__config, cccl/cuda/std/latch, cccl/cuda/std/limits, cccl/cuda/std/ratio, cccl/cuda/std/semaphore, cccl/cuda/std/span, cccl/cuda/std/tuple, cccl/cuda/stream, cccl/cuda/stream_ref, cccl/cuda/version, cccl/nv/detail/__preprocessor, cccl/nv/detail/__target_macros, cccl/nv/target, nv/detail/__preprocessor, nv/detail/__target_macros, nv/target
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/memory_pool, cccl/cuda/memory_resource, cccl/cuda/std/inplace_vector
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__algorithm/adjacent_find.h, cccl/cuda/std/__algorithm/all_of.h, cccl/cuda/std/__algorithm/any_of.h, cccl/cuda/std/__algorithm/clamp.h, cccl/cuda/std/__algorithm/comp.h, cccl/cuda/std/__algorithm/comp_ref_type.h, cccl/cuda/std/__algorithm/copy_backward.h, cccl/cuda/std/__algorithm/copy_if.h, cccl/cuda/std/__algorithm/copy_n.h, cccl/cuda/std/__algorithm/count.h, cccl/cuda/std/__algorithm/count_if.h, cccl/cuda/std/__algorithm/equal.h, cccl/cuda/std/__algorithm/fill.h, cccl/cuda/std/__algorithm/fill_n.h, cccl/cuda/std/__algorithm/find.h, cccl/cuda/std/__algorithm/find_end.h, cccl/cuda/std/__algorithm/find_first_of.h, cccl/cuda/std/__algorithm/find_if.h, cccl/cuda/std/__algorithm/find_if_not.h, cccl/cuda/std/__algorithm/for_each.h, cccl/cuda/std/__algorithm/for_each_n.h, cccl/cuda/std/__algorithm/generate.h, cccl/cuda/std/__algorithm/generate_n.h, cccl/cuda/std/__algorithm/half_positive.h, cccl/cuda/std/__algorithm/is_partitioned.h, cccl/cuda/std/__algorithm/is_permutation.h, cccl/cuda/std/__algorithm/is_sorted.h, cccl/cuda/std/__algorithm/is_sorted_until.h, cccl/cuda/std/__algorithm/lexicographical_compare.h, cccl/cuda/std/__algorithm/mismatch.h, cccl/cuda/std/__algorithm/none_of.h, cccl/cuda/std/__algorithm/remove.h, cccl/cuda/std/__algorithm/remove_copy.h, cccl/cuda/std/__algorithm/remove_copy_if.h, cccl/cuda/std/__algorithm/remove_if.h, cccl/cuda/std/__algorithm/replace.h, cccl/cuda/std/__algorithm/replace_copy.h, cccl/cuda/std/__algorithm/replace_copy_if.h, cccl/cuda/std/__algorithm/replace_if.h, cccl/cuda/std/__algorithm/search.h, cccl/cuda/std/__algorithm/search_n.h, cccl/cuda/std/__algorithm/transform.h, cccl/cuda/std/__concepts/arithmetic.h, cccl/cuda/std/__concepts/assignable.h, cccl/cuda/std/__concepts/boolean_testable.h, cccl/cuda/std/__concepts/class_or_enum.h, cccl/cuda/std/__concepts/common_reference_with.h, cccl/cuda/std/__concepts/common_with.h, cccl/cuda/std/__concepts/constructible.h, cccl/cuda/std/__concepts/copyable.h, cccl/cuda/std/__concepts/derived_from.h, cccl/cuda/std/__concepts/destructible.h, cccl/cuda/std/__concepts/different_from.h, cccl/cuda/std/__concepts/equality_comparable.h, cccl/cuda/std/__concepts/invocable.h, cccl/cuda/std/__concepts/movable.h, cccl/cuda/std/__concepts/predicate.h, cccl/cuda/std/__concepts/regular.h, cccl/cuda/std/__concepts/relation.h, cccl/cuda/std/__concepts/same_as.h, cccl/cuda/std/__concepts/semiregular.h, cccl/cuda/std/__concepts/swappable.h, cccl/cuda/std/__concepts/totally_ordered.h, cccl/cuda/std/__functional/hash.h, cccl/cuda/std/__fwd/memory_resource.h, cccl/cuda/std/__string/string_view.h, cccl/cuda/std/__tuple_dir/make_tuple_types.h, cccl/cuda/std/__tuple_dir/tuple_element.h, cccl/cuda/std/__tuple_dir/tuple_indices.h, cccl/cuda/std/__tuple_dir/tuple_size.h, cccl/cuda/std/__tuple_dir/tuple_types.h, cccl/cuda/std/__type_traits/add_const.h, cccl/cuda/std/__type_traits/add_cv.h, cccl/cuda/std/__type_traits/add_lvalue_reference.h, cccl/cuda/std/__type_traits/add_pointer.h, cccl/cuda/std/__type_traits/add_rvalue_reference.h, cccl/cuda/std/__type_traits/add_volatile.h, cccl/cuda/std/__type_traits/aligned_union.h, cccl/cuda/std/__type_traits/alignment_of.h, cccl/cuda/std/__type_traits/can_extract_key.h, cccl/cuda/std/__type_traits/common_type.h, cccl/cuda/std/__type_traits/conditional.h, cccl/cuda/std/__type_traits/conjunction.h, cccl/cuda/std/__type_traits/copy_cv.h, cccl/cuda/std/__type_traits/copy_cvref.h, cccl/cuda/std/__type_traits/decay.h, cccl/cuda/std/__type_traits/dependent_type.h, cccl/cuda/std/__type_traits/disjunction.h, cccl/cuda/std/__type_traits/enable_if.h, cccl/cuda/std/__type_traits/has_unique_object_representation.h, cccl/cuda/std/__type_traits/has_virtual_destructor.h, cccl/cuda/std/__type_traits/integral_constant.h, cccl/cuda/std/__type_traits/is_abstract.h, cccl/cuda/std/__type_traits/is_aggregate.h, cccl/cuda/std/__type_traits/is_allocator.h, cccl/cuda/std/__type_traits/is_arithmetic.h, cccl/cuda/std/__type_traits/is_array.h, cccl/cuda/std/__type_traits/is_assignable.h, cccl/cuda/std/__type_traits/is_base_of.h, cccl/cuda/std/__type_traits/is_bounded_array.h, cccl/cuda/std/__type_traits/is_callable.h, cccl/cuda/std/__type_traits/is_char_like_type.h, cccl/cuda/std/__type_traits/is_class.h, cccl/cuda/std/__type_traits/is_compound.h, cccl/cuda/std/__type_traits/is_const.h, cccl/cuda/std/__type_traits/is_constant_evaluated.h, cccl/cuda/std/__type_traits/is_constructible.h, cccl/cuda/std/__type_traits/is_copy_assignable.h, cccl/cuda/std/__type_traits/is_copy_constructible.h, cccl/cuda/std/__type_traits/is_core_convertible.h, cccl/cuda/std/__type_traits/is_default_constructible.h, cccl/cuda/std/__type_traits/is_destructible.h, cccl/cuda/std/__type_traits/is_empty.h, cccl/cuda/std/__type_traits/is_enum.h, cccl/cuda/std/__type_traits/is_final.h, cccl/cuda/std/__type_traits/is_floating_point.h, cccl/cuda/std/__type_traits/is_function.h, cccl/cuda/std/__type_traits/is_fundamental.h, cccl/cuda/std/__type_traits/is_implicitly_default_constructible.h, cccl/cuda/std/__type_traits/is_integral.h, cccl/cuda/std/__type_traits/is_literal_type.h, cccl/cuda/std/__type_traits/is_member_function_pointer.h, cccl/cuda/std/__type_traits/is_member_object_pointer.h, cccl/cuda/std/__type_traits/is_member_pointer.h, cccl/cuda/std/__type_traits/is_move_assignable.h, cccl/cuda/std/__type_traits/is_move_constructible.h, cccl/cuda/std/__type_traits/is_nothrow_assignable.h, cccl/cuda/std/__type_traits/is_nothrow_constructible.h, cccl/cuda/std/__type_traits/is_nothrow_convertible.h, cccl/cuda/std/__type_traits/is_nothrow_copy_assignable.h, cccl/cuda/std/__type_traits/is_nothrow_copy_constructible.h, cccl/cuda/std/__type_traits/is_nothrow_default_constructible.h, cccl/cuda/std/__type_traits/is_nothrow_destructible.h, cccl/cuda/std/__type_traits/is_nothrow_move_assignable.h, cccl/cuda/std/__type_traits/is_nothrow_move_constructible.h, cccl/cuda/std/__type_traits/is_null_pointer.h, cccl/cuda/std/__type_traits/is_object.h, cccl/cuda/std/__type_traits/is_pod.h, cccl/cuda/std/__type_traits/is_pointer.h, cccl/cuda/std/__type_traits/is_polymorphic.h, cccl/cuda/std/__type_traits/is_primary_template.h, cccl/cuda/std/__type_traits/is_reference.h, cccl/cuda/std/__type_traits/is_referenceable.h, cccl/cuda/std/__type_traits/is_same.h, cccl/cuda/std/__type_traits/is_scalar.h, cccl/cuda/std/__type_traits/is_scoped_enum.h, cccl/cuda/std/__type_traits/is_signed.h, cccl/cuda/std/__type_traits/is_signed_integer.h, cccl/cuda/std/__type_traits/is_standard_layout.h, cccl/cuda/std/__type_traits/is_swappable.h, cccl/cuda/std/__type_traits/is_trivial.h, cccl/cuda/std/__type_traits/is_trivially_assignable.h, cccl/cuda/std/__type_traits/is_trivially_constructible.h, cccl/cuda/std/__type_traits/is_trivially_copy_assignable.h, cccl/cuda/std/__type_traits/is_trivially_copy_constructible.h, cccl/cuda/std/__type_traits/is_trivially_copyable.h, cccl/cuda/std/__type_traits/is_trivially_default_constructible.h, cccl/cuda/std/__type_traits/is_trivially_destructible.h, cccl/cuda/std/__type_traits/is_trivially_move_assignable.h, cccl/cuda/std/__type_traits/is_trivially_move_constructible.h, cccl/cuda/std/__type_traits/is_unbounded_array.h, cccl/cuda/std/__type_traits/is_union.h, cccl/cuda/std/__type_traits/is_unsigned.h, cccl/cuda/std/__type_traits/is_valid_expansion.h, cccl/cuda/std/__type_traits/is_void.h, cccl/cuda/std/__type_traits/is_volatile.h, cccl/cuda/std/__type_traits/lazy.h, cccl/cuda/std/__type_traits/make_const_lvalue_ref.h, cccl/cuda/std/__type_traits/make_signed.h, cccl/cuda/std/__type_traits/make_unsigned.h, cccl/cuda/std/__type_traits/maybe_const.h, cccl/cuda/std/__type_traits/nat.h, cccl/cuda/std/__type_traits/negation.h, cccl/cuda/std/__type_traits/promote.h, cccl/cuda/std/__type_traits/rank.h, cccl/cuda/std/__type_traits/remove_all_extents.h, cccl/cuda/std/__type_traits/remove_const.h, cccl/cuda/std/__type_traits/remove_const_ref.h, cccl/cuda/std/__type_traits/remove_cv.h, cccl/cuda/std/__type_traits/remove_cvref.h, cccl/cuda/std/__type_traits/remove_extent.h, cccl/cuda/std/__type_traits/remove_pointer.h, cccl/cuda/std/__type_traits/remove_reference.h, cccl/cuda/std/__type_traits/remove_volatile.h, cccl/cuda/std/__type_traits/result_of.h, cccl/cuda/std/__type_traits/type_identity.h, cccl/cuda/std/__type_traits/type_set.h, cccl/cuda/std/__type_traits/underlying_type.h, cccl/cuda/std/__type_traits/void_t.h, cccl/cuda/std/__utility/as_const.h, cccl/cuda/std/__utility/cmp.h, cccl/cuda/std/__utility/convert_to_integral.h, cccl/cuda/std/__utility/declval.h, cccl/cuda/std/__utility/exchange.h, cccl/cuda/std/__utility/in_place.h, cccl/cuda/std/__utility/integer_sequence.h, cccl/cuda/std/__utility/pair.h, cccl/cuda/std/__utility/piecewise_construct.h, cccl/cuda/std/__utility/priority_tag.h, cccl/cuda/std/__utility/rel_ops.h, cccl/cuda/std/__utility/swap.h, cccl/cuda/std/__utility/typeid.h, cccl/cuda/std/__utility/unreachable.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__algorithm/copy.h, cccl/cuda/std/__algorithm/move.h, cccl/cuda/std/__algorithm/move_backward.h, cccl/cuda/std/__concepts/convertible_to.h, cccl/cuda/std/__fwd/complex.h, cccl/cuda/std/__fwd/get.h, cccl/cuda/std/__fwd/optional.h, cccl/cuda/std/__tuple_dir/sfinae_helpers.h, cccl/cuda/std/__tuple_dir/structured_bindings.h, cccl/cuda/std/__tuple_dir/tuple_like.h, cccl/cuda/std/__variant/sfinae_helpers.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023-24 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__algorithm/in_fun_result.h, cccl/cuda/std/__algorithm/ranges_for_each.h, cccl/cuda/std/__algorithm/ranges_for_each_n.h, cccl/cuda/std/__algorithm/ranges_min.h, cccl/cuda/std/__algorithm/ranges_min_element.h, cccl/cuda/std/__execution/policy.h, cccl/cuda/std/__type_traits/is_execution_policy.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__cccl/version.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+// This file is somewhat automatically generated. Disable clang-format.
+// clang-format off
+
+
+Files: cccl/cuda/std/__chrono/calendar.h, cccl/cuda/std/__chrono/day.h, cccl/cuda/std/__chrono/duration.h, cccl/cuda/std/__chrono/file_clock.h, cccl/cuda/std/__chrono/high_resolution_clock.h, cccl/cuda/std/__chrono/month.h, cccl/cuda/std/__chrono/steady_clock.h, cccl/cuda/std/__chrono/system_clock.h, cccl/cuda/std/__chrono/time_point.h, cccl/cuda/std/__chrono/year.h, cccl/cuda/std/__cmath/exponential_functions.h, cccl/cuda/std/__cmath/gamma.h, cccl/cuda/std/__cmath/hyperbolic_functions.h, cccl/cuda/std/__cmath/hypot.h, cccl/cuda/std/__cmath/inverse_hyperbolic_functions.h, cccl/cuda/std/__cmath/inverse_trigonometric_functions.h, cccl/cuda/std/__cmath/min_max.h, cccl/cuda/std/__cmath/modulo.h, cccl/cuda/std/__cmath/remainder.h, cccl/cuda/std/__cmath/roots.h, cccl/cuda/std/__cmath/rounding_functions.h, cccl/cuda/std/__cmath/trigonometric_functions.h, cccl/cuda/std/__cstdlib/aligned_alloc.h, cccl/cuda/std/__cstdlib/malloc.h, cccl/cuda/std/__iterator/back_insert_iterator.h, cccl/cuda/std/__iterator/front_insert_iterator.h, cccl/cuda/std/__iterator/incrementable_traits.h, cccl/cuda/std/__iterator/insert_iterator.h, cccl/cuda/std/__iterator/istream_iterator.h, cccl/cuda/std/__iterator/istreambuf_iterator.h, cccl/cuda/std/__iterator/ostream_iterator.h, cccl/cuda/std/__iterator/ostreambuf_iterator.h, cccl/cuda/std/__memory/pointer_traits.h, cccl/cuda/std/__ranges/movable_box.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__cmath/lerp.h, cccl/cuda/std/__cmath/logarithms.h, cccl/cuda/std/__cmath/traits.h, cccl/cuda/std/__cstdlib/abs.h, cccl/cuda/std/__cstdlib/div.h, cccl/cuda/std/__functional/operations.h, cccl/cuda/std/__ranges/concepts.h, cccl/cuda/std/__ranges/dangling.h, cccl/cuda/std/__ranges/size.h, cccl/cuda/std/__ranges/subrange.h, cccl/cuda/std/__ranges/unwrap_end.h, cccl/cuda/std/__ranges/view_interface.h, cccl/cuda/std/source_location
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__concepts/concept_macros.h
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) Facebook, Inc. and its affiliates.
+// Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__expected/bad_expected_access.h, cccl/cuda/std/__expected/expected.h, cccl/cuda/std/__expected/expected_base.h, cccl/cuda/std/__expected/unexpect.h, cccl/cuda/std/__expected/unexpected.h, cccl/cuda/std/__utility/exception_guard.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__functional/bind_back.h, cccl/cuda/std/__functional/compose.h, cccl/cuda/std/__functional/perfect_forward.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023-25 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__functional/identity.h, cccl/cuda/std/__iterator/distance.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023-24 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__fwd/array.h, cccl/cuda/std/__fwd/expected.h, cccl/cuda/std/__fwd/hash.h, cccl/cuda/std/__fwd/pair.h, cccl/cuda/std/__fwd/tuple.h, cccl/cuda/std/__fwd/unexpected.h
+//===---------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===---------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__fwd/ios.h, cccl/cuda/std/__fwd/reference_wrapper.h, cccl/cuda/std/__internal/atomic.h, cccl/cuda/std/__internal/thread_api.h, cccl/cuda/std/__internal/version.h
+//===---------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===---------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__fwd/mdspan.h, cccl/cuda/std/__mdspan/concepts.h, cccl/cuda/std/__mdspan/default_accessor.h, cccl/cuda/std/__mdspan/extents.h, cccl/cuda/std/__mdspan/layout_left.h, cccl/cuda/std/__mdspan/layout_right.h, cccl/cuda/std/__mdspan/layout_stride.h, cccl/cuda/std/__mdspan/mdspan.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+//===---------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__fwd/span.h
+// -*- C++ -*-
+//===---------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===---------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__fwd/subrange.h, cccl/cuda/std/__internal/cpp_dialect.h, cccl/cuda/std/__internal/features.h, cccl/cuda/std/__internal/namespaces.h
+//===---------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===---------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__iterator/indirectly_comparable.h, cccl/cuda/std/__iterator/iter_swap.h, cccl/cuda/std/__iterator/mergeable.h, cccl/cuda/std/__iterator/permutable.h, cccl/cuda/std/__iterator/projected.h, cccl/cuda/std/__iterator/sortable.h, cccl/cuda/std/__memory/voidify.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__iterator/move_iterator.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__iterator/move_sentinel.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__iterator/unreachable_sentinel.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) 2023 Microsoft Corporation.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__linalg/conj_if_needed.h, cccl/cuda/std/__linalg/conjugate_transposed.h, cccl/cuda/std/__linalg/conjugated.h, cccl/cuda/std/__linalg/scaled.h, cccl/cuda/std/__linalg/transposed.h, cccl/cuda/std/__mdspan/aligned_accessor.h
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+// ************************************************************************
+//@HEADER
+
+
+Files: cccl/cuda/std/__memory/construct_at.h, cccl/cuda/std/__ranges/views.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__memory/temporary_buffer.h
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024-25 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__ranges/from_range.h
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__type_traits/common_reference.h, cccl/cuda/std/__type_traits/is_convertible.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) Microsoft Corporation.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/__type_traits/extent.h
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/algorithm
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023-25 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/array, cccl/cuda/std/ccomplex, cccl/cuda/std/cmath, cccl/cuda/std/complex, cccl/cuda/std/concepts
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/cuda/std/optional
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES;.
+//
+//===----------------------------------------------------------------------===//
+
+
+Files: cccl/thrust/addressof.h, cccl/thrust/allocate_unique.h, cccl/thrust/detail/memory_algorithms.h
+// Copyright (c) 2018 NVIDIA Corporation
+// Author: Bryce Adelstein Lelbach <brycelelbach@gmail.com>
+//
+// Distributed under the Boost Software License v1.0 (boost.org/LICENSE_1_0.txt)
+
+
+Files: cccl/thrust/adjacent_difference.h, cccl/thrust/binary_search.h, cccl/thrust/copy.h, cccl/thrust/count.h, cccl/thrust/detail/adjacent_difference.inl, cccl/thrust/detail/allocator/copy_construct_range.h, cccl/thrust/detail/allocator/destroy_range.h, cccl/thrust/detail/allocator/fill_construct_range.h, cccl/thrust/detail/allocator/malloc_allocator.h, cccl/thrust/detail/allocator/no_throw_allocator.h, cccl/thrust/detail/allocator/tagged_allocator.h, cccl/thrust/detail/allocator/temporary_allocator.h, cccl/thrust/detail/allocator/value_initialize_range.h, cccl/thrust/detail/binary_search.inl, cccl/thrust/detail/config/compiler.h, cccl/thrust/detail/config/config.h, cccl/thrust/detail/config/device_system.h, cccl/thrust/detail/config/host_system.h, cccl/thrust/detail/config/simple_defines.h, cccl/thrust/detail/config.h, cccl/thrust/detail/copy.h, cccl/thrust/detail/copy.inl, cccl/thrust/detail/copy_if.h, cccl/thrust/detail/copy_if.inl, cccl/thrust/detail/count.h, cccl/thrust/detail/count.inl, cccl/thrust/detail/device_ptr.inl, cccl/thrust/detail/equal.inl, cccl/thrust/detail/extrema.inl, cccl/thrust/detail/fill.inl, cccl/thrust/detail/find.inl, cccl/thrust/detail/for_each.inl, cccl/thrust/detail/gather.inl, cccl/thrust/detail/generate.inl, cccl/thrust/detail/inner_product.inl, cccl/thrust/detail/logical.inl, cccl/thrust/detail/malloc_and_free.h, cccl/thrust/detail/merge.inl, cccl/thrust/detail/mismatch.inl, cccl/thrust/detail/overlapped_copy.h, cccl/thrust/detail/partition.inl, cccl/thrust/detail/range/head_flags.h, cccl/thrust/detail/range/tail_flags.h, cccl/thrust/detail/raw_pointer_cast.h, cccl/thrust/detail/raw_reference_cast.h, cccl/thrust/detail/reduce.inl, cccl/thrust/detail/reference.h, cccl/thrust/detail/remove.inl, cccl/thrust/detail/replace.inl, cccl/thrust/detail/reverse.inl, cccl/thrust/detail/scan.inl, cccl/thrust/detail/scatter.inl, cccl/thrust/detail/sequence.inl, cccl/thrust/detail/set_operations.inl, cccl/thrust/detail/sort.inl, cccl/thrust/detail/static_map.h, cccl/thrust/detail/swap_ranges.inl, cccl/thrust/detail/tabulate.inl, cccl/thrust/detail/temporary_array.h, cccl/thrust/detail/temporary_buffer.h, cccl/thrust/detail/transform_reduce.inl, cccl/thrust/detail/transform_scan.inl, cccl/thrust/detail/trivial_sequence.h, cccl/thrust/detail/tuple_meta_transform.h, cccl/thrust/detail/type_traits/has_nested_type.h, cccl/thrust/detail/type_traits/is_call_possible.h, cccl/thrust/detail/type_traits/is_metafunction_defined.h, cccl/thrust/detail/type_traits/iterator/is_output_iterator.h, cccl/thrust/detail/type_traits/minimum_type.h, cccl/thrust/detail/uninitialized_copy.inl, cccl/thrust/detail/uninitialized_fill.inl, cccl/thrust/detail/unique.inl, cccl/thrust/detail/use_default.h, cccl/thrust/device_delete.h, cccl/thrust/device_free.h, cccl/thrust/device_malloc.h, cccl/thrust/device_new.h, cccl/thrust/device_new_allocator.h, cccl/thrust/device_reference.h, cccl/thrust/equal.h, cccl/thrust/extrema.h, cccl/thrust/fill.h, cccl/thrust/find.h, cccl/thrust/gather.h, cccl/thrust/generate.h, cccl/thrust/inner_product.h, cccl/thrust/iterator/constant_iterator.h, cccl/thrust/iterator/counting_iterator.h, cccl/thrust/iterator/detail/any_assign.h, cccl/thrust/iterator/detail/any_system_tag.h, cccl/thrust/iterator/detail/device_system_tag.h, cccl/thrust/iterator/detail/host_system_tag.h, cccl/thrust/iterator/detail/iterator_adaptor_base.h, cccl/thrust/iterator/detail/iterator_category_to_system.h, cccl/thrust/iterator/detail/iterator_category_to_traversal.h, cccl/thrust/iterator/detail/iterator_category_with_system_and_traversal.h, cccl/thrust/iterator/detail/iterator_facade_category.h, cccl/thrust/iterator/detail/minimum_system.h, cccl/thrust/iterator/detail/normal_iterator.h, cccl/thrust/iterator/detail/retag.h, cccl/thrust/iterator/detail/tagged_iterator.h, cccl/thrust/iterator/discard_iterator.h, cccl/thrust/iterator/iterator_adaptor.h, cccl/thrust/iterator/iterator_categories.h, cccl/thrust/iterator/iterator_facade.h, cccl/thrust/iterator/iterator_traits.h, cccl/thrust/iterator/iterator_traversal_tags.h, cccl/thrust/iterator/permutation_iterator.h, cccl/thrust/iterator/retag.h, cccl/thrust/iterator/reverse_iterator.h, cccl/thrust/iterator/transform_iterator.h, cccl/thrust/iterator/zip_iterator.h, cccl/thrust/logical.h, cccl/thrust/memory.h, cccl/thrust/merge.h, cccl/thrust/mismatch.h, cccl/thrust/pair.h, cccl/thrust/partition.h, cccl/thrust/per_device_resource.h, cccl/thrust/random/detail/linear_congruential_engine_discard.h, cccl/thrust/random/detail/linear_feedback_shift_engine_wordmask.h, cccl/thrust/random/detail/mod.h, cccl/thrust/random/detail/normal_distribution_base.h, cccl/thrust/random/detail/random_core_access.h, cccl/thrust/random/detail/xor_combine_engine_max.h, cccl/thrust/random/discard_block_engine.h, cccl/thrust/random/linear_congruential_engine.h, cccl/thrust/random/linear_feedback_shift_engine.h, cccl/thrust/random/normal_distribution.h, cccl/thrust/random/subtract_with_carry_engine.h, cccl/thrust/random/uniform_int_distribution.h, cccl/thrust/random/uniform_real_distribution.h, cccl/thrust/random/xor_combine_engine.h, cccl/thrust/random.h, cccl/thrust/reduce.h, cccl/thrust/remove.h, cccl/thrust/replace.h, cccl/thrust/reverse.h, cccl/thrust/scan.h, cccl/thrust/scatter.h, cccl/thrust/sequence.h, cccl/thrust/set_operations.h, cccl/thrust/sort.h, cccl/thrust/swap.h, cccl/thrust/system/cpp/detail/adjacent_difference.h, cccl/thrust/system/cpp/detail/assign_value.h, cccl/thrust/system/cpp/detail/binary_search.h, cccl/thrust/system/cpp/detail/copy.h, cccl/thrust/system/cpp/detail/copy_if.h, cccl/thrust/system/cpp/detail/count.h, cccl/thrust/system/cpp/detail/equal.h, cccl/thrust/system/cpp/detail/extrema.h, cccl/thrust/system/cpp/detail/fill.h, cccl/thrust/system/cpp/detail/find.h, cccl/thrust/system/cpp/detail/for_each.h, cccl/thrust/system/cpp/detail/gather.h, cccl/thrust/system/cpp/detail/generate.h, cccl/thrust/system/cpp/detail/get_value.h, cccl/thrust/system/cpp/detail/inner_product.h, cccl/thrust/system/cpp/detail/iter_swap.h, cccl/thrust/system/cpp/detail/logical.h, cccl/thrust/system/cpp/detail/malloc_and_free.h, cccl/thrust/system/cpp/detail/merge.h, cccl/thrust/system/cpp/detail/mismatch.h, cccl/thrust/system/cpp/detail/partition.h, cccl/thrust/system/cpp/detail/reduce.h, cccl/thrust/system/cpp/detail/reduce_by_key.h, cccl/thrust/system/cpp/detail/remove.h, cccl/thrust/system/cpp/detail/replace.h, cccl/thrust/system/cpp/detail/reverse.h, cccl/thrust/system/cpp/detail/scan.h, cccl/thrust/system/cpp/detail/scan_by_key.h, cccl/thrust/system/cpp/detail/scatter.h, cccl/thrust/system/cpp/detail/sequence.h, cccl/thrust/system/cpp/detail/set_operations.h, cccl/thrust/system/cpp/detail/sort.h, cccl/thrust/system/cpp/detail/swap_ranges.h, cccl/thrust/system/cpp/detail/tabulate.h, cccl/thrust/system/cpp/detail/temporary_buffer.h, cccl/thrust/system/cpp/detail/transform.h, cccl/thrust/system/cpp/detail/transform_reduce.h, cccl/thrust/system/cpp/detail/transform_scan.h, cccl/thrust/system/cpp/detail/uninitialized_copy.h, cccl/thrust/system/cpp/detail/uninitialized_fill.h, cccl/thrust/system/cpp/detail/unique.h, cccl/thrust/system/cpp/detail/unique_by_key.h, cccl/thrust/system/cpp/vector.h, cccl/thrust/system/cuda/detail/assign_value.h, cccl/thrust/system/cuda/detail/error.inl, cccl/thrust/system/cuda/detail/get_value.h, cccl/thrust/system/cuda/detail/iter_swap.h, cccl/thrust/system/cuda/detail/logical.h, cccl/thrust/system/cuda/detail/malloc_and_free.h, cccl/thrust/system/cuda/detail/sequence.h, cccl/thrust/system/cuda/error.h, cccl/thrust/system/cuda/vector.h, cccl/thrust/system/detail/bad_alloc.h, cccl/thrust/system/detail/errno.h, cccl/thrust/system/detail/error_category.inl, cccl/thrust/system/detail/error_code.inl, cccl/thrust/system/detail/error_condition.inl, cccl/thrust/system/detail/generic/adjacent_difference.h, cccl/thrust/system/detail/generic/adjacent_difference.inl, cccl/thrust/system/detail/generic/binary_search.h, cccl/thrust/system/detail/generic/binary_search.inl, cccl/thrust/system/detail/generic/copy.h, cccl/thrust/system/detail/generic/copy.inl, cccl/thrust/system/detail/generic/copy_if.h, cccl/thrust/system/detail/generic/copy_if.inl, cccl/thrust/system/detail/generic/count.h, cccl/thrust/system/detail/generic/count.inl, cccl/thrust/system/detail/generic/equal.h, cccl/thrust/system/detail/generic/equal.inl, cccl/thrust/system/detail/generic/extrema.h, cccl/thrust/system/detail/generic/extrema.inl, cccl/thrust/system/detail/generic/fill.h, cccl/thrust/system/detail/generic/find.h, cccl/thrust/system/detail/generic/find.inl, cccl/thrust/system/detail/generic/for_each.h, cccl/thrust/system/detail/generic/gather.h, cccl/thrust/system/detail/generic/gather.inl, cccl/thrust/system/detail/generic/generate.h, cccl/thrust/system/detail/generic/generate.inl, cccl/thrust/system/detail/generic/inner_product.h, cccl/thrust/system/detail/generic/inner_product.inl, cccl/thrust/system/detail/generic/logical.h, cccl/thrust/system/detail/generic/memory.h, cccl/thrust/system/detail/generic/memory.inl, cccl/thrust/system/detail/generic/merge.h, cccl/thrust/system/detail/generic/merge.inl, cccl/thrust/system/detail/generic/mismatch.h, cccl/thrust/system/detail/generic/mismatch.inl, cccl/thrust/system/detail/generic/partition.h, cccl/thrust/system/detail/generic/partition.inl, cccl/thrust/system/detail/generic/per_device_resource.h, cccl/thrust/system/detail/generic/reduce.h, cccl/thrust/system/detail/generic/reduce.inl, cccl/thrust/system/detail/generic/reduce_by_key.h, cccl/thrust/system/detail/generic/reduce_by_key.inl, cccl/thrust/system/detail/generic/remove.h, cccl/thrust/system/detail/generic/remove.inl, cccl/thrust/system/detail/generic/replace.h, cccl/thrust/system/detail/generic/replace.inl, cccl/thrust/system/detail/generic/reverse.h, cccl/thrust/system/detail/generic/reverse.inl, cccl/thrust/system/detail/generic/scalar/binary_search.h, cccl/thrust/system/detail/generic/scalar/binary_search.inl, cccl/thrust/system/detail/generic/scan.h, cccl/thrust/system/detail/generic/scan_by_key.h, cccl/thrust/system/detail/generic/scan_by_key.inl, cccl/thrust/system/detail/generic/scatter.h, cccl/thrust/system/detail/generic/scatter.inl, cccl/thrust/system/detail/generic/select_system.h, cccl/thrust/system/detail/generic/sequence.h, cccl/thrust/system/detail/generic/set_operations.h, cccl/thrust/system/detail/generic/set_operations.inl, cccl/thrust/system/detail/generic/sort.h, cccl/thrust/system/detail/generic/sort.inl, cccl/thrust/system/detail/generic/swap_ranges.h, cccl/thrust/system/detail/generic/swap_ranges.inl, cccl/thrust/system/detail/generic/tabulate.h, cccl/thrust/system/detail/generic/tabulate.inl, cccl/thrust/system/detail/generic/tag.h, cccl/thrust/system/detail/generic/temporary_buffer.h, cccl/thrust/system/detail/generic/temporary_buffer.inl, cccl/thrust/system/detail/generic/transform.h, cccl/thrust/system/detail/generic/transform_reduce.h, cccl/thrust/system/detail/generic/transform_reduce.inl, cccl/thrust/system/detail/generic/transform_scan.h, cccl/thrust/system/detail/generic/transform_scan.inl, cccl/thrust/system/detail/generic/uninitialized_copy.h, cccl/thrust/system/detail/generic/uninitialized_copy.inl, cccl/thrust/system/detail/generic/uninitialized_fill.h, cccl/thrust/system/detail/generic/uninitialized_fill.inl, cccl/thrust/system/detail/generic/unique.h, cccl/thrust/system/detail/generic/unique.inl, cccl/thrust/system/detail/generic/unique_by_key.h, cccl/thrust/system/detail/generic/unique_by_key.inl, cccl/thrust/system/detail/internal/decompose.h, cccl/thrust/system/detail/sequential/adjacent_difference.h, cccl/thrust/system/detail/sequential/assign_value.h, cccl/thrust/system/detail/sequential/binary_search.h, cccl/thrust/system/detail/sequential/copy.h, cccl/thrust/system/detail/sequential/copy_backward.h, cccl/thrust/system/detail/sequential/copy_if.h, cccl/thrust/system/detail/sequential/count.h, cccl/thrust/system/detail/sequential/equal.h, cccl/thrust/system/detail/sequential/extrema.h, cccl/thrust/system/detail/sequential/fill.h, cccl/thrust/system/detail/sequential/find.h, cccl/thrust/system/detail/sequential/for_each.h, cccl/thrust/system/detail/sequential/gather.h, cccl/thrust/system/detail/sequential/general_copy.h, cccl/thrust/system/detail/sequential/generate.h, cccl/thrust/system/detail/sequential/get_value.h, cccl/thrust/system/detail/sequential/inner_product.h, cccl/thrust/system/detail/sequential/insertion_sort.h, cccl/thrust/system/detail/sequential/iter_swap.h, cccl/thrust/system/detail/sequential/logical.h, cccl/thrust/system/detail/sequential/malloc_and_free.h, cccl/thrust/system/detail/sequential/merge.h, cccl/thrust/system/detail/sequential/mismatch.h, cccl/thrust/system/detail/sequential/partition.h, cccl/thrust/system/detail/sequential/reduce.h, cccl/thrust/system/detail/sequential/reduce_by_key.h, cccl/thrust/system/detail/sequential/remove.h, cccl/thrust/system/detail/sequential/replace.h, cccl/thrust/system/detail/sequential/reverse.h, cccl/thrust/system/detail/sequential/scan.h, cccl/thrust/system/detail/sequential/scan_by_key.h, cccl/thrust/system/detail/sequential/scatter.h, cccl/thrust/system/detail/sequential/sequence.h, cccl/thrust/system/detail/sequential/set_operations.h, cccl/thrust/system/detail/sequential/stable_primitive_sort.h, cccl/thrust/system/detail/sequential/swap_ranges.h, cccl/thrust/system/detail/sequential/tabulate.h, cccl/thrust/system/detail/sequential/temporary_buffer.h, cccl/thrust/system/detail/sequential/transform.h, cccl/thrust/system/detail/sequential/transform_reduce.h, cccl/thrust/system/detail/sequential/transform_scan.h, cccl/thrust/system/detail/sequential/trivial_copy.h, cccl/thrust/system/detail/sequential/uninitialized_copy.h, cccl/thrust/system/detail/sequential/uninitialized_fill.h, cccl/thrust/system/detail/sequential/unique.h, cccl/thrust/system/detail/sequential/unique_by_key.h, cccl/thrust/system/detail/system_error.inl, cccl/thrust/system/error_code.h, cccl/thrust/system/omp/vector.h, cccl/thrust/system/system_error.h, cccl/thrust/tabulate.h, cccl/thrust/transform.h, cccl/thrust/transform_reduce.h, cccl/thrust/transform_scan.h, cccl/thrust/uninitialized_copy.h, cccl/thrust/uninitialized_fill.h, cccl/thrust/unique.h
+/*
+ *  Copyright 2008-2013 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/advance.h, cccl/thrust/distance.h, cccl/thrust/iterator/shuffle_iterator.h, cccl/thrust/system/cuda/detail/temporary_buffer.h
+/*
+ *  Copyright 2025 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/complex.h
+/*
+ *  Copyright 2008-2019 NVIDIA Corporation
+ *  Copyright 2013 Filipe RNC Maia
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/alignment.h, cccl/thrust/detail/function.h, cccl/thrust/detail/functional/actor.h, cccl/thrust/detail/functional/operators.h, cccl/thrust/detail/type_traits/is_commutative.h
+/*
+ *  Copyright 2024 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/allocator/allocator_traits.h, cccl/thrust/detail/contiguous_storage.h, cccl/thrust/detail/contiguous_storage.inl, cccl/thrust/detail/event_error.h, cccl/thrust/detail/execute_with_allocator.h, cccl/thrust/detail/execute_with_allocator_fwd.h, cccl/thrust/detail/internal_functional.h, cccl/thrust/detail/static_assert.h, cccl/thrust/detail/vector_base.h, cccl/thrust/detail/vector_base.inl, cccl/thrust/device_allocator.h, cccl/thrust/device_make_unique.h, cccl/thrust/device_malloc_allocator.h, cccl/thrust/device_vector.h, cccl/thrust/functional.h, cccl/thrust/host_vector.h, cccl/thrust/iterator/detail/tuple_of_iterator_references.h, cccl/thrust/iterator/transform_output_iterator.h, cccl/thrust/system/cpp/detail/memory.inl, cccl/thrust/system/cpp/memory.h, cccl/thrust/system/cuda/detail/memory.inl, cccl/thrust/system/cuda/memory.h, cccl/thrust/system/omp/memory.h, cccl/thrust/tuple.h
+/*
+ *  Copyright 2008-2018 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/allocator_aware_execution_policy.h, cccl/thrust/detail/config/memory_resource.h, cccl/thrust/mr/allocator.h, cccl/thrust/mr/disjoint_pool.h, cccl/thrust/mr/disjoint_sync_pool.h, cccl/thrust/mr/disjoint_tls_pool.h, cccl/thrust/mr/fancy_pointer_resource.h, cccl/thrust/mr/memory_resource.h, cccl/thrust/mr/new.h, cccl/thrust/mr/pool.h, cccl/thrust/mr/pool_options.h, cccl/thrust/mr/sync_pool.h, cccl/thrust/mr/tls_pool.h, cccl/thrust/mr/validator.h, cccl/thrust/system/cpp/detail/per_device_resource.h, cccl/thrust/system/cuda/detail/dispatch.h, cccl/thrust/system/detail/sequential/per_device_resource.h
+/*
+ *  Copyright 2018 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/caching_allocator.h, cccl/thrust/detail/config/cpp_dialect.h, cccl/thrust/iterator/transform_input_output_iterator.h
+/*
+ *  Copyright 2020 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/complex/arithmetic.h, cccl/thrust/detail/complex/clog.h, cccl/thrust/detail/complex/clogf.h, cccl/thrust/detail/complex/stream.h
+/*
+ *  Copyright 2008-2021 NVIDIA Corporation
+ *  Copyright 2013 Filipe RNC Maia
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/complex/catrig.h, cccl/thrust/detail/complex/catrigf.h, cccl/thrust/detail/complex/ccosh.h, cccl/thrust/detail/complex/ccoshf.h, cccl/thrust/detail/complex/cexp.h, cccl/thrust/detail/complex/cexpf.h, cccl/thrust/detail/complex/cpow.h, cccl/thrust/detail/complex/cproj.h, cccl/thrust/detail/complex/csinh.h, cccl/thrust/detail/complex/csinhf.h, cccl/thrust/detail/complex/csqrt.h, cccl/thrust/detail/complex/csqrtf.h, cccl/thrust/detail/complex/ctanh.h, cccl/thrust/detail/complex/ctanhf.h, cccl/thrust/detail/complex/math_private.h
+/*
+ *  Copyright 2008-2013 NVIDIA Corporation
+ *  Copyright 2013 Filipe RNC Maia
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/complex/catrig.h, cccl/thrust/detail/complex/catrigf.h, cccl/thrust/detail/complex/clog.h, cccl/thrust/detail/complex/clogf.h
+/*-
+ * Copyright (c) 2012 Stephen Montgomery-Smith <stephen@FreeBSD.ORG>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+Files: cccl/thrust/detail/complex/ccosh.h, cccl/thrust/detail/complex/ccoshf.h, cccl/thrust/detail/complex/csinh.h, cccl/thrust/detail/complex/csinhf.h
+/*-
+ * Copyright (c) 2005 Bruce D. Evans and Steven G. Kargl
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice unmodified, this list of conditions, and the following
+ *    disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+Files: cccl/thrust/detail/complex/cexp.h, cccl/thrust/detail/complex/cexpf.h
+/*-
+ * Copyright (c) 2011 David Schultz <das@FreeBSD.ORG>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+Files: cccl/thrust/detail/complex/complex.inl
+/*
+ *  Copyright 2008-2024 NVIDIA Corporation
+ *  Copyright 2013 Filipe RNC Maia
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/complex/csqrt.h, cccl/thrust/detail/complex/csqrtf.h
+/*-
+ * Copyright (c) 2007 David Schultz <das@FreeBSD.ORG>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+Files: cccl/thrust/detail/complex/ctanh.h, cccl/thrust/detail/complex/ctanhf.h
+/*-
+ * Copyright (c) 2011 David Schultz
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice unmodified, this list of conditions, and the following
+ *    disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+Files: cccl/thrust/detail/complex/math_private.h
+/*
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+
+Files: cccl/thrust/detail/execution_policy.h, cccl/thrust/execution_policy.h, cccl/thrust/system/cpp/execution_policy.h, cccl/thrust/system/detail/sequential/execution_policy.h, cccl/thrust/system/omp/execution_policy.h, cccl/thrust/system/tbb/execution_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2013, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/thrust/detail/functional/actor.h, cccl/thrust/detail/functional/operators.h
+// Portions of this code are derived from
+//
+// Manjunath Kudlur's Carbon library
+//
+// and
+//
+// Based on Boost.Phoenix v1.2
+// Copyright (c) 2001-2002 Joel de Guzman
+
+
+Files: cccl/thrust/detail/get_iterator_value.h
+/*
+ *  Copyright 2008-2016 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/malloc_and_free_fwd.h, cccl/thrust/type_traits/integer_sequence.h
+/*
+ *  Copyright 2008-2024 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/pointer.h, cccl/thrust/detail/temporary_array.inl, cccl/thrust/detail/type_traits/has_member_function.h, cccl/thrust/device_ptr.h, cccl/thrust/random/detail/discard_block_engine.inl, cccl/thrust/random/detail/linear_congruential_engine.inl, cccl/thrust/random/detail/linear_feedback_shift_engine.inl, cccl/thrust/random/detail/normal_distribution.inl, cccl/thrust/random/detail/subtract_with_carry_engine.inl, cccl/thrust/random/detail/uniform_int_distribution.inl, cccl/thrust/random/detail/uniform_real_distribution.inl, cccl/thrust/random/detail/xor_combine_engine.inl, cccl/thrust/system/detail/sequential/sort.h, cccl/thrust/system/detail/sequential/stable_merge_sort.h, cccl/thrust/system/detail/sequential/stable_radix_sort.h, cccl/thrust/system_error.h, cccl/thrust/type_traits/is_contiguous_iterator.h, cccl/thrust/type_traits/is_execution_policy.h, cccl/thrust/type_traits/is_operator_less_or_greater_function_object.h, cccl/thrust/type_traits/is_operator_plus_function_object.h, cccl/thrust/type_traits/is_trivially_relocatable.h, cccl/thrust/type_traits/logical_metafunctions.h, cccl/thrust/type_traits/unwrap_contiguous_iterator.h
+/*
+ *  Copyright 2008-2021 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/preprocessor.h
+// Copyright (c) 2017-2018 NVIDIA Corporation
+// Copyright (c) 2014-2018 Bryce Adelstein Lelbach
+// Copyright (c) 2001-2015 Housemarque Oy (housemarque.com)
+// Copyright (c) 2007-2015 Hartmut Kaiser
+// Copyright (c)      2002 Peter Dimov and Multi Media Ltd
+//                         (`THRUST_CURRENT_FUNCTION`)
+//
+// Distributed under the Boost Software License v1.0 (boost.org/LICENSE_1_0.txt)
+
+
+Files: cccl/thrust/detail/random_bijection.h
+/*
+ *  Copyright 2008-2025 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/reference_forward_declaration.h, cccl/thrust/detail/shuffle.inl, cccl/thrust/detail/type_traits/is_thrust_pointer.h, cccl/thrust/detail/type_traits/pointer_traits.h, cccl/thrust/shuffle.h, cccl/thrust/system/cpp/pointer.h, cccl/thrust/system/cuda/pointer.h, cccl/thrust/system/detail/generic/shuffle.h, cccl/thrust/system/omp/pointer.h, cccl/thrust/universal_allocator.h, cccl/thrust/universal_ptr.h, cccl/thrust/universal_vector.h
+/*
+ *  Copyright 2008-2020 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/detail/seq.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2018, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/thrust/detail/static_assert.h
+/*
+ * (C) Copyright John Maddock 2000.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/detail/type_deduction.h
+// Copyright (c)      2018 NVIDIA Corporation
+//                         (Bryce Adelstein Lelbach <brycelelbach@gmail.com>)
+// Copyright (c) 2013-2018 Eric Niebler (`THRUST_RETURNS`, etc)
+// Copyright (c) 2016-2018 Casey Carter (`THRUST_RETURNS`, etc)
+//
+// Distributed under the Boost Software License v1.0 (boost.org/LICENSE_1_0.txt)
+
+
+Files: cccl/thrust/detail/type_traits.h, cccl/thrust/version.h
+/*
+ *  Copyright 2008-2022 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/for_each.h
+/*
+ *  Copyright 2008-2013 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/iterator/counting_iterator.h
+/*
+ * Copyright David Abrahams 2003.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/iterator/iterator_adaptor.h, cccl/thrust/iterator/iterator_facade.h, cccl/thrust/iterator/reverse_iterator.h, cccl/thrust/iterator/transform_iterator.h
+/*
+ * (C) Copyright David Abrahams 2002.
+ * (C) Copyright Jeremy Siek    2002.
+ * (C) Copyright Thomas Witt    2002.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/iterator/iterator_categories.h
+/*
+ * (C) Copyright Jeremy Siek 2002.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/iterator/iterator_traits.h
+/*
+ * (C) Copyright David Abrahams 2003.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/iterator/permutation_iterator.h
+/*
+ * (C) Copyright Toon Knapen    2001.
+ * (C) Copyright David Abrahams 2003.
+ * (C) Copyright Roland Richter 2003.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/iterator/strided_iterator.h
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/iterator/zip_iterator.h
+/*
+ * Copyright David Abrahams and Thomas Becker 2000-2006.
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/mr/device_memory_resource.h, cccl/thrust/mr/host_memory_resource.h, cccl/thrust/mr/universal_memory_resource.h, cccl/thrust/system/cpp/memory_resource.h, cccl/thrust/system/cuda/memory_resource.h, cccl/thrust/system/omp/memory_resource.h
+/*
+ *  Copyright 2018-2020 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/mr/polymorphic_adaptor.h
+/*
+ *  Copyright 2018-2019 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/random/detail/normal_distribution_base.h
+/*
+ * Copyright Jens Maurer 2000-2001
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+Files: cccl/thrust/random/linear_feedback_shift_engine.h
+/*
+ * Copyright Jens Maurer 2002
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */
+
+Files: cccl/thrust/system/cpp/detail/execution_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+
+Files: cccl/thrust/system/cuda/config.h, cccl/thrust/system/cuda/detail/adjacent_difference.h, cccl/thrust/system/cuda/detail/copy.h, cccl/thrust/system/cuda/detail/copy_if.h, cccl/thrust/system/cuda/detail/core/agent_launcher.h, cccl/thrust/system/cuda/detail/core/util.h, cccl/thrust/system/cuda/detail/count.h, cccl/thrust/system/cuda/detail/cross_system.h, cccl/thrust/system/cuda/detail/equal.h, cccl/thrust/system/cuda/detail/fill.h, cccl/thrust/system/cuda/detail/find.h, cccl/thrust/system/cuda/detail/for_each.h, cccl/thrust/system/cuda/detail/gather.h, cccl/thrust/system/cuda/detail/inner_product.h, cccl/thrust/system/cuda/detail/mismatch.h, cccl/thrust/system/cuda/detail/parallel_for.h, cccl/thrust/system/cuda/detail/partition.h, cccl/thrust/system/cuda/detail/reduce.h, cccl/thrust/system/cuda/detail/reduce_by_key.h, cccl/thrust/system/cuda/detail/remove.h, cccl/thrust/system/cuda/detail/replace.h, cccl/thrust/system/cuda/detail/reverse.h, cccl/thrust/system/cuda/detail/scan.h, cccl/thrust/system/cuda/detail/scan_by_key.h, cccl/thrust/system/cuda/detail/scatter.h, cccl/thrust/system/cuda/detail/set_operations.h, cccl/thrust/system/cuda/detail/sort.h, cccl/thrust/system/cuda/detail/swap_ranges.h, cccl/thrust/system/cuda/detail/tabulate.h, cccl/thrust/system/cuda/detail/terminate.h, cccl/thrust/system/cuda/detail/transform.h, cccl/thrust/system/cuda/detail/transform_reduce.h, cccl/thrust/system/cuda/detail/transform_scan.h, cccl/thrust/system/cuda/detail/uninitialized_copy.h, cccl/thrust/system/cuda/detail/uninitialized_fill.h, cccl/thrust/system/cuda/detail/unique.h, cccl/thrust/system/cuda/detail/unique_by_key.h
+/******************************************************************************
+ * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the NVIDIA CORPORATION nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************/
+
+Files: cccl/thrust/system/cuda/detail/cdp_dispatch.h
+/*
+ *  Copyright 2021-2022 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/system/cuda/detail/execution_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2018-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause
+
+
+Files: cccl/thrust/system/cuda/detail/extrema.h
+/*******************************************************************************
+ * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the NVIDIA CORPORATION nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************/
+
+Files: cccl/thrust/system/cuda/detail/make_unsigned_special.h
+/*
+ *  Copyright 2019 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/system/cuda/detail/per_device_resource.h
+/******************************************************************************
+ * Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the NVIDIA CORPORATION nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************/
+
+Files: cccl/thrust/system/cuda/detail/util.h
+/******************************************************************************
+ * Copyright (c) 2016, NVIDIA CORPORATION.  All rights meserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the NVIDIA CORPORATION nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************/
+
+Files: cccl/thrust/system/cuda/execution_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause
+
+
+Files: cccl/thrust/system/detail/generic/shuffle.inl
+/*
+ *  Copyright 2008-20120 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+Files: cccl/thrust/system/omp/detail/adjacent_difference.h, cccl/thrust/system/omp/detail/assign_value.h, cccl/thrust/system/omp/detail/binary_search.h, cccl/thrust/system/omp/detail/copy.h, cccl/thrust/system/omp/detail/copy_if.h, cccl/thrust/system/omp/detail/count.h, cccl/thrust/system/omp/detail/default_decomposition.h, cccl/thrust/system/omp/detail/equal.h, cccl/thrust/system/omp/detail/extrema.h, cccl/thrust/system/omp/detail/fill.h, cccl/thrust/system/omp/detail/find.h, cccl/thrust/system/omp/detail/for_each.h, cccl/thrust/system/omp/detail/gather.h, cccl/thrust/system/omp/detail/generate.h, cccl/thrust/system/omp/detail/get_value.h, cccl/thrust/system/omp/detail/inner_product.h, cccl/thrust/system/omp/detail/iter_swap.h, cccl/thrust/system/omp/detail/logical.h, cccl/thrust/system/omp/detail/malloc_and_free.h, cccl/thrust/system/omp/detail/merge.h, cccl/thrust/system/omp/detail/mismatch.h, cccl/thrust/system/omp/detail/partition.h, cccl/thrust/system/omp/detail/reduce.h, cccl/thrust/system/omp/detail/reduce_by_key.h, cccl/thrust/system/omp/detail/reduce_intervals.h, cccl/thrust/system/omp/detail/remove.h, cccl/thrust/system/omp/detail/replace.h, cccl/thrust/system/omp/detail/reverse.h, cccl/thrust/system/omp/detail/scan.h, cccl/thrust/system/omp/detail/scan_by_key.h, cccl/thrust/system/omp/detail/scatter.h, cccl/thrust/system/omp/detail/sequence.h, cccl/thrust/system/omp/detail/set_operations.h, cccl/thrust/system/omp/detail/sort.h, cccl/thrust/system/omp/detail/swap_ranges.h, cccl/thrust/system/omp/detail/tabulate.h, cccl/thrust/system/omp/detail/temporary_buffer.h, cccl/thrust/system/omp/detail/transform.h, cccl/thrust/system/omp/detail/transform_reduce.h, cccl/thrust/system/omp/detail/transform_scan.h, cccl/thrust/system/omp/detail/uninitialized_copy.h, cccl/thrust/system/omp/detail/uninitialized_fill.h, cccl/thrust/system/omp/detail/unique.h, cccl/thrust/system/omp/detail/unique_by_key.h, cccl/thrust/system/tbb/detail/adjacent_difference.h, cccl/thrust/system/tbb/detail/assign_value.h, cccl/thrust/system/tbb/detail/binary_search.h, cccl/thrust/system/tbb/detail/copy.h, cccl/thrust/system/tbb/detail/copy_if.h, cccl/thrust/system/tbb/detail/count.h, cccl/thrust/system/tbb/detail/equal.h, cccl/thrust/system/tbb/detail/extrema.h, cccl/thrust/system/tbb/detail/fill.h, cccl/thrust/system/tbb/detail/find.h, cccl/thrust/system/tbb/detail/for_each.h, cccl/thrust/system/tbb/detail/gather.h, cccl/thrust/system/tbb/detail/generate.h, cccl/thrust/system/tbb/detail/get_value.h, cccl/thrust/system/tbb/detail/inner_product.h, cccl/thrust/system/tbb/detail/iter_swap.h, cccl/thrust/system/tbb/detail/logical.h, cccl/thrust/system/tbb/detail/malloc_and_free.h, cccl/thrust/system/tbb/detail/mismatch.h, cccl/thrust/system/tbb/detail/partition.h, cccl/thrust/system/tbb/detail/reduce.h, cccl/thrust/system/tbb/detail/reduce_by_key.h, cccl/thrust/system/tbb/detail/reduce_intervals.h, cccl/thrust/system/tbb/detail/remove.h, cccl/thrust/system/tbb/detail/replace.h, cccl/thrust/system/tbb/detail/reverse.h, cccl/thrust/system/tbb/detail/scan.h, cccl/thrust/system/tbb/detail/scan_by_key.h, cccl/thrust/system/tbb/detail/scatter.h, cccl/thrust/system/tbb/detail/sequence.h, cccl/thrust/system/tbb/detail/set_operations.h, cccl/thrust/system/tbb/detail/sort.h, cccl/thrust/system/tbb/detail/swap_ranges.h, cccl/thrust/system/tbb/detail/tabulate.h, cccl/thrust/system/tbb/detail/temporary_buffer.h, cccl/thrust/system/tbb/detail/transform.h, cccl/thrust/system/tbb/detail/transform_reduce.h, cccl/thrust/system/tbb/detail/transform_scan.h, cccl/thrust/system/tbb/detail/uninitialized_copy.h, cccl/thrust/system/tbb/detail/uninitialized_fill.h, cccl/thrust/system/tbb/detail/unique.h, cccl/thrust/system/tbb/detail/unique_by_key.h, cccl/thrust/system/tbb/vector.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2013, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/omp/detail/execution_policy.h, cccl/thrust/system/tbb/detail/execution_policy.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2025, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/omp/detail/per_device_resource.h, cccl/thrust/system/tbb/detail/per_device_resource.h
+// SPDX-FileCopyrightText: Copyright (c) 2018, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/omp/detail/pragma_omp.h
+// SPDX-FileCopyrightText: Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause
+
+
+Files: cccl/thrust/system/tbb/detail/merge.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2021, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/tbb/memory.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2018, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/tbb/memory_resource.h
+// SPDX-FileCopyrightText: Copyright (c) 2018-2020, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/system/tbb/pointer.h
+// SPDX-FileCopyrightText: Copyright (c) 2008-2020, NVIDIA Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+Files: cccl/thrust/tuple.h
+/*
+ * Copyright (C) 1999, 2000 Jaakko Järvi (jaakko.jarvi@cs.utu.fi)
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying NOTICE file for the complete license)
+ *
+ * For more information, see http://www.boost.org
+ */

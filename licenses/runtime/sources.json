@@ -1,0 +1,121 @@
+{
+  "GCC-COPYING.RUNTIME": {
+    "source": "https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-13.3.0/COPYING.RUNTIME",
+    "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+    "backends": [
+      "cpu",
+      "hip",
+      "cuda"
+    ]
+  },
+  "GCC-COPYING3": {
+    "source": "https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-13.3.0/COPYING3",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "backends": [
+      "cpu",
+      "hip",
+      "cuda"
+    ]
+  },
+  "GCC-copyright": {
+    "source": "Ubuntu noble g++/gcc-13 13.3.0-6ubuntu2~24.04.1 /usr/share/doc/gcc-13/copyright",
+    "sha256": "08c6f3dee4c19aa1e57eb7d4ad45829b2e99656313bd07fa0922e2553f500be5",
+    "backends": [
+      "cpu",
+      "hip",
+      "cuda"
+    ]
+  },
+  "LICENSE.LLVM": {
+    "source": "https://raw.githubusercontent.com/ROCm/llvm-project/8f497e0992fb7513f7f78a6f6b6f1056c375e961/llvm/LICENSE.TXT",
+    "sha256": "8d85c1057d742e597985c7d4e6320b015a9139385cff4cbae06ffc0ebe89afee",
+    "backends": [
+      "hip",
+      "cuda"
+    ]
+  },
+  "LICENSE.amd-device-libs": {
+    "source": "https://raw.githubusercontent.com/ROCm/llvm-project/8f497e0992fb7513f7f78a6f6b6f1056c375e961/amd/device-libs/LICENSE.TXT",
+    "sha256": "a4e8e3ba6e9255928a29d3085f929de402e61413cb0c49276e16b558effa8a2a",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.hip": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/hip/LICENSE.md",
+    "sha256": "b185aaa652b0bf066c37a0d6314ce4bf4521e4a3c9bf46edd2f6a777ac522223",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.hipblas": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/hipblas/LICENSE.md",
+    "sha256": "fec91d5fe42b9fef3e0d8088e769c113f8dd6eda614b6bc5a646feacb16c88a4",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.hipblas-common": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/hipblas-common/LICENSE.md",
+    "sha256": "b185aaa652b0bf066c37a0d6314ce4bf4521e4a3c9bf46edd2f6a777ac522223",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.rocblas": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/rocblas/LICENSE.md",
+    "sha256": "b57f384b03b348ca6dc3694dafa3ed7e69003a910fcd9e402eca514f4d86af83",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.rocprim": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/rocprim/LICENSE.md",
+    "sha256": "b185aaa652b0bf066c37a0d6314ce4bf4521e4a3c9bf46edd2f6a777ac522223",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.hipcub": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/hipcub/LICENSE.txt",
+    "sha256": "af1b0bce89e2ab523e43a09ddb8a2e52838e8d772fe89d4c29e86965cb627bc1",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.half": {
+    "source": "rocm-sdk-devel 10.0.0 share/doc/half/LICENSE.txt",
+    "sha256": "1269110471a5506d5cc9c115c57b855206f69a90cc57bbbf27860907067ed946",
+    "backends": [
+      "hip"
+    ]
+  },
+  "LICENSE.CUDA-13.2": {
+    "source": "NVIDIA redistrib cuda_cudart-linux-x86_64-13.2.51-archive/LICENSE (also identical in nvcc/crt/cuBLAS packages)",
+    "sha256": "0b7b3f1644af45c0e1279e995e5daa5b465997235c16bc86c83dcdf3c3b88b05",
+    "backends": [
+      "cuda"
+    ]
+  },
+  "LICENSE.CCCL": {
+    "source": "https://raw.githubusercontent.com/NVIDIA/cccl/477f8bcb27eb80c28e18bbd97e5dde80ecfc648b/LICENSE (v3.2.0)",
+    "sha256": "f96f51edda77fb9897de29d924d615e6bd153f4969db85fc6b7a22d7a624631e",
+    "backends": [
+      "cuda"
+    ]
+  },
+  "LICENSE.CCCL-package": {
+    "source": "NVIDIA redistrib cuda_cccl-linux-x86_64-13.2.27-archive/LICENSE",
+    "sha256": "72c22161fc1ebf242443d45158a7dd382d68597b00eeb7a7f539be5c6114be33",
+    "backends": [
+      "cuda"
+    ]
+  },
+  "NOTICE.CCCL-headers": {
+    "source": "Verbatim copyright-bearing comments from cuda_cccl 13.2.27 include/",
+    "sha256": "eed1a3cb37ecbcc97d425500fa32fa74c7da670cd2fbcc7f0666e444ced22a0c",
+    "backends": [
+      "cuda"
+    ]
+  }
+}

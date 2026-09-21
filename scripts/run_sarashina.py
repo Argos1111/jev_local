@@ -14,8 +14,9 @@ else:
     from setup_runtime import ROOT, model_specs, sha256
 
 
-def launch_environment(backend, profile, mmproj, text_only, flash_attn, cache_mib, device=None):
-    build = BASE/f'build-{backend}'
+def launch_environment(backend, profile, mmproj, text_only, flash_attn, cache_mib, device=None, build=None):
+    custom_build = build is not None
+    build = Path(build).resolve() if custom_build else BASE/f'build-{backend}'
     manifest_path = build/'jev-build.json'
     if not manifest_path.is_file():
         raise RuntimeError(f'Run python3 scripts/build_sarashina.py --backend {backend} first')
@@ -50,11 +51,17 @@ def launch_environment(backend, profile, mmproj, text_only, flash_attn, cache_mi
         info = json.loads(record.read_text())
         if info.get('projector_type') != 'sarashina2vl' or info.get('output_sha256') != sha256(mmproj):
             raise RuntimeError('Projector/manifest mismatch; refusing to use a mismatched artifact')
+        preprocessing = info.get('preprocessing')
+        if preprocessing and preprocessing not in manifest.get('sarashina_preprocessing', []):
+            raise RuntimeError('Build does not implement this projector preprocessing; rebuild the official experiment')
+        if not preprocessing:
+            print('WARNING: Legacy projector uses reconstructed Pillow preprocessing, not official AutoProcessor.', file=sys.stderr)
+    run_base = BASE/'external'/sha256(manifest_path)[:16] if custom_build else BASE
     env.update(LLAMA_SERVER=str(build/'bin/llama-server'), LFM_MODEL=str(model),
                LFM_MMPROJ='' if text_only else str(mmproj.resolve()),
                GPU_LAYERS='0' if backend == 'cpu' else 'all',
                LLAMA_ARG_FLASH_ATTN=flash_attn, JEV_IMAGE_CACHE_MIB=str(cache_mib),
-               SLOT_CACHE_DIR=str(BASE/'slots'), JEV_BACKEND_LOG=str(BASE/'llama-server.log'))
+               SLOT_CACHE_DIR=str(run_base/'slots'), JEV_BACKEND_LOG=str(run_base/'llama-server.log'))
     if backend in DEFAULT_DEVICES:
         env['GPU_DEVICE'] = device or env.get('GPU_DEVICE') or DEFAULT_DEVICES[backend]
         if backend in ('hip', 'cuda') and flash_attn != 'off':
@@ -76,9 +83,10 @@ def launch_environment(backend, profile, mmproj, text_only, flash_attn, cache_mi
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=BACKENDS, default='hip')
+    parser.add_argument('--build', type=Path, help='Extracted release or custom build directory containing bin/ and jev-build.json')
     parser.add_argument('--device', help='llama.cpp device(s), e.g. CUDA0 or ROCm1; overrides GPU_DEVICE')
     parser.add_argument('--model', choices=('sarashina', 'sarashina-q8'), default='sarashina')
-    parser.add_argument('--mmproj', type=Path, default=ROOT/'models/sarashina2.2-vision-3b.mmproj-jev-f16.gguf')
+    parser.add_argument('--mmproj', type=Path, default=ROOT/'models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf')
     parser.add_argument('--text-only', action='store_true')
     parser.add_argument('--flash-attn', choices=('auto', 'off', 'on'), default=os.environ.get('LLAMA_ARG_FLASH_ATTN', 'auto'))
     parser.add_argument('--image-cache-mib', type=int, default=int(os.environ.get('JEV_IMAGE_CACHE_MIB', '128')))
@@ -86,7 +94,8 @@ def main():
     parser.add_argument('--backend-port', type=int, default=8097)
     parser.add_argument('--state-cache', choices=('auto', 'off', 'shared'), default='auto')
     args = parser.parse_args()
-    env = launch_environment(args.backend, args.model, args.mmproj, args.text_only, args.flash_attn, args.image_cache_mib, args.device)
+    env = launch_environment(args.backend, args.model, args.mmproj, args.text_only, args.flash_attn,
+                             args.image_cache_mib, args.device, args.build)
     command = [sys.executable, str(ROOT/'scripts/run_local.py'), '--model', args.model,
                '--port', str(args.port), '--backend-port', str(args.backend_port), '--state-cache', args.state_cache]
     print(f'Experimental Sarashina: {args.backend}, FA={args.flash_attn}, image cache={args.image_cache_mib} MiB', flush=True)

@@ -140,9 +140,9 @@ python3 scripts/run_sarashina.py --port 18080 --backend-port 18097
 # Q8: --model sarashina-q8
 ```
 
-RTX 4090向けビルドは`python3 scripts/build_sarashina.py --backend cuda --cuda-architectures 89`（Linux／WSL2＋CUDA Toolkit）。RTX 5090など他世代の指定・mmproj変換・任意検査は[再現手順](docs/SARASHINA.md#実験版のビルドと起動)、報告するログは[フィードバック案内](docs/SARASHINA.md#gpu数値検査とフィードバック)を参照してください。**CUDAはsm_89向けビルド確認済み、実機推論は未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。
+RTX 4090向けビルドは`python3 scripts/build_sarashina.py --backend cuda --cuda-architectures 89`（Linux／WSL2＋CUDA Toolkit）。RTX 5090など他世代の指定・mmproj変換・任意検査は[再現手順](docs/SARASHINA.md#実験版のビルドと起動)、報告するログは[フィードバック案内](docs/SARASHINA.md#gpu数値検査とフィードバック)を参照してください。**CUDAはsm_89向けビルド確認済み、実機推論は未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。ビルド済みCPU / HIP / CUDA版は[Pre-releaseの利用案内](docs/SARASHINA_RELEASE.md)を参照してください。
 
-R9700での元解像度の文書＋4問の再送は、Q4で約2.12秒→0.66秒、Q8で約2.00秒→0.55秒（同一ビルド内の画像キャッシュOFF/ON比較）。1文書12問はQ4/Q8とも12/12でしたが、候補順反転で10/12、512px縮小で9/12へ低下し、単色・複数画像の失敗も残ります。公式checkpointへのアクセスがなく、公開クローンとの照合に限定されます。**通常設定は変更せず、制約付きの実験機能**として提供します。[全方式の比較・修正内容・再現手順](docs/SARASHINA.md)を参照してください。
+公式checkpointからmmprojを再生成し、公式AutoProcessorに合わせて前処理を追加修正しました。R9700での元解像度文書＋4問の再送はQ4で約2.15秒→0.69秒、Q8で約2.05秒→0.60秒（同一ビルド内の画像キャッシュOFF/ON比較）。文書12問は両者12/12ですが、単色・複数画像の失敗と、言語GGUFの公式tokenizerとの分割差が残ります。旧成果物は保存し、**通常設定は変更せず、制約付きの実験機能**として提供します。[検証範囲・更新した変換／ビルド手順](docs/SARASHINA.md)を参照してください。
 
 ## API
 

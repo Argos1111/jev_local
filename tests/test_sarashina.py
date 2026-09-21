@@ -39,6 +39,37 @@ class ConverterTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 converter.validate_config(wrong)
 
+    def test_official_preprocessor_not_reconstructed_qwen_defaults(self):
+        path = setup_runtime.ROOT/'native/sarashina-reference.json'
+        spec = json.loads(path.read_text())
+        self.assertIn('preprocessor_config.json', spec['conversion_files'])
+        value = {'image_processor_type': 'Sarashina2VisionImageProcessor',
+                 'do_resize': True, 'do_rescale': True, 'do_normalize': True, 'do_convert_rgb': True,
+                 'image_mean': [0.5]*3, 'image_std': [0.5]*3, 'rescale_factor': 1/255,
+                 'patch_size': 14, 'temporal_patch_size': 2, 'merge_size': 2,
+                 'min_pixels': 3136, 'max_pixels': 1016064}
+        converter.validate_preprocessor(value)
+        for key, wrong in [('max_pixels', 1003520), ('do_normalize', False), ('image_std', [1]*3)]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                converter.validate_preprocessor(dict(value, **{key: wrong}))
+
+    def test_source_metadata_requires_pinned_official_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = [root/name for name in ('config.json', 'model.safetensors', 'preprocessor_config.json')]
+            for path in paths:
+                path.write_bytes(path.name.encode())
+            lock = {'repository': 'test/official', 'revision': '0'*40, 'checkpoint_file': 'model.safetensors',
+                    'files': {p.name: {'sha256': setup_runtime.sha256(p), 'size': p.stat().st_size} for p in paths}}
+            with patch.object(converter, 'reference_lock', return_value=lock):
+                result = converter.source_metadata(*paths)
+                self.assertEqual(result['source_repository'], 'test/official')
+                self.assertEqual(result['preprocessing'], 'sarashina_official_v1')
+                self.assertEqual(result['checkpoint_sha256'], lock['files']['model.safetensors']['sha256'])
+                paths[1].write_bytes(b'changed')
+                with self.assertRaisesRegex(ValueError, 'official reference'):
+                    converter.source_metadata(*paths)
+
     def test_all_source_shapes_and_final_norm_are_accounted_for(self):
         layout = converter.tensor_layout()
         self.assertEqual(len(layout), 333)
@@ -51,8 +82,9 @@ class ConverterTests(unittest.TestCase):
 
 
 class FetchTests(unittest.TestCase):
-    def test_no_implicit_clone_download(self):
-        with patch('sys.argv', ['fetch']), patch.object(fetcher, 'download') as download, redirect_stderr(io.StringIO()):
+    def test_obsolete_clone_option_does_not_download(self):
+        with patch('sys.argv', ['fetch', '--accept-public-clone']), patch.object(fetcher, 'fetch_file') as download, \
+             redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
                 fetcher.main()
             download.assert_not_called()
@@ -63,28 +95,57 @@ class FetchTests(unittest.TestCase):
             (root/'scripts').mkdir()
             (root/'native').mkdir()
             (root/'scripts/runtime.json').write_text((setup_runtime.ROOT/'scripts/runtime.json').read_text())
+            names = ('config.json', 'preprocessor_config.json', 'model.safetensors')
             (root/'native/sarashina-reference.json').write_text(json.dumps({
-                'notice': 'fixture clone', 'repository': 'test/clone', 'revision': '0'*40,
-                'files': {n: {'sha256': '1'*64, 'size': 1} for n in ('config.json', 'model-00001-of-00008.safetensors')}}))
+                'notice': 'fixture official', 'repository': 'test/official', 'revision': '0'*40,
+                'conversion_files': names,
+                'files': {n: {'sha256': '1'*64, 'size': 1} for n in names}}))
             selected = root/'.cache/runtime/selected.json'
             selected.parent.mkdir(parents=True)
             selected.write_text('original selection')
             def download(url, path, digest):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(b'1')
-            with patch('sys.argv', ['fetch', '--accept-public-clone', '--model', 'sarashina', '--output', str(root/'reference')]), \
-                 patch.object(fetcher, 'ROOT', root), patch.object(fetcher, 'download', side_effect=download) as fetch, \
-                 redirect_stdout(io.StringIO()):
+            with patch('sys.argv', ['fetch', '--model', 'sarashina', '--output', str(root/'reference')]), \
+                 patch.object(fetcher, 'ROOT', root), patch.object(fetcher, 'fetch_file') as fetch, \
+                 patch.object(fetcher, 'download', side_effect=download), redirect_stdout(io.StringIO()):
                 fetcher.main()
             self.assertEqual(fetch.call_count, 3)
+            self.assertEqual([call.args[1] for call in fetch.call_args_list], list(names))
             self.assertEqual(selected.read_text(), 'original selection')
             self.assertFalse((selected.parent/'model.json').exists())
             self.assertTrue((root/'models/sarashina2.2-vision-3b.Q4_K_M.gguf').is_file())
 
-    def test_reference_lock_is_revision_and_checksum_pinned(self):
+    def test_existing_changed_reference_is_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root/'config.json'
+            path.write_bytes(b'local edit')
+            spec = {'files': {path.name: {'size': path.stat().st_size, 'sha256': '0'*64}}}
+            with self.assertRaisesRegex(ValueError, 'changed official'):
+                fetcher.fetch_file(spec, path.name, root)
+            self.assertEqual(path.read_bytes(), b'local edit')
+
+    def test_download_uses_saved_auth_and_pinned_revision(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            spec = {'repository': 'test/official', 'revision': '0'*40, 'files': {'config.json': {}}}
+            from unittest.mock import Mock
+            download = Mock()
+            with patch.dict('sys.modules', {'huggingface_hub': SimpleNamespace(hf_hub_download=download)}), \
+                 patch.object(fetcher, 'verify_file') as verify, redirect_stdout(io.StringIO()):
+                fetcher.fetch_file(spec, 'config.json', root)
+            download.assert_called_once_with(repo_id='test/official', revision='0'*40, filename='config.json',
+                                             local_dir=root, token=True)
+            verify.assert_called_once_with(root/'config.json', {})
+
+    def test_reference_lock_is_official_revision_and_checksum_pinned(self):
         spec = json.loads((setup_runtime.ROOT/'native/sarashina-reference.json').read_text())
+        self.assertEqual(spec['repository'], 'sbintuitions/sarashina2.2-vision-3b')
         self.assertRegex(spec['revision'], r'^[0-9a-f]{40}$')
-        self.assertEqual(sum(name.endswith('.safetensors') for name in spec['files']), 8)
+        self.assertEqual(sum(name.endswith('.safetensors') for name in spec['files']), 1)
+        self.assertEqual(spec['checkpoint_file'], 'model.safetensors')
         for name, row in spec['files'].items():
             self.assertEqual(Path(name).name, name)
             self.assertRegex(row['sha256'], r'^[0-9a-f]{64}$')
@@ -113,7 +174,7 @@ class SourceBuildTests(unittest.TestCase):
             with patch.object(builder, 'ROOT', root), patch.object(builder, 'download'), \
                  patch.object(builder.subprocess, 'run') as run:
                 source, identity = builder.prepare_source(base=root/'experiment', patch_tool='fixture-patch')
-                self.assertEqual(run.call_count, 3)
+                self.assertEqual(run.call_count, len(builder.PATCHES) + 1)
                 self.assertEqual(run.call_args_list[0].args[0][0], 'fixture-patch')
                 self.assertEqual(json.loads((source/'jev-source.json').read_text())['identity'], identity)
                 run.reset_mock()
@@ -144,13 +205,14 @@ class BackendBuildTests(unittest.TestCase):
                 root = Path(directory)
                 folder = root/'experiment/build-cuda'
                 (folder/'bin').mkdir(parents=True)
-                names = ['llama-server', 'libllama-server-impl.so', 'libmtmd.so', 'libllama.so',
+                names = ['llama-server', 'libllama-server-impl.so', 'libllama-common.so', 'libmtmd.so', 'libllama.so',
                          'libggml.so', 'libggml-base.so', 'libggml-cpu.so', 'test_sarashina_embedding',
                          'libggml-cuda.so', 'test-backend-ops']
                 for name in names:
                     (folder/'bin'/name).write_bytes(b'fixture')
-                with patch('sys.argv', ['build', '--backend', 'cuda', '--cuda-architectures', '89'] + (['--test-fa'] if check else [])), \
-                     patch.object(builder, 'ROOT', root), patch.object(builder, 'BASE', root/'experiment'), \
+                options = ['--base', str(root/'experiment')] if check else []
+                with patch('sys.argv', ['build', '--backend', 'cuda', '--cuda-architectures', '89'] + options + (['--test-fa'] if check else [])), \
+                     patch.object(builder, 'ROOT', root), patch.object(builder, 'BASE', root/('other-base' if check else 'experiment')), \
                      patch.object(builder.sys, 'platform', 'linux'), patch.object(builder.shutil, 'which', side_effect=lambda x: '/tools/'+x), \
                      patch.object(builder, 'prepare_source', return_value=(root/'source', {})), \
                      patch.object(builder.subprocess, 'run') as run, \
@@ -253,6 +315,7 @@ class ExperimentalLaunchTests(unittest.TestCase):
                 (folder/'bin'/name).write_bytes(name.encode())
             (folder/'jev-build.json').write_text(json.dumps({'backend': backend,
                 'fa160_tests': {'passed': 252, 'architecture': 'gfx1201', 'device': 'ROCm0'},
+                'sarashina_preprocessing': ['legacy_pillow', 'sarashina_official_v1'],
                 'runtime_env': {'LD_LIBRARY_PATH': '/fixture/rocm'},
                 'binaries': {name: setup_runtime.sha256(folder/'bin'/name) for name in names}}))
 
@@ -269,6 +332,17 @@ class ExperimentalLaunchTests(unittest.TestCase):
         self.assertEqual(env['GPU_LAYERS'], '0')
         self.assertNotIn('GPU_DEVICE', env)
 
+    def test_custom_release_build_keeps_default_experiment_and_selections(self):
+        release = self.root/'release'
+        (self.base/'build-cpu').rename(release)
+        env = launcher.launch_environment('cpu', 'sarashina', self.projector, False, 'off', 0, build=release)
+        self.assertEqual(env['LLAMA_SERVER'], str(release/'bin/llama-server'))
+        self.assertEqual(self.selection.read_text(), '{"original":true}')
+        self.assertTrue(env['JEV_BACKEND_LOG'].startswith(str(self.base/'external')))
+        self.assertNotEqual(env['SLOT_CACHE_DIR'], str(self.base/'slots'))
+        with self.assertRaisesRegex(RuntimeError, 'backend mismatch'):
+            launcher.launch_environment('cuda', 'sarashina', self.projector, False, 'off', 0, build=release)
+
     def test_modified_binary_or_projector_fails_closed(self):
         binary = self.base/'build-hip/bin/libggml-hip.so'
         binary.write_bytes(b'changed')
@@ -277,6 +351,20 @@ class ExperimentalLaunchTests(unittest.TestCase):
         self.projector.write_bytes(b'changed')
         with self.assertRaisesRegex(RuntimeError, 'Projector/manifest'):
             launcher.launch_environment('cpu', 'sarashina', self.projector, False, 'auto', 128)
+
+    def test_official_projector_requires_implemented_preprocessing_not_gpu_verification(self):
+        path = self.projector.with_suffix('.gguf.json')
+        info = json.loads(path.read_text())
+        info['preprocessing'] = 'sarashina_official_v1'
+        path.write_text(json.dumps(info))
+        env = launcher.launch_environment('cpu', 'sarashina', self.projector, False, 'off', 128)
+        self.assertEqual(env['LFM_MMPROJ'], str(self.projector))
+        path = self.base/'build-cpu/jev-build.json'
+        manifest = json.loads(path.read_text())
+        manifest.pop('sarashina_preprocessing')
+        path.write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(RuntimeError, 'preprocessing'):
+            launcher.launch_environment('cpu', 'sarashina', self.projector, False, 'off', 128)
 
     def test_gpu_device_and_kv_types_are_not_restricted_by_past_checks(self):
         with patch.dict(os.environ, {'GPU_DEVICE': 'ROCm1', 'LLAMA_ARG_CACHE_TYPE_K': 'q8_0'}):

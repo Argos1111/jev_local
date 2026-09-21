@@ -1,0 +1,77 @@
+# Sarashina mmproj — attribution and modification notice
+
+This notice describes the provenance and changes for
+`$filename` (SHA256 `$sha256`).
+It does not replace or modify the accompanying license texts.
+
+## Sarashina2.2 Vision 3B
+
+Copyright (c) 2025 SB Intuitions
+
+Original model: https://huggingface.co/sbintuitions/sarashina2.2-vision-3b
+
+License: MIT. See [LICENSE.sarashina2.2-vision-3b](LICENSE.sarashina2.2-vision-3b).
+The license text was obtained from the official repository at revision
+`46d9cc3929a54f7d2b91ce5668d7a9c5833991ed`.
+
+Actual checkpoint source for this conversion:
+https://huggingface.co/$source_repo/tree/$source_revision
+
+The checkpoint was obtained directly from the official gated repository after
+the user approved access and authenticated locally. The conversion reads the
+single model.safetensors and the official configuration files; it does not use
+a public clone or execute checkpoint-supplied Python. The model/processor code
+is executed only by separately opted-in, hash-checked diagnostics.
+
+## SigLIP image encoder provenance
+
+The official Sarashina model card identifies the image encoder's base model as
+Google SigLIP SO400M patch14-384:
+https://huggingface.co/google/siglip-so400m-patch14-384
+
+The SigLIP model card states Apache-2.0, and the original big_vision repository
+also states that its models are released under Apache-2.0:
+https://github.com/google-research/big_vision/blob/0127fb6b337ee2a27bf4e54dea79cff176527356/README.md#license
+
+See [LICENSE.siglip](LICENSE.siglip) for the complete Apache-2.0 text, obtained
+from that big_vision revision. This identifies the source of the license text,
+not the big_vision revision used to train Sarashina. No separate upstream NOTICE
+file was found in the inspected SigLIP HF file list or that big_vision tree.
+This is a downstream attribution notice, not an upstream NOTICE file.
+
+## Changes made by Jev Local
+
+- Converted the official checkpoint's image encoder, merger and final LayerNorm
+  to GGUF using Jev Local's conversion script; no additional training.
+- Included `mm.post_norm.weight` and `mm.post_norm.bias`, which were missing
+  from the previously distributed projector conversion.
+- Recorded the vision FFN width as 4304 and used the project-specific
+  `sarashina2vl` projector type; the result contains 442 tensors.
+- Recorded `jev.sarashina.preprocess_version=1`, the official image-area limits,
+  and official source/configuration hashes. The matching runtime normalizes
+  before float bicubic resize instead of using the legacy Pillow uint8 path.
+- The GGUF contains F16 multidimensional weights and F32 one-dimensional
+  parameters. The binary's description also identifies the included final
+  LayerNorm and the need for the updated Jev Local runtime.
+
+Conversion code: `scripts/convert_sarashina_mmproj.py` in
+https://github.com/Argos1111/jev_local
+
+Runtime sources must include `native/sarashina-official-preprocess-b11042.patch`.
+The previous cf973239 release does not implement this preprocessing version.
+The publisher should record the updated source commit before public release.
+
+The required runtime separately corrects image boundaries, preprocessing and
+normalization. Its source/patches are available in Jev Local; no runtime binary
+or language-model GGUF is included in this projector-only distribution.
+
+mradermacher is the distributor of the compatible language-model GGUFs and the
+original projector used for comparison. The corrected projector here was
+converted directly from the official checkpoint, not from mradermacher's
+projector file. The existing mradermacher language GGUFs are unchanged; observed
+tokenization differences from the official tokenizer remain a separate issue.
+
+This is an independent, unofficial derivative. No endorsement by SB Intuitions,
+Google or the llama.cpp project is implied. The model's known limitations and
+validation scope are documented in the
+[Jev Local Sarashina notes](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md).

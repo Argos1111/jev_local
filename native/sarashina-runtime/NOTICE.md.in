@@ -1,0 +1,55 @@
+# Runtime attribution and modification notice
+
+This is the Jev Local `$backend` build of llama.cpp b11042, not an official
+llama.cpp, SB Intuitions, AMD or NVIDIA release. No endorsement is implied.
+
+## Source and changes
+
+Upstream: https://github.com/ggml-org/llama.cpp/tree/b11042
+
+Copyright (c) 2023-2026 The ggml authors. The complete upstream MIT license is
+in `licenses/LICENSE.llama.cpp`.
+
+Jev Local changes are the three patches and image-cache header in
+`source-inputs/native/`: Sarashina-specific projector/final LayerNorm, image
+boundaries, official normalized-float bicubic preprocessing v1, image embedding
+cache, and CUDA/HIP FA160 dispatch with optional numerical tests. Unversioned
+legacy projectors retain legacy preprocessing with a warning.
+
+Exact source archive and patch hashes are in `jev-build.json`. The archive
+contains the exact build inputs, but does not contain the upstream source tree,
+model weights, Python environments, CUDA/ROCm shared libraries or GPU drivers.
+`source-inputs/scripts/build_sarashina.py` fetches the checksum-pinned upstream
+source when rebuilding. No project-wide license for Jev Local's independent
+additions is selected by these third-party notices.
+
+## Embedded third-party components
+
+Full texts and attribution are in `licenses/`:
+
+- cpp-httplib (MIT, yhirose), nlohmann/json (MIT, Niels Lohmann), including
+  Hedley (Evan Nemerson), Grisu2 (Florian Loitsch), and UTF-8 decoding
+  (Bjoern Hoehrmann). The C++11-only Abseil fallback is not used in this C++17 build.
+- xxHash (BSD-2-Clause, Yann Collet), rotate-bits (MIT, William Casarin),
+  SHA-1 (Steve Reid, public domain), SHA-256 (public domain).
+- stb_image (MIT or Unlicense, Sean Barrett), miniaudio (MIT-0 or Unlicense,
+  David Reid), subprocess and base64 (Unlicense). Both upstream alternatives
+  for stb_image and miniaudio are retained verbatim.
+- tinyBLAS/llamafile (MIT, Mozilla Foundation) and YaRN-derived RoPE code
+  (MIT, Jeffrey Quesnelle and Bowen Peng).
+- GCC headers/generated runtime portions: GCC copyright, GPLv3 and GCC
+  Runtime Library Exception 3.1. GCC/libstdc++ shared libraries are external.
+
+HIP builds additionally include HIP/header and AMD device-library notices,
+hipBLAS/rocBLAS notices and LLVM's Apache-2.0 with LLVM exceptions and legacy
+NCSA texts. These do not mean the ROCm SDK or compiler is bundled.
+
+CUDA builds additionally include CUDA Toolkit 13.2's EULA/third-party notices
+and CCCL 3.2.0 licenses (libcu++, CUB and Thrust). CUDA device-runtime portions
+are linked into the CUDA plugin; CUDA Runtime/cuBLAS shared libraries and the
+NVIDIA driver are external. NVIDIA portions remain under their respective
+terms; the upstream MIT license does not relicense them.
+
+Web UI, prebuilt UI, OpenSSL, OpenMP and LLGuidance are disabled. Changing
+these options or bundling GPU/OS libraries requires a new dependency and
+notice inventory.

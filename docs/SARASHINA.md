@@ -3,10 +3,10 @@
 [SB IntuitionsのSarashina2.2 Vision 3B](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)を、[mradermacher配布のGGUF](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF)で実行します。LFMと同じllama.cpp・先頭回答トークンのlogprob・`/v1/systemone`を使い、追加学習はしません。
 
 - **通常の`run.sh --model sarashina` / `sarashina-q8`は文章・JSON専用**のままです。LFMの既定設定や保存済みの選択は変更しません。
-- **画像経路を修正した実験ランタイム**を別に用意しました。元解像度の文書画像で12問中12問が一致し、画像エンコード再利用とGPU Flash Attentionの速度改善も実測しています。ただし単色・複数画像・候補順の問題が残り、一般的な画像対応の合格とはしていません。
-- 参照用の公式checkpoint / AutoProcessorはHTTP 401で取得できず、**公開クローン＋再構成した前処理との照合**です。公式版との完全な同等性は未検証です。
+- **公式checkpoint由来の修正版mmprojと画像ランタイム**を別に用意しました。元解像度の文書画像で12問中12問が一致し、画像エンコード再利用とGPU Flash Attentionの速度改善も実測しています。ただし単色・複数画像・候補順の問題が残り、一般的な画像対応の合格とはしていません。
+- 2026-09-21、利用者によるHFのアクセス承認・ログイン後に**公式checkpointとAutoProcessorを取得し、別ファイルへ再変換**しました。旧クローンと全624 tensorは同一でしたが、前処理の差を追加修正しています。既存の言語GGUFには公式tokenizerとの分割差があり、推論全体の完全な同等性は主張しません。
 
-[画像修正と検証](#画像経路の修正実験機能) / [GPU FAの実測](#実験版gpu-flash-attention) / [ビルドと起動](#実験版のビルドと起動)
+[画像修正と検証](#画像経路の修正実験機能) / [GPU FAの実測](#実験版gpu-flash-attention) / [ビルドと起動](#実験版のビルドと起動) / [配布用Pre-releaseの利用](SARASHINA_RELEASE.md)
 
 ## 量子化の選択
 
@@ -17,7 +17,8 @@
 | `sarashina2.2-vision-3b.Q4_K_M.gguf` | 2.066 | 標準の比較用。`--model sarashina` |
 | `sarashina2.2-vision-3b.Q8_0.gguf` | 3.568 | 量子化の対照用。`--model sarashina-q8` |
 | `sarashina2.2-vision-3b.mmproj-f16.gguf` | 0.893 | 元の公開projector。調査用に保持、自動取得・有効化しない |
-| `sarashina2.2-vision-3b.mmproj-jev-f16.gguf` | 0.893 | 修正版。明示的に変換し、実験ランタイムだけで使用 |
+| `sarashina2.2-vision-3b.mmproj-jev-f16.gguf` | 0.893 | 旧クローン由来の修正版。履歴・比較用に保持 |
+| `sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf` | 0.893 | 公式由来の新版。明示的に変換し、新しい実験ランタイムで使用 |
 
 Q4はQ8よりファイル容量が約42%小さくなります。これらは重みのサイズで、VRAMの実測値ではありません。推論にはKVキャッシュ・計算用バッファも必要です。実験画像構成はQ4本体＋修正版mmprojで約2.96 GBです。
 
@@ -149,27 +150,35 @@ GGUFとロードログで確認した言語モデルの構造:
 |---|---|
 | merger出力後の正規化 | 欠けていた2560次元の`norm.weight` / `norm.bias`を収録し、LayerNorm（epsilon `1e-5`）を適用 |
 | 画像境界 | Qwenの文字列ではなく`<\|prefix\|>` / `<\|suffix\|>`。token ID 102397 / 102398を検査 |
-| 前処理 | bicubic、paddingなし、mean/std各0.5、14px patch・2×2 merge、4〜1280画像トークン |
+| 前処理 | RGBをrescale・mean/std各0.5で正規化**してから**float bicubic（係数−0.75、`align_corners=False`、antialiasなし）。padding・uint8への再丸め・値のclampなし |
+| 画像面積 | 公式設定の3136〜1,016,064 pixels（4〜1296画像トークン相当）。14px patch・2×2 merge |
 | リサイズ境界 | Pythonと同じties-to-evenの丸め。28の倍数の中間値・極小画像・面積上限も照合 |
 | 活性化 | encoderはtanh GELU、mergerはerf GELU |
 | メタデータ | vision FFN幅を2560ではなく4304として記録 |
 
 私有projector種別`sarashina2vl`に分離し、Qwen / LFMのグラフを変更しません。語彙なしのメモリ見積りでも安全に動くよう境界token検査を条件付きにしています。converterは全333入力tensorの名前・形状を検査して442出力tensorを生成し、チェックポイント付属Pythonを実行しません。
 
-公開クローン由来の再変換結果を元のmmprojと比較すると、**共通440 tensorは型・形状・値がすべて一致**し、追加分はpost-merger LayerNormの2 tensorでした。これはvision重みについての確認であり、公式checkpoint全体との同等性を証明しません。修正版F16は892,579,328 bytes、SHA256 `094e86c9c7d54361a5c19384c60f379064346396f64fcd77c52e000942eb7843`。別ファイルへの再変換でも同じSHA256を確認しました。
+新しい`native/sarashina-official-preprocess-b11042.patch`は公式の`F.interpolate(mode="bicubic")`に合わせます。旧版の「Pillowでuint8をリサイズしてから正規化」とは異なります。公式JSONにある`resample: 2`は公式Pythonでは参照されず、実際はfloat bicubicです。旧再構成版の上限1280も公式設定の1296へ変更しました。
 
-### 参照との数値照合
+公式版は892,579,936 bytes、SHA256 **`7c170758eabf18eaf60d6c584d27b9955c3fdd595975d21fc4e7b9c93ca1b321`**。別ファイルへの再変換でもバイト単位の一致を確認しました。`jev.sarashina.preprocess_version=1`と出典をGGUFへ記録します。旧ランタイムでは新版の前処理を扱えないため**再ビルドが必要**です。新ランタイムは旧mmprojも旧前処理＋警告で実行できます。
 
-参照は`AnalyticPudding/sarashina2.2-vision-3b-clone`、revision `05710ee40ae41ff322da991298ab893cf54ce110`です。全8 shard・config・モデル実装のSHA256を[`native/sarashina-reference.json`](../native/sarashina-reference.json)に固定しています。公式配布元の認証済みコピーではありません。公式AutoProcessorの設定ファイルを取得できないため、Qwen2VLImageProcessorの設定を再構成しています。
+旧クローン（`AnalyticPudding/sarashina2.2-vision-3b-clone`、revision `05710ee40ae41ff322da991298ab893cf54ce110`）との比較では、**公式checkpointの全624 tensorが名前・型・形状・データのSHA256まで一致**しました。モデル/configuration Pythonも同一で、configの差はdtypeの表記とTransformers版の記録です。変換入力は以後すべて公式版です。
 
-- **前処理のみ**: 単色・図形・勾配・縮小文書に加え、丸め境界・極小・縦横比200・面積上限・1190×665相当を含む12ケースで、出力形状と正規化画素が参照に一致（最大絶対差0）。修正前は238×182が252×196へ丸められ、参照の224×168と異なることを再現しました。
-- **encoder全体**: CPU float32参照に対し、5画像（単色2・図形・勾配・縮小文書）の最終2560次元embeddingを照合。F16 projector＋ROCm FA ONでcosine **0.999720以上**、RMSE **0.00145〜0.02379**。検査基準はcosine ≥0.999、RMSE ≤0.04、全値finite。CPU実行も同じ基準を通過しました。
-- **完全一致ではありません**: ROCmの最大要素差は勾配画像で約0.439。F32 projectorによる診断でもggmlのConv2D/im2col入力のF16丸め等の数値差が残ります。参照入力だけをhalfへ丸める診断では勾配のRMSEが0.0260→0.00304へ縮まりましたが、この診断を本来のfloat32参照との一致としては扱いません。
-- **生成照合**: clone bf16 / Transformers 4.57.1とnative Q4で8/8、Q8で2画像順序テストを含む10/10の生成文が一致（EOSを除く）。入力token数も一致。ただしこれは少数ケースでの実装照合で、正答率ではありません。tokenizerはnativeのtoken IDを共用して画像経路を切り分けています。
+新旧修正版mmprojの**442 tensorもすべて同一**で、ファイルhashの違いは出典・前処理メタデータです。旧版は892,579,328 bytes、SHA256 `094e86c9c7d54361a5c19384c60f379064346396f64fcd77c52e000942eb7843`のまま保存しました。mradermacher元mmprojとの共通440 tensorも一致し、追加分はpost-merger LayerNormの2 tensorです。言語Q4/Q8 GGUFはmradermacher配布のまま変更していません。
+
+### 公式参照との数値照合
+
+参照は**`sbintuitions/sarashina2.2-vision-3b`、revision `46d9cc3929a54f7d2b91ce5668d7a9c5833991ed`**。全重みは8 shardではなく7,603,021,272 bytesの`model.safetensors`一つです。config・processor・tokenizer・Python・LICENSEの15ファイルを取得し、revision・サイズ・SHA256を[`native/sarashina-reference.json`](../native/sarashina-reference.json)に固定しました。取得・変換ではcheckpoint付属コードを実行しません。診断時だけ、コードをレビューして明示許可後にローカルで実行します。
+
+- **前処理15/15**: 単色・図形・勾配・縮小文書・丸め境界・極小・縦横比200・面積上限・1190×665相当・checkerboard・乱数画像を公式AutoProcessorと比較。形状一致、正規化画素の最大絶対差 **7.16e-7以下**（基準1e-6）。1008×1008は1296 tokens。旧版の「12ケース画素差0」は再構成したQwen処理との結果であり、公式処理との一致ではありませんでした。
+- **encoder 5/5、CPUとHIP**: 公式重みのCPU float32式を参照。F16 projector＋R9700 / FA ONでcosine **0.999747以上**、RMSE **0.00145〜0.02259**。CPU nativeもcosine 0.999805以上、RMSE 0.000603〜0.01986。合格基準は従来と同じcosine ≥0.999 / RMSE ≤0.04 / 全値finiteです。
+- **bitwise一致ではありません**: HIPの最大要素差は約0.3575、CPUは約0.3907。GGUF精度・ggmlのConv2D/im2col入力のF16丸めなどの差が残ります。`--reference-half-pixels`は切り分け専用で、本来のfloat32参照とは区別します。
+- **生成文**: 公式bf16 / Transformers 4.57.1＋公式AutoProcessorに対し、native **Q4は11/12、Q8は12/12**一致（EOSを除く）。図形・単色・非整倍画像・2画像・元解像度文書を含む12例、最大80生成tokenです。Q4の文書回答は表現が異なりましたが、タイトル・検知日は読めています。正答率や全出力の一致保証ではありません。
+- **tokenizerの未解決差**: 公式tokenizerとnativeから独立に得た入力ID列が一致したのは**1/12**、入力token数は10/12でした（文書は一致、図形2例はnativeが1 token多い）。例: 公式の「答えて／ください」に対しnativeは「答え／てください」。slow/fast公式tokenizerの両方で再現します。既存言語GGUFの`tokenizer.ggml.model=llama`と公式Unigram経路の違いを確認しましたが、原因確定・言語GGUFの修正は未実施です。mmprojとは別の検討事項です。参照生成ツールはこの不一致を隠さず**非ゼロ終了**します。旧版はnativeのIDを共用していたため、この差を検査できていませんでした。
 
 ### 画像の読解結果と残る制約
 
-R9700、修正版mmproj、HIP実験ビルド、FA auto（GPUで有効）、画像キャッシュ128 MiB、4 slots・合計context 8192、既存`/v1/systemone`で確認しました。
+R9700、公式由来mmproj、新版HIPビルド、FA auto（有効）、画像キャッシュ128 MiB、**4 slots・合計context 32768**、既存`/v1/systemone`で再確認しました。
 
 | 入力・条件 | Q4 | Q8 |
 |---|---:|---:|
@@ -177,29 +186,29 @@ R9700、修正版mmproj、HIP実験ビルド、FA auto（GPUで有効）、画�
 | 別画像3件の同時送信 | 3/3 | 3/3 |
 | GSS元画像1190×665、12問 | 12/12 | 12/12 |
 | 同上、画像なし対照 | 8/12 | 8/12 |
-| 元画像、Choice順反転 | 10/12 | 10/12 |
+| 元画像、Choice順反転 | 10/12 | 11/12 |
 | 反転、画像なし対照 | 3/12 | 3/12 |
-| GSS縮小画像512×286、元順12問 | 9/12 | 9/12 |
+| GSS縮小画像512×286、元順12問 | 10/12 | 10/12 |
 | 2枚目の四角形の色、画像順2通り | **1/2** | **1/2** |
 
-GSSは既存の12問を各条件1回ずつ採点した1資料の診断です。元のChoiceの正解は先頭に寄っており、12/12だけでは一般的な読解能力を示せません。順反転では件数内訳・赤破線の意味を誤答。縮小では検知日・一般の方の個人情報・アカウント停止の3問を誤答しました。**LFM用の512px推奨をSarashinaの文書読解へ無条件に転用しないでください。** Q8の自由生成では文書タイトル・検知日「令和8年6月25日」・件数「約24.6万件」を読めました。
+GSSは既存の12問を各条件1回ずつ採点した1資料の診断です。元のChoiceの正解は先頭に寄っており、12/12だけでは一般的な読解能力を示せません。旧前処理では順反転10/12・縮小9/12でしたが、新旧1回ずつの差を一般的な精度改善とはしません。**LFM用の512px推奨をSarashinaの文書読解へ無条件に転用しないでください。** Q4/Q8と公式参照の自由生成では文書タイトル・検知日「令和8年6月25日」を読めました。
 
-単色5色をすべて「白」と答える問題と、blue/red順の2枚目を「青」と答える問題は**公開クローンの参照生成でも同じ**でした。したがって単なるQ4劣化やnativeキャッシュの混同だけでは説明できませんが、公式版にも同じ欠点があるとは断定できません。`tools.verify_sarashina_vision`はこれらを記録し、全体としては**非ゼロ終了（不合格）**にします。単画像図形の成功だけで失敗を隠しません。画像と長いテキストStateの同時送信・slot保存/復元もQ4/Q8で確認しています。
+単色5色をすべて「白」と答える問題と、blue/red順の2枚目を「青」と答える問題は、今回は**公式checkpoint＋公式AutoProcessorでも再現**しました。クローン固有の問題とは考えられませんが、少数入力・指定プロンプトでの観測です。`tools.verify_sarashina_vision`はこれらを記録し、全体としては**非ゼロ終了（不合格）**にします。単画像図形の成功だけで失敗を隠しません。画像と長いテキストStateの同時送信・slot保存/復元もQ4/Q8で再確認しています。
 
 ### 画像エンコード再利用の速度
 
 画像encoder＋projector出力だけを、モデルごとのLRU（128 MiB）で再利用します。キーは正規化画素全体・形状・付加情報。decoderのKV / Stateは共有せず、画像前処理と各質問のprefillは毎回行います。`X-Jev-Local-State-Cache: off-images`は変わりません。実装は既存の[`vision_embedding_cache.h`](../native/vision_embedding_cache.h)を利用しますが、LFM用ビルドとは別です。
 
-最終版での同一バイナリOFF→ON→ON→OFF比較。GSS **1190×665px**（前処理後1176×672、1008画像tokens）、4 Choice、4 workers、context 32768、FA ON。各ブロック初回1回＋5回、下表の再送値は各mode 10回のHTTP中央値です。モデルロード・ファイル読み込み・base64変換は除外します。
+公式前処理版での同一バイナリOFF→ON→ON→OFF比較。GSS **1190×665px**（前処理後1176×672、1008画像tokens）、4 Choice、4 workers、context 32768、FA ON。各ブロック初回1回＋5回、下表の再送値は各mode 10回のHTTP中央値です。モデルロード・ファイル読み込み・base64変換は除外します。
 
 | 量子化 | 再利用なし | 同じ画像を再送 | 倍率 | ON初回（各1 miss＋3 hits） |
 |---|---:|---:|---:|---:|
-| Q4_K_M | 2117 ms | **657 ms** | **3.22倍** | 1406〜1422 ms |
-| Q8_0 | 2004 ms | **545 ms** | **3.67倍** | 1297〜1305 ms |
+| Q4_K_M | 2146 ms | **688 ms** | **3.12倍** | 1443〜1444 ms |
+| Q8_0 | 2053 ms | **600 ms** | **3.42倍** | 1313〜1314 ms |
 
-4問の選択は全測定で一致。全応答を先頭の応答と比較した候補確率差の最大はQ4 0.07045、Q8 0.01927で、キャッシュOFFでも実行バッチによる揺れがあります。**Q4を1 workerで比較すると全候補確率差0**、2244→784 ms（2.86倍）でした。キャッシュの意味的な同一性確認と4並列の速度測定を分けています。
+4問の選択は全測定で一致。全応答を先頭の応答と比較した候補確率差の最大はQ4 0.10416、Q8 0.02801で、キャッシュOFFでも実行バッチによる揺れがあります。**Q4を1 workerで比較すると全候補確率差0**、2436→968 ms（2.52倍、各mode 4回）でした。キャッシュの意味的な同一性確認と4並列の速度測定を分けています。
 
-これは1資料の再利用による改善で、新しい画像1枚のエンコードを3倍速くしたという意味ではありません。12問の精度診断時間と4問の再送時間も区別してください。リサイズ境界修正前の記録はQ4 2262→707 ms、Q8 2140→609 msで、最終版とは画像token数が異なるため上表へ混ぜていません。
+これは1資料の再利用による改善で、新しい画像1枚のエンコードを3倍速くしたという意味ではありません。12問の精度診断時間と4問の再送時間も区別してください。旧前処理版の記録はQ4 2117→657 ms、Q8 2004→545 msです。前処理が変わったため新版の再測定値を示しており、厳密な新旧性能比較ではありません。
 
 ## 実験版GPU Flash Attention
 
@@ -242,7 +251,7 @@ GPU型番・検査合格を起動条件にしない版で、次を確認しま�
 
 ### R9700でのSystemOne API再評価
 
-前掲の全test / heldoutと同じツール・件数・4同時リクエストで実験HIPビルドを再評価しました。mmprojはロード済みですが、全入力は画像なし。FA autoで有効、エラーは全タスク0件。各cellは**正解率 / HTTP p50 ms**です。
+前掲の全test / heldoutと同じツール・件数・4同時リクエストで実験HIPビルドを再評価しました。**この表は公式checkpoint取得前の記録です。** 言語GGUF・FA160パッチは新版でも変更していませんが、全testの再走査は行っていません。mmprojはロード済みですが、全入力は画像なし。FA autoで有効、エラーは全タスク0件。各cellは**正解率 / HTTP p50 ms**です。
 
 | モデル | JNLI | JComQA | livedoor | JMMLU | 顧客対応16例 |
 |---|---:|---:|---:|---:|---:|
@@ -257,14 +266,17 @@ GPU型番・検査合格を起動条件にしない版で、次を確認しま�
 
 ### 1. 参照ファイルとGGUFを明示的に取得
 
-モデルの利用条件と公開クローンの注意事項を確認してください。このコマンドはモデルの重み（`--full`では比較用Pythonファイルも取得）をダウンロードし、`.cache/runtime/selected.json`・`model.json`を変更しません。
+モデルの利用条件を公式HFページで確認してアクセス承認を受け、HF CLIでログインしてください（[隔離したCLIの導入](SARASHINA_UPLOAD.md#3-hf-cliを隔離して用意しログインする)）。スクリプトが代わりに同意・申請することはありません。
 
 ```bash
-python3 scripts/fetch_sarashina_reference.py --accept-public-clone --model sarashina
+.venv-hf/bin/python scripts/fetch_sarashina_reference.py --model sarashina
 # Q8も必要なら --model sarashina-q8 で再実行
+# 公式AutoProcessor / 参照生成まで比較する場合は --full を追加
 ```
 
-通常はconfig＋visionを含む先頭shard（約0.892 GB）だけを取得。生成比較も行う場合は`--full`を付けます（全8 shard等で約7.60 GB）。実行コードはダウンロードするだけでは走りません。通常の`setup.sh --model ... --model-only`と異なりモデル選択も保存しません。
+`.cache/sarashina-official/`へ公式のconfig・前処理設定・**単一の全checkpoint（約7.60 GB）**を取得します。画像重みだけのshardは公式版にはありません。`--full`はtokenizer・Python・LICENSE等の小ファイルも取得します。CLIの保存済み認証を使い、URLやコードへtokenを埋め込みません。アクセス失敗時に公開クローンへfallbackせず、既存入力のhash不一致も上書きしません。
+
+`.cache/runtime/selected.json`・`model.json`は変更しません。言語GGUFは引き続きmradermacherの固定revisionから取得します。
 
 ### 2. 別venvでprojectorを変換
 
@@ -276,14 +288,14 @@ python3 -m venv .venv-sarashina
 .venv-sarashina/bin/python -m pip install -r scripts/requirements-sarashina.txt
 
 .venv-sarashina/bin/python scripts/convert_sarashina_mmproj.py \
-  --config .cache/sarashina-reference/config.json \
-  --shard .cache/sarashina-reference/model-00001-of-00008.safetensors \
-  --output models/sarashina2.2-vision-3b.mmproj-jev-f16.gguf
+  --config .cache/sarashina-official/config.json \
+  --checkpoint .cache/sarashina-official/model.safetensors \
+  --output models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf
 ```
 
 参照モデルの生成までGPUで比較する場合は、CPU版の代わりにそのGPUに対応するtorchを導入してください。R9700測定ではAMD配布の`torch[device-gfx1201]==2.13.0+rocm10.0.0`を使用しました。CUDAのllama.cppを動かすためにROCm版torchを入れる必要はありません。
 
-既存の出力・manifest・partialファイルがある場合は上書きせず停止します。生成された`.gguf.json`には入力/出力hashとtensor数を保存します。元の公開mmprojは置換しません。F32診断用には別ファイルへ`--outtype f32`で変換します。
+既存の出力・manifest・partialファイルがある場合は上書きせず停止します。configの隣の`preprocessor_config.json`も読み、公式の入力サイズ・hashを検証します。生成された`.gguf.json`には公式repo/revision・入力/出力hash・前処理版・tensor数を保存します。元の公開mmproj・旧クローン由来の修正版は置換しません。F32診断用には別ファイルへ`--outtype f32`で変換します。
 
 ### 3. 隔離したランタイムをビルド
 
@@ -350,7 +362,9 @@ PY
 python3 scripts/build_sarashina.py --backend stock-rocm --jobs 8
 ```
 
-成果物は`.cache/sarashina-runtime/`以下に隔離します。ソースarchiveのhash、適用patchのhash、変更/生成ソースのhash、CMake設定、任意カーネル検査の状態、実行ファイル/共有ライブラリのhash、指定した実行環境をmanifestへ保存します。ソースやpatchを変更した場合はローカル編集を上書きせず停止するので、旧source/buildを別の場所へ保管して再ビルドしてください（旧版から更新する場合も同様）。stock-rocmとCPUもビルド・画像推論を確認しましたが、前掲の高速化の測定対象はhipです。
+成果物は新しい**`.cache/sarashina-official-runtime/`**以下に隔離し、以前の`.cache/sarashina-runtime/`や`.cache/sarashina-portability/`は残します。ソースarchiveのhash、適用patchのhash、変更/生成ソースのhash、CMake設定、任意カーネル検査の状態、実行ファイル/共有ライブラリのhash、指定した実行環境をmanifestへ保存します。ソースやpatchを変更した場合はローカル編集を上書きせず停止するので、その実験のsource/buildを別の場所へ保管して再ビルドしてください。
+
+公式前処理追加後にCPU・HIP（gfx1100/gfx1201）・CUDA（sm_89）を再ビルドしました。CPU/HIPのembedding照合、R9700 / 7900 XTXのFA160各252/252を確認。CUDAビルドのCPU前処理検査も15/15通過しましたが、**NVIDIA GPU実行は依然未検証**です。stock-rocmは旧版で画像推論を確認した構成で、今回の再測定対象ではありません。
 
 ### 4. 明示的に起動
 
@@ -366,7 +380,7 @@ python3 scripts/run_sarashina.py --backend cuda --device CUDA0 --port 18080 --ba
 # 切り分け: --flash-attn off --image-cache-mib 0
 ```
 
-backend省略時はhip、Q4、FA auto、画像キャッシュ128 MiB、4 slots・context 8192。manifestのhashを検証し、明示した環境変数がなければビルド時のlibrary/Tensileパスを使います。`--device`、`GPU_DEVICE`、backend別の既定（CUDA0 / ROCm0）の順でGPUを選びます。**検査時と異なるGPUでも起動を禁止しません**。stock-rocmでFA ONを指定した場合も、CPU fallbackの警告を表示して続行します。context拡大は`CTX_SIZE=32768`で指定可能です。
+backend省略時はhip、Q4、**公式由来mmproj**、FA auto、画像キャッシュ128 MiB、4 slots・context 8192。manifestのhashと前処理の対応版を検証し、明示した環境変数がなければビルド時のlibrary/Tensileパスを使います。`--device`、`GPU_DEVICE`、backend別の既定（CUDA0 / ROCm0）の順でGPUを選びます。**検査時と異なるGPUでも起動を禁止しません**。stock-rocmでFA ONを指定した場合も、CPU fallbackの警告を表示して続行します。context拡大は`CTX_SIZE=32768`で指定可能です。
 
 ```bash
 # 別ターミナル。元画像を使う例
@@ -374,7 +388,7 @@ python3 systemone_client.py --url http://127.0.0.1:18080 \
   --input examples/vision_gss_4.json --image sample_pics/20260911_image.png
 ```
 
-通常の設定とログを上書きせず、backendログは`.cache/sarashina-runtime/llama-server.log`、一時slotは同フォルダ内の`slots/`です。同じ実験ランチャーを複数同時起動せず、停止してから切り替えます。Ctrl+CでAPIとbackendの両方を停止。通常のLFM / ModernBERTへ戻すにはそのランチャーを通常どおり起動します。
+通常の設定とログを上書きせず、backendログは`.cache/sarashina-official-runtime/llama-server.log`、一時slotは同フォルダ内の`slots/`です。同じ実験ランチャーを複数同時起動せず、停止してから切り替えます。Ctrl+CでAPIとbackendの両方を停止。通常のLFM / ModernBERTへ戻すにはそのランチャーを通常どおり起動します。
 
 ### GPU数値検査とフィードバック
 
@@ -388,7 +402,7 @@ python3 -m tools.verify_sarashina_fa --backend cuda --device CUDA0 \
 
 `verification.json`・`fa160-test.log`・デバイス/バージョン情報を保存します。0件・CPUだけ・未対応・失敗を合格扱いにはせず、専用検査コマンドは非ゼロ終了しますが、ランチャーの使用には影響しません。検査結果はそのGPU・ドライバー・ビルド・F16 KVについてのもので、モデル精度や速度の保証ではありません。
 
-フィードバックにはGPU名、OS、ドライバー/CUDAまたはROCmのバージョン、ビルドコマンド、`.cache/sarashina-runtime/build-cuda/jev-build.json`（HIPなら`build-hip`）、検査結果、下記OFF/ON計測の`measurement.json`とbackendログを添えてください。ローカル絶対パスや入力内容を含むことがあるので公開前に確認してください。**「FA enabled」だけではGPU実行を証明しません**。graph splits、CPU fallback警告、デバイスと数値検査を合わせて確認します。
+フィードバックにはGPU名、OS、ドライバー/CUDAまたはROCmのバージョン、ビルドコマンド、`.cache/sarashina-official-runtime/build-cuda/jev-build.json`（HIPなら`build-hip`）、検査結果、下記OFF/ON計測の`measurement.json`とbackendログを添えてください。ローカル絶対パスや入力内容を含むことがあるので公開前に確認してください。**「FA enabled」だけではGPU実行を証明しません**。graph splits、CPU fallback警告、デバイスと数値検査を合わせて確認します。
 
 ### 再検証コマンド
 
@@ -399,36 +413,42 @@ python3 -m tools.verify_api --url http://127.0.0.1:18080
 .venv-sarashina/bin/python -m tools.verify_sarashina_vision \
   --url http://127.0.0.1:18080 --output results/sarashina-vision.json
 
+# モデル/processorのレビュー後。検査用小ファイルをまだ取得していなければ先に実行
+.venv-hf/bin/python scripts/fetch_sarashina_reference.py --full
+
 # CUDA版のencoderをTorch CPU float32と比較（HIP版ならnativeパスとdeviceを変更）
 .venv-sarashina/bin/python -m tools.verify_sarashina_embeddings \
-  --native .cache/sarashina-runtime/build-cuda/bin/test_sarashina_embedding --device CUDA0 \
+  --allow-reviewed-code \
+  --native .cache/sarashina-official-runtime/build-cuda/bin/test_sarashina_embedding --device CUDA0 \
   --flash-attn 1 --output results/sarashina-embeddings
-# リサイズ境界・正規化だけを比較（11合成ケース＋縮小文書があれば1ケース）
+# リサイズ境界・正規化だけを比較（14合成ケース＋縮小文書があれば1ケース）
 .venv-sarashina/bin/python -m tools.verify_sarashina_embeddings \
-  --native .cache/sarashina-runtime/build-cuda/bin/test_sarashina_embedding --device CPU \
+  --allow-reviewed-code \
+  --native .cache/sarashina-official-runtime/build-cuda/bin/test_sarashina_embedding --device CPU \
   --pixels-only --output results/sarashina-pixels
 
-# --fullで取得後、ローカルPython実装を読んでから明示的に実行許可
+# --fullで取得後、ローカルモデル/processor Pythonを読んでから明示的に実行許可
+# 現行言語GGUFと公式tokenizerの分割差を検出し、非ゼロ終了します
 .venv-sarashina/bin/python -m tools.verify_sarashina_reference \
   --allow-reviewed-code --multi-image --url http://127.0.0.1:18097 \
   --output results/sarashina-reference.json
 ```
 
-参照生成はhash確認済みのローカルモデル実装を`trust_remote_code=True, local_files_only=True`で実行します。CPU版はencoder照合用、生成比較ツールはGPUメモリに全checkpointをロードします。検証の通過基準・照合範囲は前述のとおりです。
+どちらの参照ツールも公式ファイルのhash確認後、ローカルAutoProcessorを`trust_remote_code=True, local_files_only=True, use_fast=False`で実行します。**embedding/画素検査にも`--allow-reviewed-code`が必要**です。生成比較はさらにモデルPythonを実行し、既定で`cuda:0`へ全checkpointをロードします（`--torch-device`で変更）。`HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1`も指定できます。生成比較は独立した公式token IDを使用し、不一致を終了コードとJSONへ記録します。生成文の一致件数はtokenizer検査・正答率と別に報告します。
 
 速度ツールは自分でbackendを起動/停止します。ほかの推論を停止してGPUを空けてください。隣接する`jev-build.json`からlibrary/Tensileパスを読み、明示した環境変数を優先します。既存の出力ディレクトリを再使用すると測定ログを上書きするため、比較ごとに別名を指定します。下記はCUDAの例で、HIPの場合は`build-hip`と`--device ROCm0`（またはROCm1）へ変更します。
 
 ```bash
 # FA単独。モデルのみで実行可能。--dataset-casesを省略すれば追加データ取得なし
 python3 -m tools.benchmark_sarashina_fa \
-  --server .cache/sarashina-runtime/build-cuda/bin/llama-server \
+  --server .cache/sarashina-official-runtime/build-cuda/bin/llama-server \
   --device CUDA0 --model models/sarashina2.2-vision-3b.Q4_K_M.gguf \
   --dataset-cases --output results/sarashina-rtx4090-fa
 
 # 画像キャッシュ単独。--workers 1で確率の逐次回帰確認
 python3 -m tools.benchmark_image_cache \
-  --server .cache/sarashina-runtime/build-cuda/bin/llama-server --device CUDA0 \
-  --model sarashina --mmproj models/sarashina2.2-vision-3b.mmproj-jev-f16.gguf \
+  --server .cache/sarashina-official-runtime/build-cuda/bin/llama-server --device CUDA0 \
+  --model sarashina --mmproj models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf \
   --flash-attn on --image sample_pics/20260911_image.png \
   --output results/sarashina-image-cache
 ```
@@ -457,6 +477,8 @@ python3 -m tools.evaluate \
 
 公式ランタイムの生ログ・応答・summaryは`results/sarashina-comparison/`、CPU fallbackの切り分けは`results/sarashina-flash-attn/`、修正後の検証は`results/sarashina-repair/`です（すべてGit対象外）。最終版の主な記録は`final-cache-{q4,q8}/`、`fa160-final-{q4,q8}/`、`final-embeddings/`、`pixels-boundaries/`、`final-{q4,q8}-gss-*.json`、`q{4,8}-fa-{jglue,heldout}/`、`regression-*.log`です。初期の失敗・中間ビルドの記録も消さずに残しています。配布されるのは本ページの要約と再実行ツールです。評価条件は[JGLUE](JGLUE.md)・[評価ツール](EVALUATION.md)も参照してください。
 
-単体テスト71件、R9700 / 7900 XTXでFAカーネル各252件を通過。LFM text / VL・ModernBERT・Sarashina Q4 / Q8のAPI契約、LFMの画像＋text cache、既存LFM画像キャッシュ計測ツールを再確認しました。通常の保存済みランタイム選択とモデル選択は維持しています。
+公式版への移行記録は`results/sarashina-official/`と`.cache/sarashina-official-review/`です。`pixels-final/`、`embeddings-{cpu,hip}/`、`reference-q{4,8}.json`、`q{4,8}-gss-*.json`、`cache-q4/`、`cache-q8-final/`、`cache-q4-serial/`に数値・全応答・hashを保存。Q8キャッシュの初回記録は別GPUの検査と同時実行したため、表にはGPUを空けた`cache-q8-final/`の再測定を採用しました。初期の画素照合失敗も残しています。
 
-モデルとGGUFのカードはMIT Licenseを表記しています。オリジナル配布元にはアクセス同意条件もあるため、利用・再配布時は[公式モデルカード](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)と配布元の条件を確認してください。本リポジトリはモデルを同梱せず、実行時に取得します。
+単体テスト84件、新HIPビルドでR9700 / 7900 XTXのFA各252件、Sarashina Q4/Q8のAPI契約を通過。画像精度・tokenizer診断は前述のとおり不合格を含みます。LFM / ModernBERTと通常の保存済みランタイム・モデル選択は変更していません。以前のLFM画像＋text cache・全方式APIの検証記録も保持しています。
+
+モデルとGGUFのカードはMIT Licenseを表記しています。2026-09-21に公式MIT原文も取得し、SigLIP由来部分のApache-2.0、HFのアクセス条件、llama.cppの第三者コードを含めた[配布時の必要表記と未確認事項](SARASHINA_DISTRIBUTION.md)を整理しました。本リポジトリはモデルを同梱せず、明示的な取得・変換手順を提供します。

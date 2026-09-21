@@ -1,0 +1,40 @@
+# Jev Local Sarashina runtime ($backend)
+
+Sarashina画像対応を修正した **llama.cpp b11042の非公式Pre-release** です。モデル・mmproj・GPUドライバーは含みません。
+
+## 動作環境
+
+- Linux x86_64 / WSL2。Ubuntu 24.04環境でビルド・起動検査。
+- CPU: AVX2・FMA・F16C。必要なABIはGLIBC 2.38、GLIBCXX 3.4.32、CXXABI 1.3.13。
+- CUDA版: CUDA 13.2対応のドライバー、CUDA Runtime 13、cuBLAS 13が別途必要。`sm_89` / `compute_89`向け（RTX 4090など）。**NVIDIA実機未検証**。
+- HIP版: ROCm SDK 10.0でビルド。`libamdhip64.so.7` / `libhipblas.so.3` / `librocblas.so.5`とその依存ライブラリ・Tensileデータが別途必要。`gfx1100;gfx1201`向け。
+
+GPUライブラリを標準以外の場所へ入れた場合は`LD_LIBRARY_PATH`を設定してください。ROCmの分割SDKでは`ROCBLAS_TENSILE_LIBPATH` / `HIPBLASLT_TENSILE_LIBPATH`も必要な場合があります。別GPUは対応archを指定して再ビルドできます。型番や数値検査の成否による起動制限はありません。
+
+## 使い方
+
+展開先で整合性・起動を確認します。
+
+```bash
+sha256sum -c SHA256SUMS
+./bin/llama-server --version
+./bin/llama-server --list-devices
+```
+
+Jev Localの`models/`へ言語GGUFと公式由来mmproj・同名`.gguf.json`を配置し、Jev Localのルートから起動します。
+
+```bash
+python3 scripts/run_sarashina.py --backend $backend --build /path/to/$name
+```
+
+対応mmproj: `sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`。取得・変換は[Jev Localの手順](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md)を参照してください。通常の`run.sh`の選択は変更しません。
+
+`bin/llama-server`を直接使う場合も`--model`と`--mmproj`を指定します。CPUでは`-ngl 0`、GPUでは`-ngl all`を指定し、まず`--host 127.0.0.1`で使用してください。Web UI・OpenSSLは無効です。未認証のまま外部公開しないでください。
+
+## 内容
+
+`bin/`、ビルド情報`jev-build.json`、検査記録`verification.json`、`source-inputs/`、`licenses/`、`SHA256SUMS`を同梱しています。llama.cppの共有ライブラリは同じ`bin/`内から読み込み、GPU・OSの共有ライブラリは同梱しません。
+
+検査は数値照合・起動確認で、一般的な画像理解精度や全GPUでの動作を保証するものではありません。モデル側の単色・複数画像・候補順の失敗と、既存言語GGUFのtokenizer差は残ります。
+
+[出典・変更・第三者表記](NOTICE.md)

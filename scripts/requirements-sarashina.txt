@@ -5,3 +5,6 @@ safetensors==0.8.0
 pillow==12.1.1
 transformers==4.57.1
 accelerate==1.13.0
+# Official AutoProcessor uses the Llama tokenizer's sentencepiece conversion.
+sentencepiece==0.2.1
+protobuf==6.33.6

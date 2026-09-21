@@ -1,56 +1,69 @@
 {
-  "repository": "AnalyticPudding/sarashina2.2-vision-3b-clone",
-  "revision": "05710ee40ae41ff322da991298ab893cf54ce110",
-  "official_repository": "sbintuitions/sarashina2.2-vision-3b",
-  "notice": "Public clone, not an authenticated official checkpoint. Full weight equivalence is unverified. Official files required access approval (HTTP 401) during investigation.",
+  "repository": "sbintuitions/sarashina2.2-vision-3b",
+  "revision": "46d9cc3929a54f7d2b91ce5668d7a9c5833991ed",
+  "checkpoint_file": "model.safetensors",
+  "conversion_files": ["config.json", "preprocessor_config.json", "model.safetensors"],
+  "notice": "Official gated checkpoint. Request access and review the terms yourself on Hugging Face, then log in locally. Fetching/conversion never executes checkpoint-supplied code or accepts terms on your behalf. No public-clone fallback.",
   "files": {
+    "LICENSE": {
+      "sha256": "c2142adf07ff4607749b33314f969ffca01ce0bd629eee341323bdf5ca825b3f",
+      "size": 1069
+    },
+    "README.md": {
+      "sha256": "c5a2edddbeb165bd6c1d6ecdb8d694b01276a79227564127bebfec07fb8dc3b0",
+      "size": 6996
+    },
+    "chat_template.json": {
+      "sha256": "02f914cacac71d3dfcf81a653f3ed9e3b6a01b6bf49bab1d4d97b1181a79ea2f",
+      "size": 1124
+    },
     "config.json": {
-      "sha256": "d0d60df2cadef8686039771e551e0eb98947c73b697105545d98b5dd80276df8",
-      "size": 1577
+      "sha256": "0b7afa90fc9bdfb8010210e4bf227dda7beef2e20cb4a71c2b13b1134462977d",
+      "size": 1532
     },
     "configuration_sarashina2_vision.py": {
       "sha256": "4647f49bbe1e6ec89c0cf52ab2b95ff123c0b8b364891d934eca78311a7e5048",
       "size": 2921
     },
+    "generation_config.json": {
+      "sha256": "f806a44490b1b506f312f17492a8c42fa06293037b35fed23982ff54efdb6071",
+      "size": 133
+    },
+    "model.safetensors": {
+      "sha256": "91fdaf16a99ee00f43801b26f6167aee0d205477303dfc72a37242e660da7ac4",
+      "size": 7603021272
+    },
     "modeling_sarashina2_vision.py": {
       "sha256": "dd7b93cb63afd785fd2c1122284b979d87477963e7085d59f0048a087046a195",
       "size": 11691
     },
-    "model.safetensors.index.json": {
-      "sha256": "a8f7a09a9fa2735eb2eaf14b698301f9ee00a21b898f000c9dabc7d8b2bbe724",
-      "size": 50177
+    "preprocessor_config.json": {
+      "sha256": "fce7a136f861ac3c0e646de63ef81f7708ea4c9f2699e4d605911d4abb0ebeec",
+      "size": 646
     },
-    "model-00001-of-00008.safetensors": {
-      "sha256": "c27d2a010d6cfc0925bee17bd644dca8441fd8dc433e90c488f49bf88631e972",
-      "size": 891766400
+    "processing_sarashina2_vision.py": {
+      "sha256": "2a8bcd737eb0c7dd9884219be735992379ee21af1048cad92c29e38359792c7b",
+      "size": 24035
     },
-    "model-00002-of-00008.safetensors": {
-      "sha256": "a7afec0f6cce3bdf4e817b6db7c81d52d04bee3cca70eb8020abea17e46576a6",
-      "size": 963402528
+    "processor_config.json": {
+      "sha256": "7d0edcf32e117aadabc12677ed2f7449459a6b368ddd3e40973153dff859a6d4",
+      "size": 152
     },
-    "model-00003-of-00008.safetensors": {
-      "sha256": "a4c9cb8bd18bd0ffef428da4819bdb48c458f83d14b2d86452202a05808c093e",
-      "size": 996214648
+    "special_tokens_map.json": {
+      "sha256": "30bf8256f9a1eb3287af2a9b7940465e29a38aad4a459a3e773bb3a14bd34c0f",
+      "size": 968
     },
-    "model-00004-of-00008.safetensors": {
-      "sha256": "3374d40e2a997d57dc25dc495df6f44026f0c7214a0bc67f183837dad55d2d94",
-      "size": 996204208
+    "tokenizer.json": {
+      "sha256": "0197cf057f75f7033095c881fc6c3b055aded47d0b59f67ed06c29ba5c80eed1",
+      "size": 6724007
     },
-    "model-00005-of-00008.safetensors": {
-      "sha256": "09fa1f65f6369e1a824e5ef1c5c850186375f8adca454767057fc3790c75fcb5",
-      "size": 970000424
+    "tokenizer.model": {
+      "sha256": "008293028e1a9d9a1038d9b63d989a2319797dfeaa03f171093a57b33a3a8277",
+      "size": 1831879
     },
-    "model-00006-of-00008.safetensors": {
-      "sha256": "9927a8f6c062faa2cee55126043f21d57b302ea041a8dadb9c2159a7fc72b94f",
-      "size": 976543184
-    },
-    "model-00007-of-00008.safetensors": {
-      "sha256": "8b2dfdae7270cd2cf1343759bb92e4df090580515bb309f4ec66127de166ff22",
-      "size": 970000424
-    },
-    "model-00008-of-00008.safetensors": {
-      "sha256": "998ee0e470c12ec45fd622d71d0d3df204b6691fd7c9ed89ed1965964a6df68a",
-      "size": 838888280
+    "tokenizer_config.json": {
+      "sha256": "3e537fe7d20428da47d9b4ce8807f03fab9c32aa03251f7c402c7973713bf9ed",
+      "size": 5051
     }
   }
 }

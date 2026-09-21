@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Local checkpoint generation, using native token IDs to isolate vision/runtime errors.
+"""Official local checkpoint/AutoProcessor generation compared with the native runtime.
 
-Executes the reviewed local modeling/configuration files via trust_remote_code.
-Requires all checkpoint shards, Transformers 4.57.1, torch and accelerate.
+Executes only hash-checked local model/processor Python, with explicit permission.
+Native tokenization is checked independently against the official tokenizer.
 """
 import argparse
 import base64
@@ -14,24 +14,24 @@ import urllib.request
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--reference', type=Path, default=Path('.cache/sarashina-reference'))
+    p.add_argument('--reference', type=Path, default=Path('.cache/sarashina-official'))
     p.add_argument('--url', default='http://127.0.0.1:28197')
-    p.add_argument('--output', type=Path, default=Path('results/sarashina-repair/reference-generation.json'))
+    p.add_argument('--output', type=Path, default=Path('results/sarashina-official/reference-generation.json'))
     p.add_argument('--dtype', choices=('bfloat16', 'float32'), default='bfloat16')
+    p.add_argument('--torch-device', default='cuda:0')
+    p.add_argument('--image', type=Path, help='Also compare a real document image (not resized by this tool)')
     p.add_argument('--multi-image', action='store_true', help='Also compare two-image order handling')
     p.add_argument('--allow-reviewed-code', action='store_true',
-                   help='Execute the hash-checked local Python model implementation')
+                   help='Execute the hash-checked local official model and processor Python')
     args = p.parse_args()
     if not args.allow_reviewed_code:
-        p.error('Review the local modeling/configuration Python, then pass --allow-reviewed-code')
-    from scripts.setup_runtime import ROOT, sha256
-    lock = json.loads((ROOT/'native/sarashina-reference.json').read_text())
-    for name, spec in lock['files'].items():
-        if not (args.reference/name).is_file() or sha256(args.reference/name) != spec['sha256']:
-            p.error(f'Missing or changed reference file: {name}')
+        p.error('Review the local model/processor Python, then pass --allow-reviewed-code')
+    from scripts.setup_runtime import sha256
+    from scripts.fetch_sarashina_reference import verify_reference
+    lock = verify_reference(args.reference)
     import torch
     from PIL import Image, ImageDraw
-    from transformers import AutoModelForCausalLM, Qwen2VLImageProcessor
+    from transformers import AutoModelForCausalLM, AutoProcessor
 
     torch.set_num_threads(8)
     def post(path, payload):
@@ -44,9 +44,10 @@ def main():
         return post('/detokenize', {'tokens': ids})['content']
 
     model = AutoModelForCausalLM.from_pretrained(args.reference, trust_remote_code=True,
-                local_files_only=True, dtype=getattr(torch, args.dtype), device_map={'': 'cuda:0'},
+                local_files_only=True, dtype=getattr(torch, args.dtype), device_map={'': args.torch_device},
                 attn_implementation='sdpa').eval()
-    processor = Qwen2VLImageProcessor(image_mean=[.5]*3, image_std=[.5]*3)
+    processor = AutoProcessor.from_pretrained(args.reference, trust_remote_code=True,
+                                              local_files_only=True, use_fast=False)
     cases = []
     for color in ('red', 'blue', 'green', 'black', 'white'):
         cases.append((f'solid-{color}', Image.new('RGB', (224, 224), color),
@@ -60,6 +61,11 @@ def main():
     draw.rectangle((16, 16, 100, 100), fill='red')
     draw.ellipse((120, 110, 210, 200), fill='blue')
     cases.append(('shapes', image, 'この画像には何が写っていますか？日本語で簡潔に答えてください。'))
+    cases.append(('shapes-resized', image.resize((233, 157)),
+                  'この画像には何が写っていますか？日本語で簡潔に答えてください。'))
+    if args.image:
+        cases.append(('document', Image.open(args.image).convert('RGB'),
+                      'この文書のタイトルと検知日を読み取ってください。'))
     if args.multi_image:
         squares = {}
         for color in ('red', 'blue'):
@@ -70,9 +76,10 @@ def main():
             cases.append((f'pair-{first}-{second}', [squares[first], squares[second]],
                 '2枚目の画像の中央にある四角形は何色ですか？色の名前だけを日本語で答えてください。'))
     from importlib.metadata import version
-    report = {'dtype': args.dtype, 'source': str(args.reference), 'reference_lock': lock,
-              'versions': {name: version(name) for name in ('torch', 'transformers', 'pillow', 'numpy')},
-              'scope': 'Public-clone reference with reconstructed Qwen processor, not gated official AutoProcessor',
+    report = {'dtype': args.dtype, 'torch_device': args.torch_device, 'source': str(args.reference), 'reference_lock': lock,
+              'processor_class': type(processor).__name__, 'tokenizer_class': type(processor.tokenizer).__name__,
+              'versions': {name: version(name) for name in ('torch', 'transformers', 'pillow', 'numpy', 'sentencepiece', 'protobuf')},
+              'scope': 'Official checkpoint/AutoProcessor; official vs native token IDs checked independently',
               'cases': []}
     with urllib.request.urlopen(args.url+'/props') as r:
         props = json.load(r)
@@ -84,17 +91,18 @@ def main():
     with torch.inference_mode():
         for name, image, question in cases:
             images = image if isinstance(image, list) else [image]
-            vision = processor(images=images, return_tensors='pt').to('cuda:0')
-            ids = tokens('<|user|>')
-            for grid in vision['image_grid_thw']:
-                ids += tokens('<|prefix|>') + [14]*(int(grid.prod().item()) // 4) + tokens('<|suffix|>')
-            ids += tokens(question+'</s><|assistant|>')
-            inputs = {'input_ids': torch.tensor([ids], device='cuda:0'),
-                      'attention_mask': torch.ones((1, len(ids)), device='cuda:0', dtype=torch.long),
-                      **vision}
+            messages = [{'role': 'user', 'content': [*({'type': 'image'} for _ in images),
+                                                   {'type': 'text', 'text': question}]}]
+            prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
+            inputs = processor(images=images, text=[prompt], return_tensors='pt').to(args.torch_device)
+            ids = inputs['input_ids'][0].tolist()
+            native_ids = tokens('<|user|>')
+            for grid in inputs['image_grid_thw']:
+                native_ids += tokens('<|prefix|>') + [14]*(int(grid.prod().item()) // 4) + tokens('<|suffix|>')
+            native_ids += tokens(question+'</s><|assistant|>')
             generated = model.generate(**inputs, do_sample=False, max_new_tokens=80, eos_token_id=2, pad_token_id=3)
             output_ids = generated[0, len(ids):].tolist()
-            text = decode(output_ids)
+            text = processor.decode(output_ids, skip_special_tokens=False)
             encoded = []
             for image in images:
                 data = io.BytesIO()
@@ -108,14 +116,20 @@ def main():
                    'reference_output_ids': output_ids, 'input_tokens': len(ids),
                    'native_input_tokens': native['tokens_evaluated'],
                    'same_text': text.removesuffix('</s>') == native['content'],
-                   'same_token_count': len(ids) == native['tokens_evaluated']}
+                   'same_token_count': len(ids) == native['tokens_evaluated'],
+                   'same_input_ids': ids == native_ids, 'same_detokenization': text == decode(output_ids)}
             report['cases'].append(row)
             print(row, flush=True)
+            row.update(official_input_ids=ids, native_reconstructed_input_ids=native_ids)
             args.output.parent.mkdir(parents=True, exist_ok=True)
             report['exact_text_matches'] = sum(r['same_text'] for r in report['cases'])
+            report['input_id_matches'] = sum(r['same_input_ids'] for r in report['cases'])
+            report['input_token_count_matches'] = sum(r['same_token_count'] for r in report['cases'])
+            report['tokenization_passed'] = all(r['same_token_count'] and r['same_input_ids'] and r['same_detokenization']
+                                               for r in report['cases'])
             args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
-    if not all(r['same_token_count'] for r in report['cases']):
-        raise SystemExit('Reference/native input token counts differ')
+    if not all(r['same_token_count'] and r['same_input_ids'] and r['same_detokenization'] for r in report['cases']):
+        raise SystemExit('Official/native tokenization differs; see report')
 
 
 if __name__ == '__main__':

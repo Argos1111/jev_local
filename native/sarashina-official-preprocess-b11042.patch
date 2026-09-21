@@ -1,0 +1,128 @@
+--- a/tools/mtmd/clip-model.h
++++ b/tools/mtmd/clip-model.h
+@@ -63,6 +63,7 @@
+     int32_t image_longest_edge = 0;
+     int32_t image_min_pixels = -1;
+     int32_t image_max_pixels = -1;
++    int32_t sarashina_preprocess_version = 0;
+     resize_algo image_resize_algo = RESIZE_ALGO_BICUBIC;
+     pad_style image_resize_pad = PAD_CEIL; // padding style when resizing
+     std::array<uint8_t, 3> image_pad_color = {0, 0, 0};
+--- a/tools/mtmd/clip.cpp
++++ b/tools/mtmd/clip.cpp
+@@ -1656,7 +1656,17 @@
+                         hparams.n_merge = 2;
+                         hparams.image_resize_algo = RESIZE_ALGO_BICUBIC;
+                         hparams.image_resize_pad = PAD_NONE;
+-                        hparams.set_limit_image_tokens(4, 1280);
++                        get_u32("jev.sarashina.preprocess_version", hparams.sarashina_preprocess_version, false);
++                        if (hparams.sarashina_preprocess_version == 1) {
++                            get_u32(KEY_IMAGE_MIN_PIXELS, hparams.image_min_pixels);
++                            get_u32(KEY_IMAGE_MAX_PIXELS, hparams.image_max_pixels);
++                            hparams.set_limit_image_tokens();
++                        } else if (hparams.sarashina_preprocess_version == 0) {
++                            hparams.set_limit_image_tokens(4, 1280);
++                            LOG_WRN("%s: legacy Sarashina projector uses reconstructed Pillow preprocessing\n", __func__);
++                        } else {
++                            throw std::runtime_error("Unsupported Sarashina preprocessing version");
++                        }
+                         hparams.set_warmup_n_tokens(8*8);
+                     } break;
+                 case PROJECTOR_TYPE_QWEN2VL:
+--- a/tools/mtmd/mtmd-image.cpp
++++ b/tools/mtmd/mtmd-image.cpp
+@@ -183,6 +183,70 @@
+             hb = static_cast<int>(std::ceil(h * beta / f)) * f;
+         }
+         return {wb, hb};
++    }
++
++    // Float bicubic for the official Sarashina processor: normalize first, no antialias or clamping of values.
++    static void resize_sarashina(const clip_image_u8 & src, clip_image_f32 & dst,
++                                const clip_image_size & size, const clip_hparams & hparams) {
++        clip_image_f32 normalized;
++        normalized.from_u8(src);
++        normalized.normalize(hparams.image_mean, hparams.image_std);
++        if (size == src.get_size()) {
++            dst = std::move(normalized);
++            return;
++        }
++        dst.set_size(size, src.is_placeholder(), false);
++        if (src.is_placeholder()) {
++            return;
++        }
++        struct sample_axis {
++            int index[4];
++            float weight[4];
++        };
++        auto axis = [](int input, int output) {
++            std::vector<sample_axis> samples(output);
++            const float scale = static_cast<float>(input) / output;
++            for (int i = 0; i < output; ++i) {
++                const float pos = std::fma(scale, i + 0.5f, -0.5f);
++                const int start = static_cast<int>(std::floor(pos));
++                const float t = pos - start;
++                const float u = 1.0f - t;
++                auto inner = [](float x) { return std::fma(std::fma(1.25f, x, -2.25f)*x, x, 1.0f); };
++                auto outer = [](float x) { return std::fma(std::fma(std::fma(-0.75f, x, 3.75f), x, -6.0f), x, 3.0f); };
++                samples[i].weight[0] = outer(t + 1.0f);
++                samples[i].weight[1] = inner(t);
++                samples[i].weight[2] = inner(u);
++                samples[i].weight[3] = outer(u + 1.0f);
++                for (int j = 0; j < 4; ++j) {
++                    samples[i].index[j] = std::clamp(start + j - 1, 0, input - 1);
++                }
++            }
++            return samples;
++        };
++        const auto xs = axis(src.get_size().width, size.width);
++        const auto ys = axis(src.get_size().height, size.height);
++        const auto & input = normalized.get_ro_buf();
++        std::vector<float> output(static_cast<size_t>(size.width)*size.height*3);
++        for (int y = 0; y < size.height; ++y) {
++            for (int x = 0; x < size.width; ++x) {
++                for (int c = 0; c < 3; ++c) {
++                    float rows[4];
++                    for (int j = 0; j < 4; ++j) {
++                        const size_t base = static_cast<size_t>(ys[y].index[j])*src.get_size().width*3 + c;
++                        rows[j] = input[base + xs[x].index[0]*3] * xs[x].weight[0];
++                        for (int k = 1; k < 4; ++k) {
++                            rows[j] = std::fma(input[base + xs[x].index[k]*3], xs[x].weight[k], rows[j]);
++                        }
++                    }
++                    float value = rows[0] * ys[y].weight[0];
++                    for (int j = 1; j < 4; ++j) {
++                        value = std::fma(rows[j], ys[y].weight[j], value);
++                    }
++                    output[(static_cast<size_t>(y)*size.width + x)*3 + c] = value;
++                }
++            }
++        }
++        dst.cpy_buf(output);
+     }
+ 
+     // draw src image into dst image at offset (offset_x, offset_y)
+@@ -807,12 +871,18 @@
+     const clip_image_size target_size = sarashina
+         ? img_tool::calc_size_sarashina(original_size, opts)
+         : img_tool::calc_size_preserved_ratio(original_size, opts);
+-    img_tool::resize(img, resized_image, target_size,
+-                        hparams.image_resize_algo,
+-                        hparams.image_resize_pad,
+-                        hparams.image_pad_color);
+     mtmd_image_preproc_out output;
+-    output.append(hparams, resized_image, true);
++    if (sarashina && hparams.sarashina_preprocess_version == 1) {
++        clip_image_f32 resized;
++        img_tool::resize_sarashina(img, resized, target_size, hparams);
++        output.append(hparams, resized, false);
++    } else {
++        img_tool::resize(img, resized_image, target_size,
++                            hparams.image_resize_algo,
++                            hparams.image_resize_pad,
++                            hparams.image_pad_color);
++        output.append(hparams, resized_image, true);
++    }
+     return output;
+ }
+ 

@@ -14,7 +14,7 @@ from scripts.setup_runtime import ROOT, sha256
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=('hip', 'cuda'), default='cuda')
-    parser.add_argument('--build', type=Path, help='Build directory (default: .cache/sarashina-runtime/build-BACKEND)')
+    parser.add_argument('--build', type=Path, help='Build directory (default: .cache/sarashina-official-runtime/build-BACKEND)')
     parser.add_argument('--device', help='Backend device to check, default: CUDA0 or ROCm0')
     parser.add_argument('--output', type=Path, help='Report directory; logs/JSON are suitable for feedback')
     parser.add_argument('--timeout', type=float, default=600)
