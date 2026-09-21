@@ -4,16 +4,17 @@
 
 このページの準備スクリプトはローカル処理のみです。ログイン・アップロード・Publicへの変更は利用者が明示的に実行します。2026-09-21にCLI `huggingface_hub==1.32.0`のヘルプを確認しました。
 
-**公式checkpoint由来の新版と短縮したREADMEをアップロード済み**です。固定revisionを別ディレクトリへ再取得し、8ファイルすべてのSHA256一致を確認しました。
+**公式checkpoint由来の新版mmprojをPublic公開済み**です。公開後、認証・既存HFキャッシュを使わずに固定revisionの8ファイルを再取得し、約893 MBのGGUF全体を含めてSHA256一致を確認しました。利用だけなら[対応ランタイムとモデルの取得手順](SARASHINA_RELEASE.md#利用方法)を参照してください。
 
 - 配布先: [argos1111/sarashina2.2-vision-3b-mmproj-jev-f16](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)
-- 新版revision: `0261fe2a2e9974fe533710d075196eade265d4a8`
-- 公開状態: **Privateのまま**。可視性の変更はしていません。
-- 新版は`mmproj-jev-official-f16.gguf`（SHA256 `7c170758...`）。旧クローン由来の`mmproj-jev-f16.gguf`（SHA256 `094e86c9...`）とそのmanifestは変更せず残しています。
-- README・NOTICE・source lock・SHA256SUMSは新版へ更新しました。旧版の説明はrevision `22f873e5e3f13d997e75fa5d8f41ed1128288b30`で確認できます。
-- `.gitattributes`はHF側が新版GGUFのLFSルールを追記し、既存ルールを保持。ModernBERTなど他リポジトリは変更していません。
+- 公開時revision: `aabea115c03f21dbd5b0018c24770f632cb8c93d`
+- 公開状態: **Public、ゲートなし**。利用者の明示的な承認を受け、このリポジトリだけPrivateから切り替えました。
+- 新版は`mmproj-jev-official-f16.gguf`（SHA256 `7c170758...`）。重み・変換manifest・LICENSEは初回の公式由来版revision `0261fe2a2e9974fe533710d075196eade265d4a8`から変更していません。
+- 公開前にREADMEへ対応Pre-releaseを案内し、NOTICEのソースを`5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`へ固定。変更はREADME・NOTICE・SHA256SUMSのみです。
+- 旧クローン由来の`mmproj-jev-f16.gguf`（SHA256 `094e86c9...`）とmanifest、全コミット履歴を保持しています。旧版の説明はrevision `22f873e5e3f13d997e75fa5d8f41ed1128288b30`で確認できます。
+- 公開前の全履歴を点検し、想定外ファイル・認証情報パターンがないことを確認しました。`.gitattributes`、ModernBERTなど他リポジトリ、公式モデルのアクセス設定は変更していません。
 
-送信・再取得の記録は`.cache/hf-projector-publication-official/`に保存しています。
+初回の送信・再取得記録は`.cache/hf-projector-publication-official/`、公開時の履歴点検・可視性変更・未認証ダウンロードの記録は`.cache/hf-projector-publication-public/`に保存しています。
 
 ## 1. 配布条件を確認してPrivateリポジトリを作る
 
@@ -99,7 +100,7 @@ HF_REPO='YOUR_HF_USERNAME/sarashina2.2-vision-3b-mmproj-jev-f16'
 ```
 
 - **Jev Localのルートや`models/`全体をアップロードしないでください。** 専用フォルダ＋明示した8ファイルだけが対象です。
-- `--private`は**新規作成時のみ**有効で、既存PublicリポジトリをPrivateに戻す指定ではありません。ブラウザで対象がPrivateであることを確認してください。
+- `--private`は**新規作成時のみ**有効で、既存PublicリポジトリをPrivateに戻す指定ではありません。送信先と意図した可視性をブラウザで確認してください。非公開で事前確認したい場合は別のPrivateリポジトリを使います。
 - `--include`を繰り返す書式は上記CLI版で確認しています。`--delete`は使わず、サーバー側の他ファイルを削除しません。既存リポジトリへ新版を送ると**README・NOTICE・source lock・SHA256SUMSは新版へ更新され、旧GGUFは残ります**。この変更を意図する場合だけ実行してください。完全に分けたい場合は別の専用Privateリポジトリを作り、`HF_REPO`を変更します。
 - 通信が中断した場合は同じコマンドを再実行できます。403の場合はリポジトリ名、`whoami`、そのリポジトリへのトークンのWrite権限を確認します。トークンをログやチャットへ貼る必要はありません。
 

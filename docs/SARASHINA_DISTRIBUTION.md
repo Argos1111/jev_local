@@ -45,7 +45,7 @@ MIT本文は改変・再配布・商用利用を許諾し、コピーまたは�
 | 検証の限界 | 公式前処理15例・embedding 5例を照合。単色・複数画像・候補順の失敗と、既存言語GGUFのtokenizer差は残る |
 | 独立した配布 | SB Intuitions / Google / llama.cpp上流による公式リリース・承認ではない |
 
-旧修正版は公開クローン`AnalyticPudding/sarashina2.2-vision-3b-clone`（`05710ee40ae41ff322da991298ab893cf54ce110`）由来でした。旧GGUFとそのmanifestはローカル・HFとも変更せず、新版を同じPrivateリポジトリへ追加しました。公式と旧クローンの全624 tensorの同一性は今回確認できましたが、**新版はクローンではなく公式の取得ファイルから再変換**し、公式の前処理を追加修正しています。過去の取得元を遡って公式由来と呼び替えることはしません。
+旧修正版は公開クローン`AnalyticPudding/sarashina2.2-vision-3b-clone`（`05710ee40ae41ff322da991298ab893cf54ce110`）由来でした。旧GGUFとそのmanifestはローカル・HFとも変更せず、新版を当時Privateだった同じリポジトリへ追加し、その後、利用者の承認を受け履歴ごとPublicへ切り替えました。公式と旧クローンの全624 tensorの同一性は今回確認できましたが、**新版はクローンではなく公式の取得ファイルから再変換**し、公式の前処理を追加修正しています。過去の取得元を遡って公式由来と呼び替えることはしません。
 
 `mradermacher`は変更していない言語Q4/Q8 GGUFの量子化配布元です。公式由来の新版mmprojとは区別します。言語GGUFも一緒に配布する場合は、その配布元・revision・変更の有無を追加します。
 
@@ -110,11 +110,11 @@ b11042の著作権表示は`Copyright (c) 2023-2026 The ggml authors`です。�
 
 実際に配るファイルを確定してから、直接依存だけでなく推移的依存と静的に取り込まれたコードも棚卸しします。今回の[Pre-release](SARASHINA_RELEASE.md)ではGPU/OS共有ライブラリは外部依存とし、CPU / HIP / CUDA別のアーカイブへb11042の第三者表記と[`licenses/runtime/`](../licenses/runtime/)を同梱しました。CUDA device runtime・HIP device libraries・ヘッダ由来部分も表記対象に含めています。これはGPU SDK一式を同梱する構成の監査ではありません。
 
-## 3. 公開前に残る確認
+## 3. 配布時の留意点と公開記録
 
 1. **モデルの公式同意条件**: 利用者の同意・アクセス成功は確認済み。追加条件の文面や再配布への適用をエージェントが独立に確認済みとはしません。公開前の最終確認は配布担当者が行います。
 2. **本プロジェクト独自部分のライセンス選択**: 現在、プロジェクト全体・独自追加コードの利用条件を定めるルートLICENSEは未設定です。上流LICENSEを同梱しても、自動的に独自コード全体へ同じ条件が適用されるわけではありません。利用者に与える再利用・再配布の許諾は権利者が決めます。ここでは新しいライセンスを選定していません。
-3. **ランタイムの公開時チェック**: Pre-releaseのローカルアーカイブに第三者LICENSE / NOTICE、依存一覧、変更点、ビルド設定、SHA256を同梱済み。公開するソースcommitとタグを確定し、アップロード後の再取得hashを検査する。GPU SDK・追加機能を同梱する場合は棚卸しし直す。
+3. **ランタイムの公開時チェック**: Pre-releaseのアーカイブに第三者LICENSE / NOTICE、依存一覧、変更点、ビルド設定、SHA256を同梱済み。ソースcommit `5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`とタグを確定し、公開後の全5 assetを未認証で再取得してhash一致を確認しました。GPU SDK・追加機能を同梱する場合は棚卸しし直します。
 4. **検証範囲の表示**: CUDA sm_89はビルド／リンクのみ確認、NVIDIA実機での動作は未検証。HIPのR9700 / 7900 XTXの確認とは分けて記載する。公式版や全GPU動作保証と表示しない。
 
-調査に用いたHTTP応答・取得URL・SHA256は`.cache/license-review-2026-09-21/`、公式取得と再変換は`.cache/sarashina-official-review/`・`results/sarashina-official/`に保存しています（Git対象外）。新版mmprojは利用者の指示でHFの専用Privateリポジトリへアップロードし、再取得によるhash一致を確認しました（[送信記録](SARASHINA_UPLOAD.md)）。**HFの可視性は変更していません。** ランタイムの配布物・公開先・検査範囲は[Pre-releaseの案内](SARASHINA_RELEASE.md)を参照してください。
+調査に用いたHTTP応答・取得URL・SHA256は`.cache/license-review-2026-09-21/`、公式取得と再変換は`.cache/sarashina-official-review/`・`results/sarashina-official/`に保存しています（Git対象外）。新版mmprojはPrivateへの送信・再取得検査後、**利用者の明示的な承認を受け、HFの専用リポジトリだけPublicへ切り替えました**。公開前の履歴点検と、公開後の未認証での8ファイル全体のhash照合も実施しました（[公開記録](SARASHINA_UPLOAD.md)）。可視性変更は、追加条件を独立に監査済みとする宣言ではありません。公式リポジトリのアクセス設定や他モデルの可視性は変更していません。ランタイムの配布物・公開先・検査範囲は[Pre-releaseの案内](SARASHINA_RELEASE.md)を参照してください。

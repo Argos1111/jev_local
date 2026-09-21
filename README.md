@@ -140,7 +140,7 @@ python3 scripts/run_sarashina.py --port 18080 --backend-port 18097
 # Q8: --model sarashina-q8
 ```
 
-RTX 4090向けビルドは`python3 scripts/build_sarashina.py --backend cuda --cuda-architectures 89`（Linux／WSL2＋CUDA Toolkit）。RTX 5090など他世代の指定・mmproj変換・任意検査は[再現手順](docs/SARASHINA.md#実験版のビルドと起動)、報告するログは[フィードバック案内](docs/SARASHINA.md#gpu数値検査とフィードバック)を参照してください。**CUDAはsm_89向けビルド確認済み、実機推論は未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。ビルド済みCPU / HIP / CUDA版は[Pre-releaseの利用案内](docs/SARASHINA_RELEASE.md)を参照してください。
+RTX 4090向けビルドは`python3 scripts/build_sarashina.py --backend cuda --cuda-architectures 89`（Linux／WSL2＋CUDA Toolkit）。RTX 5090など他世代の指定・mmproj変換・任意検査は[再現手順](docs/SARASHINA.md#実験版のビルドと起動)、報告するログは[フィードバック案内](docs/SARASHINA.md#gpu数値検査とフィードバック)を参照してください。**CUDAはsm_89向けビルド確認済み、実機推論は未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。ビルド済みCPU / HIP / CUDA版と、[HFでPublic公開した公式由来mmproj](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)の取得・起動は[Pre-releaseの利用案内](docs/SARASHINA_RELEASE.md)を参照してください。
 
 公式checkpointからmmprojを再生成し、公式AutoProcessorに合わせて前処理を追加修正しました。R9700での元解像度文書＋4問の再送はQ4で約2.15秒→0.69秒、Q8で約2.05秒→0.60秒（同一ビルド内の画像キャッシュOFF/ON比較）。文書12問は両者12/12ですが、単色・複数画像の失敗と、言語GGUFの公式tokenizerとの分割差が残ります。旧成果物は保存し、**通常設定は変更せず、制約付きの実験機能**として提供します。[検証範囲・更新した変換／ビルド手順](docs/SARASHINA.md)を参照してください。
 
@@ -179,7 +179,7 @@ docs/                             詳細な設定・仕様・測定条件
 models/ .cache/ results/ .venv*/   ローカル生成物（Git対象外）
 ```
 
-モデル・画像・生ログ・計測結果・ビルド成果物はGitHubに含めません。**修正版mmprojや対応ランタイムも、公開する取得元/SHA256・パッチ・変換／ビルドスクリプトから生成します。** 公開する測定要約は`docs/`にまとめています。`results/`内のファイルを編集しても配布コードにはならないため、再利用するスクリプトは`tools/`で管理します。
+モデル・画像・生ログ・計測結果・ビルド成果物はGit管理しません。**修正版mmprojはHF、対応ランタイムはGitHub Releasesで別配布**し、取得元/SHA256・パッチ・変換／ビルドスクリプトをソースツリーに含めます。公開する測定要約は`docs/`にまとめています。`results/`内のファイルを編集しても配布コードにはならないため、再利用するスクリプトは`tools/`で管理します。
 
 ## 開発・検証
 
@@ -203,4 +203,4 @@ CIではPythonテスト・シェル構文と、モデル不要のC++キャッシ
 - [ModernBERTバックエンド](docs/MODERNBERT.md)
 - [Sarashinaバックエンド・全方式の比較](docs/SARASHINA.md)
 
-依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)、[Sarashina2.2 Vision](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)・[ModernBERT-Ja](https://huggingface.co/sbintuitions/modernbert-ja-310m)（MIT）は、それぞれの配布元の利用条件に従います。ModernBERTの学習に使う公開データセット（JGLUE・JCoLA・JMMLU: CC BY-SA 4.0、JCommonsenseMorality: MIT、MASSIVE: CC BY 4.0、livedoor: CC BY-ND 2.1 JP）は実行時に取得し、リポジトリには含めません。学習済みモデルを再配布する場合はCC BY-SAの継承条件に留意してください。本プロジェクトにバイナリ・モデル重みは同梱しません。
+依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)、[Sarashina2.2 Vision](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)・[ModernBERT-Ja](https://huggingface.co/sbintuitions/modernbert-ja-310m)（MIT）は、それぞれの配布元の利用条件に従います。ModernBERTの学習に使う公開データセット（JGLUE・JCoLA・JMMLU: CC BY-SA 4.0、JCommonsenseMorality: MIT、MASSIVE: CC BY 4.0、livedoor: CC BY-ND 2.1 JP）は実行時に取得し、リポジトリには含めません。学習済みモデルを再配布する場合はCC BY-SAの継承条件に留意してください。Gitのソースツリーにバイナリ・モデル重みは同梱しません。

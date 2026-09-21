@@ -25,18 +25,20 @@ tags:
 | [`$filename`]($filename) | F16 mmproj（約893 MB） |
 | [`$filename.json`]($filename.json) | 起動時に必要な変換情報 |
 
+同居する`mmproj-jev-f16.gguf`は旧クローン由来の保存用ファイルです。通常は上記の公式由来版を使用してください。
+
 ## 使い方
 
 1. 上の2ファイルをJev Localの`models/`へ配置します。
 2. 言語GGUF（Q4_K_M / Q8_0）を[mradermacherの配布元](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)から取得し、同じフォルダへ配置します。
-3. [ビルド手順](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md#実験版のビルドと起動)に従い、`sarashina-official-preprocess-b11042.patch`を含むランタイムを用意します。checkpointの取得・mmprojの変換は不要です。
+3. [対応ランタイムのPre-release](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)から環境に合う版を取得・展開します。[自分でビルド](https://github.com/Argos1111/jev_local/blob/5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0/docs/SARASHINA.md#実験版のビルドと起動)もできます。checkpointの取得・mmprojの変換は不要です。
 
-Jev Localのルートから起動します（HIPの例）。
+Jev Localのルートから、展開先を指定して起動します（HIPの例）。
 
 ```bash
-python3 scripts/run_sarashina.py --backend hip
+python3 scripts/run_sarashina.py --backend hip --build /path/to/extracted-runtime
 ```
 
-CUDAは`--backend cuda`、CPUは`--backend cpu`を指定します。
+CUDAは`--backend cuda`、CPUは`--backend cpu`を指定します。自分でビルドした場合は`--build`を省略できます。
 
 [出典・変更記録](NOTICE.md) · [SHA256SUMS](SHA256SUMS)

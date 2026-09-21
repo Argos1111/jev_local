@@ -2,7 +2,7 @@
 
 Sarashinaの修正版mmprojに対応する、Jev Local独自のllama.cpp b11042ビルドです。Linux x86_64向けのCPU / HIP / CUDA版を用意しています。
 
-配布ページ: **[sarashina-llama-b11042-pre1](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)**（Pre-release、Latestにはしない）。GitHubはPublic、モデルを置いたHFリポジトリはPrivateです。
+配布ページ: **[sarashina-llama-b11042-pre1](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)**（Pre-release、Latestにはしない）。GitHubと、公式由来mmprojを置いたHFリポジトリはどちらもPublicです。
 
 ## 配布ファイル
 
@@ -42,7 +42,12 @@ HIP / CUDAはbackendとアーカイブを合わせます。ライブラリが標
 
 `--build`指定の起動はログ・slot cacheをmanifestのhashごとに隔離し、既存のビルド・通常の保存済みモデル/ランタイム選択を変えません。バイナリ・projectorの整合性と前処理の互換性は検査します。
 
-公式由来mmprojは[HFの専用リポジトリ](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)へアップロード済みですが、現在Privateです。アクセスできない場合は[公式checkpointからの変換手順](SARASHINA.md#実験版のビルドと起動)を使います。ランタイムにモデル重みは含みません。
+公式由来mmprojは[HFの専用リポジトリ（revision固定）](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/tree/aabea115c03f21dbd5b0018c24770f632cb8c93d)で**Public公開済み**です。認証なしで取得できます。次の2ファイルをJev Localの`models/`へ配置してください。
+
+- [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/aabea115c03f21dbd5b0018c24770f632cb8c93d/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf)
+- [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/aabea115c03f21dbd5b0018c24770f632cb8c93d/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json)
+
+同じrevisionの`SHA256SUMS`で整合性を確認し、LICENSE / NOTICEも保持してください。言語GGUF（Q4_K_M / Q8_0）は[mradermacherの配布元](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)から別途取得します。配布済みmmprojを使う場合、公式checkpointの取得・変換は不要です。同居する`mmproj-jev-f16.gguf`は旧クローン由来の保存用ファイルで、新版と混同しないでください。ランタイムにはモデル重みを含みません。
 
 ## 今回の配布ビルドの検査
 
@@ -83,6 +88,6 @@ python3 scripts/prepare_sarashina_release.py \
 1. GitHub CLIへログイン。HFトークンではなくGitHub認証を使い、トークンをソース・チャットへ書かない。
 2. この変更をJev Localへcommit/pushし、公開するソースcommitを確定。通常モデルの既定は変更しない。
 3. 確定commitへタグを付けてpushし、`gh release create ... --verify-tag --prerelease --latest=false`で作成する。まずDraftでアーカイブを送信・検査してから公開する。
-4. GitHub APIのasset size/digestと再ダウンロードhashを照合する。HFの可視性は変更しない。
+4. GitHub APIのasset size/digestと再ダウンロードhashを照合する。HFの可視性変更は別操作として扱い、配布担当者の明示的な承認を得る（今回のmmprojは別途承認を受けPublic公開済み）。
 
 GitHub認証用CLIはこの環境では`.cache/release-tools/gh_2.101.0_linux_amd64/bin/gh`へ隔離して用意しています。Release公開のためにggml-org/llama.cppへPR・commit・pushする必要はありません。

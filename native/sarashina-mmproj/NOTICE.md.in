@@ -54,12 +54,14 @@ This is a downstream attribution notice, not an upstream NOTICE file.
   parameters. The binary's description also identifies the included final
   LayerNorm and the need for the updated Jev Local runtime.
 
-Conversion code: `scripts/convert_sarashina_mmproj.py` in
-https://github.com/Argos1111/jev_local
+Conversion and compatible runtime source: Jev Local commit
+`5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`:
+https://github.com/Argos1111/jev_local/tree/5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0
 
-Runtime sources must include `native/sarashina-official-preprocess-b11042.patch`.
-The previous cf973239 release does not implement this preprocessing version.
-The publisher should record the updated source commit before public release.
+The conversion script is `scripts/convert_sarashina_mmproj.py`. These runtime
+sources include `native/sarashina-official-preprocess-b11042.patch`; the older
+cf973239 commit does not implement this preprocessing version. Prebuilt runtime:
+https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1
 
 The required runtime separately corrects image boundaries, preprocessing and
 normalization. Its source/patches are available in Jev Local; no runtime binary
@@ -74,4 +76,4 @@ tokenization differences from the official tokenizer remain a separate issue.
 This is an independent, unofficial derivative. No endorsement by SB Intuitions,
 Google or the llama.cpp project is implied. The model's known limitations and
 validation scope are documented in the
-[Jev Local Sarashina notes](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md).
+[Jev Local Sarashina notes](https://github.com/Argos1111/jev_local/blob/5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0/docs/SARASHINA.md).
