@@ -166,7 +166,7 @@ python3 -m tools.benchmark_jglue --url http://127.0.0.1:8080 --output results/jg
 - `tools/evaluate.py`の手作り8例（日英の返金要求判定）：8/8。学習データにこのドメインは含まれていませんが、8例では一般化の証拠にはなりません。
 - 候補順を反転しても確率は完全に一致します（ペアごとに独立に採点するため）。
 
-結果は[`results/jglue-test-modernbert/`](../results)に保存しています（Git対象外）。
+結果は`results/jglue-test-modernbert/`に保存しています（Git対象外・リポジトリには同梱しません）。
 
 ### 学習に使っていないタスクでの汎化
 

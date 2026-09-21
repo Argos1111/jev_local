@@ -1,12 +1,27 @@
+# Python environments and local test caches.
 __pycache__/
 *.py[cod]
-.venv/
-.venv-modernbert/
+.venv*/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 .cache/
 .local/
 results/
 models/
+# Weights, conversion manifests and incomplete downloads (including custom paths).
 *.gguf
+*.gguf.json
+*.safetensors
+*.safetensors.index.json
+pytorch_model*.bin
+*.pt
+*.pth
+*.part
+*.partial
 *.log
 .env
 .env.*
@@ -20,9 +35,23 @@ models/
 sample_pics/*
 !sample_pics/README.md
 # Native build artifacts outside the normal .cache build directory.
+/build/
+/build-*/
+/dist/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+build.ninja
+.ninja_deps
+.ninja_log
 *.o
 *.a
 *.so
 *.so.*
+*.dylib
+*.dll
+*.lib
+*.exe
 core
 core.*

@@ -1,0 +1,7 @@
+# Optional conversion/reference diagnostics only. Install a matching torch build separately.
+gguf==0.19.0
+numpy==2.5.3
+safetensors==0.8.0
+pillow==12.1.1
+transformers==4.57.1
+accelerate==1.13.0

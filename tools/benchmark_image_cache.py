@@ -14,7 +14,9 @@ import time
 import urllib.request
 
 from image_input import load_image
+from scripts.build_sarashina import build_environment
 from scripts.run_local import wait_ready
+from scripts.setup_runtime import model_specs, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,19 +28,34 @@ def main():
     p.add_argument('--rounds', type=int, default=5)
     p.add_argument('--input', type=Path, default=ROOT/'examples/vision_gss_4.json')
     p.add_argument('--image', type=Path, required=True)
-    p.add_argument('--device', default=os.environ.get('GPU_DEVICE', 'ROCm0'))
+    p.add_argument('--device', default=os.environ.get('GPU_DEVICE'), help='e.g. CUDA0 or ROCm1; omitted: llama.cpp chooses available GPUs')
     p.add_argument('--port', type=int, default=19080)
     p.add_argument('--backend-port', type=int, default=19097)
     p.add_argument('--workers', type=int, default=4, help='Use 1 for serial numerical regression checks')
+    p.add_argument('--model', choices=('vision', 'sarashina', 'sarashina-q8'), default='vision')
+    p.add_argument('--mmproj', type=Path, help='Explicit matching projector for Sarashina')
+    p.add_argument('--flash-attn', choices=('auto', 'off', 'on'), default='auto')
     args = p.parse_args()
     if args.rounds < 1: p.error('--rounds must be positive')
     if not 1 <= args.workers <= 4: p.error('--workers must be 1..4')
     if args.port == args.backend_port or not all(1 <= x <= 65535 for x in (args.port,args.backend_port)):
         p.error('Ports must be distinct and in 1..65535')
-    if not args.server.is_file(): p.error('Experimental binary missing; run python3 scripts/build_image_cache.py')
+    if not args.server.is_file(): p.error('Experimental binary missing; see docs/IMAGE_CACHE.md or docs/SARASHINA.md')
+    if args.model != 'vision' and (not args.mmproj or not args.mmproj.is_file()):
+        p.error('Sarashina requires an explicit --mmproj')
+    if os.environ.get('LFM_MODEL') and not (args.mmproj or os.environ.get('LFM_MMPROJ')):
+        p.error('Explicit LFM_MODEL also requires its matching --mmproj or LFM_MMPROJ')
+    specs = model_specs(json.loads((ROOT/'scripts/runtime.json').read_text()), args.model)
+    model = Path(os.environ.get('LFM_MODEL') or ROOT/'models'/specs[0]['filename'])
+    projector = args.mmproj or Path(os.environ.get('LFM_MMPROJ') or ROOT/'models'/specs[1]['filename'])
+    if not model.is_file() or not projector.is_file():
+        p.error('Model/projector missing; download the matching profile first')
+    if args.model != 'vision' and model.resolve() != (ROOT/'models'/specs[0]['filename']).resolve():
+        p.error('Unset LFM_MODEL before benchmarking this Sarashina profile')
     if not args.input.is_file() or not args.image.is_file(): p.error('--input and --image must be existing files; sample images are not bundled')
     for port in (args.port,args.backend_port):
         with socket.socket() as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try: probe.bind(('127.0.0.1',port))
             except OSError: p.error(f'Port {port} is busy; choose unused ports')
     api_url = f'http://127.0.0.1:{args.port}'
@@ -51,29 +68,43 @@ def main():
         p.error('This comparison requires Choice questions (e.g. examples/vision_gss_4.json)')
     payload['images'] = [load_image(pic)]
     body = json.dumps(payload, ensure_ascii=False).encode()
+    build = args.server.resolve().parent.parent
+    manifest_path = build/'jev-build.json'
     report = {'created_at':datetime.now(timezone.utc).isoformat(), 'image_sha256':hashlib.sha256(pic.read_bytes()).hexdigest(),
+              'build_manifest':json.loads(manifest_path.read_text()) if manifest_path.is_file() else None,
               'request_without_image':{k:v for k,v in payload.items() if k != 'images'},
-              'binary':str(args.server.resolve()), 'binary_sha256':hashlib.sha256(args.server.read_bytes()).hexdigest(),
+              'binary':str(args.server.resolve()), 'binary_sha256':sha256(args.server),
+              'libraries_sha256':{p.name:sha256(p) for p in sorted(args.server.parent.glob('*.so'))},
+              'model':str(model.resolve()), 'model_sha256':sha256(model),
+              'mmproj_sha256':sha256(projector),
               'requested_device':args.device, 'gpu_layers':'all', 'ctx_size':32768, 'slots':4,
-              'workers':args.workers, 'order':['off','on','on','off'], 'blocks':[]}
+              'workers':args.workers, 'profile':args.model, 'flash_attn':args.flash_attn,
+              'mmproj':str(projector.resolve()),
+              'order':['off','on','on','off'], 'blocks':[]}
     def save():
         (args.output/'measurement.json').write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n')
     for index, mode in enumerate(report['order']):
         name = f'{index+1}-{mode}'
-        env = dict(os.environ, LLAMA_SERVER=str(args.server.resolve()), GPU_LAYERS='all', GPU_DEVICE=args.device,
-                   CTX_SIZE='32768', PORT=str(args.backend_port), JEV_IMAGE_CACHE_MIB='128' if mode == 'on' else '0')
+        env = dict(build_environment(build, args.server.resolve().parent), LLAMA_SERVER=str(args.server.resolve()), GPU_LAYERS='all',
+                   GPU_DEVICE=args.device or '', CTX_SIZE='32768', PORT=str(args.backend_port),
+                   JEV_IMAGE_CACHE_MIB='128' if mode == 'on' else '0',
+                   SLOT_CACHE_DIR=str((args.output/'slots').resolve()))
+        env['LFM_MODEL'] = str(model.resolve())
+        env['LFM_MMPROJ'] = str(projector.resolve())
         procs = []
         block = {'mode':mode, 'runs':[]}
         logpath = args.output/f'{name}-backend.log'
         try:
             with logpath.open('w') as log, (args.output/f'{name}-api.log').open('w') as api_log:
-                procs.append(subprocess.Popen([sys.executable,str(ROOT/'scripts/start_backend.py'), '--model', 'vision'],env=env,stdout=log,stderr=log))
+                procs.append(subprocess.Popen([sys.executable,str(ROOT/'scripts/start_backend.py'), '--model', args.model,
+                    '-fa', args.flash_attn, '--cache-ram', '0'],env=env,stdout=log,stderr=log))
                 wait_ready(backend_url,procs[-1])
                 procs.append(subprocess.Popen([sys.executable,str(ROOT/'api_server.py'),'--backend-url',backend_url,'--port',str(args.port),'--workers',str(args.workers)],env=env,stdout=api_log,stderr=api_log))
                 wait_ready(api_url,procs[-1])
                 with urllib.request.urlopen(backend_url+'/props') as r:
                     props=json.load(r)
-                if mode == 'on' and 'jev-vision-cache' not in props.get('build_info',''):
+                expected_build = 'jev-vision-cache' if args.model == 'vision' else 'jev-sarashina'
+                if mode == 'on' and expected_build not in props.get('build_info',''):
                     raise RuntimeError('Backend is not the experimental encoder-cache build')
                 block['backend']={k:props.get(k) for k in ['build_info','model_path','modalities','total_slots']}
                 for i in range(args.rounds+1):

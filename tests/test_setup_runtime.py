@@ -54,14 +54,20 @@ class ModelSelectionTests(unittest.TestCase):
             with patch.dict(os.environ, {'LFM_PROFILE': 'text'}):
                 self.assertEqual(model_profile(root), 'text')
                 self.assertEqual(model_profile(root, 'vision'), 'vision')
+                self.assertEqual(model_profile(root, 'sarashina'), 'sarashina')
+            with patch.dict(os.environ, {'LFM_PROFILE': 'sarashina'}):
+                self.assertEqual(model_profile(root), 'sarashina')
             with patch.dict(os.environ, {'LFM_PROFILE': 'unknown'}):
                 with self.assertRaisesRegex(RuntimeError, 'Unknown model profile'):
                     model_profile(root)
 
     def test_text_downloads_no_projector(self):
-        lock = {'text_model': 'text', 'model': 'vl', 'mmproj': 'projector'}
+        lock = {'text_model': 'text', 'model': 'vl', 'mmproj': 'projector',
+                'sarashina_model': 'sarashina', 'sarashina_q8_model': 'sarashina-q8'}
         self.assertEqual(model_specs(lock, 'text'), ['text'])
         self.assertEqual(model_specs(lock, 'vision'), ['vl', 'projector'])
+        self.assertEqual(model_specs(lock, 'sarashina'), ['sarashina'])
+        self.assertEqual(model_specs(lock, 'sarashina-q8'), ['sarashina-q8'])
 
     def test_model_only_setup_saves_choice_without_changing_runtime(self):
         lock = json.loads((setup_runtime.ROOT/'scripts/runtime.json').read_text())
@@ -72,7 +78,7 @@ class ModelSelectionTests(unittest.TestCase):
             runtime = root/'.cache/runtime/selected.json'
             runtime.parent.mkdir(parents=True)
             runtime.write_text('{"server":"existing"}')
-            for profile, count in [('text', 1), ('vision', 2)]:
+            for profile, count in [('text', 1), ('vision', 2), ('sarashina', 1), ('sarashina-q8', 1)]:
                 with self.subTest(profile=profile), patch.object(setup_runtime, 'ROOT', root), patch.object(setup_runtime.sys, 'argv', ['setup', '--model', profile, '--model-only']), patch.object(setup_runtime, 'download') as download_mock, patch.object(setup_runtime, 'select_runtime') as select:
                     setup_runtime.main()
                     self.assertEqual(download_mock.call_count, count)

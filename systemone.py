@@ -93,13 +93,15 @@ def singleton_answer(spec):
 
 class AdapterBackend(JevLocal):
     def prepare(self, payload):
-        # Larger Choice sets use single numeric tokens; never truncate to 26 labels.
-        for spec in payload['questions'].values():
+        # Larger Choice sets use numeric labels only if the tokenizer supports
+        # them. Sarashina splits multi-digit numbers; reject rather than truncate.
+        for key, spec in payload['questions'].items():
             for label in self.labels(spec):
                 if label not in self.ids:
                     ids = self.post('/tokenize', {'content':label, 'add_special':False})['tokens']
                     if len(ids) != 1:
-                        raise RuntimeError(f'Backend cannot represent option label {label!r} as one token')
+                        raise ValidationError(['questions', key, 'criteria'],
+                                              f'Backend cannot represent option label {label!r} as one token; reduce the number of choices or use a backend with single-token numeric labels')
                     self.ids[label] = ids[0]
 
 

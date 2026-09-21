@@ -1,0 +1,283 @@
+--- a/cmake/build-info.cmake
++++ b/cmake/build-info.cmake
+@@ -46,3 +46,7 @@
+ else()
+     set(BUILD_TARGET "${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}")
+ endif()
++
++# Do not report the enclosing project git revision for the source archive.
++set(BUILD_NUMBER 11042)
++set(BUILD_COMMIT "ec9281505-jev-sarashina")
+--- a/tools/mtmd/clip-impl.h
++++ b/tools/mtmd/clip-impl.h
+@@ -449,6 +449,7 @@
+     PROJECTOR_TYPE_MINICPMV,
+     PROJECTOR_TYPE_GLM_EDGE,
+     PROJECTOR_TYPE_QWEN2VL,
++    PROJECTOR_TYPE_SARASHINA2VL,
+     PROJECTOR_TYPE_QWEN3VL,
+     PROJECTOR_TYPE_STEP3VL,
+     PROJECTOR_TYPE_GEMMA3,
+@@ -514,6 +515,7 @@
+     { PROJECTOR_TYPE_MINICPMV,          "resampler"},
+     { PROJECTOR_TYPE_GLM_EDGE,          "adapter"},
+     { PROJECTOR_TYPE_QWEN2VL,           "qwen2vl_merger"},
++    { PROJECTOR_TYPE_SARASHINA2VL,      "sarashina2vl"},
+     { PROJECTOR_TYPE_QWEN25VL,          "qwen2.5vl_merger"},
+     { PROJECTOR_TYPE_QWEN3VL,           "qwen3vl_merger"},
+     { PROJECTOR_TYPE_STEP3VL,           "step3vl"},
+--- a/tools/mtmd/clip.cpp
++++ b/tools/mtmd/clip.cpp
+@@ -1,4 +1,5 @@
+ #include "clip.h"
++#include "vision_embedding_cache.h"
+ #include "clip-impl.h"
+ #include "clip-model.h"
+ #include "clip-graph.h"
+@@ -145,6 +146,7 @@
+ 
+ 
+ struct clip_ctx {
++    jev_vision_embedding_cache jev_cache;
+     clip_model model;
+ 
+     gguf_context_ptr ctx_gguf;
+@@ -967,6 +969,7 @@
+             {
+                 builder = std::make_unique<clip_graph_dots3note_a>(ctx, img);
+             } break;
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN25VL:
+             {
+@@ -1648,6 +1651,14 @@
+                         hparams.image_resize_algo = RESIZE_ALGO_BILINEAR;
+                         get_u32(KEY_PROJ_SCALE_FACTOR, hparams.n_merge, false);
+                     } break;
++                case PROJECTOR_TYPE_SARASHINA2VL:
++                    {
++                        hparams.n_merge = 2;
++                        hparams.image_resize_algo = RESIZE_ALGO_BICUBIC;
++                        hparams.image_resize_pad = PAD_NONE;
++                        hparams.set_limit_image_tokens(4, 1280);
++                        hparams.set_warmup_n_tokens(8*8);
++                    } break;
+                 case PROJECTOR_TYPE_QWEN2VL:
+                 case PROJECTOR_TYPE_QWEN25VL:
+                 case PROJECTOR_TYPE_QWEN3VL:
+@@ -2308,6 +2319,7 @@
+                     || model.proj_type == PROJECTOR_TYPE_LDP
+                     || model.proj_type == PROJECTOR_TYPE_LDPV2
+                     || model.proj_type == PROJECTOR_TYPE_QWEN2VL
++                    || model.proj_type == PROJECTOR_TYPE_SARASHINA2VL
+                     || model.proj_type == PROJECTOR_TYPE_QWEN25VL
+                     || model.proj_type == PROJECTOR_TYPE_EXAONE4_5
+                     || model.proj_type == PROJECTOR_TYPE_GLM_EDGE
+@@ -2462,6 +2474,7 @@
+                     model.mm_boi = get_tensor(string_format(TN_TOK_GLM_BOI));
+                     model.mm_eoi = get_tensor(string_format(TN_TOK_GLM_EOI));
+                 } break;
++            case PROJECTOR_TYPE_SARASHINA2VL:
+             case PROJECTOR_TYPE_QWEN2VL:
+             case PROJECTOR_TYPE_QWEN25VL:
+             case PROJECTOR_TYPE_EXAONE4_5:
+@@ -2470,6 +2483,12 @@
+                     model.mm_0_b = get_tensor(string_format(TN_LLAVA_PROJ, 0, "bias"));
+                     model.mm_1_w = get_tensor(string_format(TN_LLAVA_PROJ, 2, "weight"));
+                     model.mm_1_b = get_tensor(string_format(TN_LLAVA_PROJ, 2, "bias"));
++                    if (model.proj_type == PROJECTOR_TYPE_SARASHINA2VL) {
++                        model.mm_post_norm_w = get_tensor(string_format(TN_MM_POST_NORM, "weight"));
++                        model.mm_post_norm_b = get_tensor(string_format(TN_MM_POST_NORM, "bias"));
++                        GGML_ASSERT(model.mm_post_norm_w->ne[0] == model.mm_1_b->ne[0]);
++                        GGML_ASSERT(model.mm_post_norm_b->ne[0] == model.mm_1_b->ne[0]);
++                    }
+                 } break;
+             case PROJECTOR_TYPE_QWEN3VL:
+                 {
+@@ -4035,6 +4054,7 @@
+     const int n_total = clip_n_output_tokens(ctx, img);
+     const auto & proj = ctx->proj_type();
+     switch (proj) {
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN25VL:
+         case PROJECTOR_TYPE_QWEN3VL:
+@@ -4061,6 +4081,7 @@
+     const auto & params = ctx->model.hparams;
+     const auto & proj = ctx->proj_type();
+     switch (proj) {
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN25VL:
+         case PROJECTOR_TYPE_QWEN3VL:
+@@ -4141,6 +4162,7 @@
+             {
+                 n_patches /= params.n_merge * params.n_merge;
+             } break;
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN25VL:
+         case PROJECTOR_TYPE_QWEN3VL:
+@@ -4401,7 +4423,26 @@
+     params.n_threads = n_threads;
+     params.out_embd = &out_batch_embd;
+ 
+-    return clip_encode(ctx, &params);
++    if (ctx->model.proj_type != PROJECTOR_TYPE_SARASHINA2VL || imgs_c_ptr->is_audio ||
++            imgs_c_ptr->entries.size() != 1 || out_batch_embd.empty() || !ctx->jev_cache.enabled()) {
++        return clip_encode(ctx, &params);
++    }
++    // Key the actual preprocessed pixels, shape, and per-tile metadata, NOT
++    // the image ID (all tiles of one source image can share the same ID).
++    std::string key;
++    auto append = [&](const auto & value) {
++        key.append(reinterpret_cast<const char *>(&value), sizeof(value));
++    };
++    append(imgs_c_ptr->entries.size());
++    for (const auto & image : imgs_c_ptr->entries) {
++        if (image.is_placeholder()) return clip_encode(ctx, &params);
++        append(image.nx()); append(image.ny());
++        append(image.add_viewsep); append(image.add_newline); append(image.lead_pad);
++        const auto & pixels = image.get_ro_buf();
++        append(pixels.size());
++        key.append(reinterpret_cast<const char *>(pixels.data()), pixels.size() * sizeof(float));
++    }
++    return ctx->jev_cache.run(std::move(key), out_batch_embd, [&]() { return clip_encode(ctx, &params); });
+ }
+ 
+ // persisted state slots of the gen-audio decoder, per pipeline
+@@ -4780,6 +4821,7 @@
+                 set_input_i32("merger_ds_idx_2", m_ds_2);
+                 set_input_i32("merger_ds_idx_3", m_ds_3);
+             } break;
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN3VL:
+         case PROJECTOR_TYPE_GLM4V:
+@@ -5937,6 +5979,7 @@
+             return ctx->model.mm_merger_fc2_b->ne[0];
+         case PROJECTOR_TYPE_MUSE_GLIMMER:
+             return ctx->model.mm_2_w->ne[1];
++        case PROJECTOR_TYPE_SARASHINA2VL:
+         case PROJECTOR_TYPE_QWEN2VL:
+         case PROJECTOR_TYPE_QWEN25VL:
+         case PROJECTOR_TYPE_EXAONE4_5:
+--- a/tools/mtmd/models/qwen2vl.cpp
++++ b/tools/mtmd/models/qwen2vl.cpp
+@@ -183,8 +183,13 @@
+                         model.mm_0_w, model.mm_0_b,
+                         nullptr, nullptr,
+                         model.mm_1_w, model.mm_1_b,
+-                        FFN_GELU,
++                        proj_type == PROJECTOR_TYPE_SARASHINA2VL ? FFN_GELU_ERF : FFN_GELU,
+                         -1);
++
++    if (proj_type == PROJECTOR_TYPE_SARASHINA2VL) {
++        embeddings = build_norm(embeddings, model.mm_post_norm_w, model.mm_post_norm_b,
++                                NORM_TYPE_NORMAL, 1e-5f, -1);
++    }
+ 
+     if (use_window_attn) {
+         window_idx = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, n_pos / 4);
+--- a/tools/mtmd/mtmd.cpp
++++ b/tools/mtmd/mtmd.cpp
+@@ -690,6 +690,15 @@
+                     tok_row_end_trail = false; // no trailing end-of-row token
+                     ov_img_first      = true;
+                     image_preproc     = std::make_unique<mtmd_image_preprocessor_minicpmv>(ctx_v);
++                } break;
++            case PROJECTOR_TYPE_SARASHINA2VL:
++                {
++                    img_beg = "<|prefix|>";
++                    img_end = "<|suffix|>";
++                    if (vocab && (lookup_token(img_beg) != 102397 || lookup_token(img_end) != 102398)) {
++                        throw std::runtime_error("Sarashina projector requires the matching Sarashina vocabulary");
++                    }
++                    image_preproc = std::make_unique<mtmd_image_preprocessor_dyn_size>(ctx_v);
+                 } break;
+             case PROJECTOR_TYPE_QWEN2VL:
+             case PROJECTOR_TYPE_QWEN25VL:
+--- a/tools/mtmd/mtmd-image.cpp
++++ b/tools/mtmd/mtmd-image.cpp
+@@ -2,6 +2,7 @@
+ 
+ #include <algorithm>
+ #include <cmath>
++#include <stdexcept>
+ #include <vector>
+ 
+ void mtmd_image_preproc_out::append(const clip_hparams & hparams, const clip_image_u8 & img, bool normalized) {
+@@ -156,6 +157,34 @@
+         return {w_bar, h_bar};
+     }
+ 
++    // Sarashina uses Python's ties-to-even rounding and double-precision size calculations.
++    static clip_image_size calc_size_sarashina(const clip_image_size & size, const calc_size_opt & opts) {
++        const int w = size.width;
++        const int h = size.height;
++        if (w <= 0 || h <= 0 || std::max(w, h) > 200.0 * std::min(w, h)) {
++            throw std::runtime_error("Sarashina image aspect ratio must not exceed 200");
++        }
++        const int f = opts.align_size;
++        auto round_even = [f](int value) {
++            const int q = value / f;
++            const int r = value % f;
++            return (q + (2*r > f || (2*r == f && q % 2 != 0))) * f;
++        };
++        int wb = round_even(w);
++        int hb = round_even(h);
++        const double area = static_cast<double>(w) * h;
++        if (static_cast<double>(wb) * hb > opts.max_pixels) {
++            const double beta = std::sqrt(area / opts.max_pixels);
++            wb = std::max(f, static_cast<int>(std::floor(w / beta / f)) * f);
++            hb = std::max(f, static_cast<int>(std::floor(h / beta / f)) * f);
++        } else if (static_cast<double>(wb) * hb < opts.min_pixels) {
++            const double beta = std::sqrt(opts.min_pixels / area);
++            wb = static_cast<int>(std::ceil(w * beta / f)) * f;
++            hb = static_cast<int>(std::ceil(h * beta / f)) * f;
++        }
++        return {wb, hb};
++    }
++
+     // draw src image into dst image at offset (offset_x, offset_y)
+     static void composite(clip_image_u8 & dst, const clip_image_u8 & src, int offset_x, int offset_y) {
+         if (src.is_placeholder()) {
+@@ -769,14 +798,15 @@
+     const clip_image_size original_size = img.get_size();
+     // the original pixtral model doesn't have n_merge
+     const int cur_merge = hparams.n_merge;
+-    const clip_image_size target_size = img_tool::calc_size_preserved_ratio(
+-        original_size,
+-        {
+-            /* align_size   */ hparams.patch_size * cur_merge,
+-            /* min_pixels   */ hparams.image_min_pixels,
+-            /* max_pixels   */ hparams.image_max_pixels,
+-            /* longest_edge */ 0,
+-        });
++    const img_tool::calc_size_opt opts = {
++        /* align_size   */ hparams.patch_size * cur_merge,
++        /* min_pixels   */ hparams.image_min_pixels,
++        /* max_pixels   */ hparams.image_max_pixels,
++        /* longest_edge */ 0,
++    };
++    const clip_image_size target_size = sarashina
++        ? img_tool::calc_size_sarashina(original_size, opts)
++        : img_tool::calc_size_preserved_ratio(original_size, opts);
+     img_tool::resize(img, resized_image, target_size,
+                         hparams.image_resize_algo,
+                         hparams.image_resize_pad,
+--- a/tools/mtmd/mtmd-image.h
++++ b/tools/mtmd/mtmd-image.h
+@@ -119,8 +119,11 @@
+ // if image_resize_pad is true, the resized image will be padded, otherwise it will be either stretched or center-cropped depending on image_resize_pad
+ // this is used by models with native support for dynamic image size, for example: Qwen-VL, Pixtral, Kimi-VL, etc
+ struct mtmd_image_preprocessor_dyn_size : mtmd_image_preprocessor {
+-    mtmd_image_preprocessor_dyn_size(const clip_ctx * ctx) : mtmd_image_preprocessor(ctx) {}
++    mtmd_image_preprocessor_dyn_size(const clip_ctx * ctx) : mtmd_image_preprocessor(ctx), sarashina(clip_get_projector_type(ctx) == PROJECTOR_TYPE_SARASHINA2VL) {}
+     mtmd_image_preproc_out preprocess(const clip_image_u8 & img) const override;
++
++private:
++    bool sarashina;
+ };
+ 
+ // similar to mtmd_image_preprocessor_dyn_size, but resize the image to have longest edge equal to hparams.image_longest_edge, while preserving aspect ratio

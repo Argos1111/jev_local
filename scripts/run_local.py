@@ -12,6 +12,11 @@ import time
 import urllib.error
 import urllib.request
 
+if __package__:
+    from .setup_runtime import MODEL_PROFILES
+else:
+    from setup_runtime import MODEL_PROFILES
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -32,7 +37,7 @@ def wait_ready(url, process, timeout=180):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model', choices=['text', 'vision'], help='Override the model chosen at setup')
+    parser.add_argument('--model', choices=MODEL_PROFILES, help='Override the model chosen at setup (standard Sarashina profiles: text input only)')
     parser.add_argument('--port', type=int, default=8080, help='Public local API port')
     parser.add_argument('--backend-port', type=int, default=int(os.environ.get('PORT', '8097')))
     parser.add_argument('--state-cache', choices=['auto', 'shared', 'off'], default='auto')
@@ -41,6 +46,7 @@ def main():
         parser.error('API and backend ports must be distinct and in 1..65535')
     for port in (args.port, args.backend_port):
         with socket.socket() as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 probe.bind(('127.0.0.1', port))
             except OSError as exc:
@@ -48,7 +54,7 @@ def main():
     cache = Path(os.environ.get('SLOT_CACHE_DIR', str(ROOT/'.cache/slots'))).resolve()
     backend_url = f'http://127.0.0.1:{args.backend_port}'
     api_url = f'http://127.0.0.1:{args.port}'
-    log_path = ROOT/'.cache/llama-server.log'
+    log_path = Path(os.environ.get('JEV_BACKEND_LOG', str(ROOT/'.cache/llama-server.log')))
     log_path.parent.mkdir(parents=True, exist_ok=True)
     children = []
 
@@ -94,4 +100,5 @@ if __name__ == '__main__':
     try:
         main()
     except (OSError, RuntimeError) as exc:
-        sys.exit(f'Cannot start Jev Local: {exc}\nRun ./setup.sh first; see .cache/llama-server.log and docs/SETUP.md.')
+        log_path = os.environ.get('JEV_BACKEND_LOG', str(ROOT/'.cache/llama-server.log'))
+        sys.exit(f'Cannot start Jev Local: {exc}\nRun ./setup.sh first; see {log_path} and docs/SETUP.md.')

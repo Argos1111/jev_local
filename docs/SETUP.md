@@ -2,7 +2,7 @@
 
 ## 標準構成
 
-`./setup.sh --model text`は文章用のLFM2.5-1.2B Instruct Q8_0、`./setup.sh --model vision`は画像対応のLFM2.5-VL-1.6B Q8_0とmmprojを取得します。GPUを検出して対応するllama.cpp公式バイナリも導入します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
+`./setup.sh --model text`は文章用のLFM2.5-1.2B Instruct Q8_0、`./setup.sh --model vision`は画像対応のLFM2.5-VL-1.6B Q8_0とmmprojを取得します。`--model sarashina`はSarashina2.2 Vision 3B Q4_K_M、`--model sarashina-q8`は同Q8_0の言語部分だけを取得します（[通常構成の制約・画像修正版の別ビルド](SARASHINA.md)）。GPUを検出して対応するllama.cpp公式バイナリも導入します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
 
 | 環境 | 自動選択 |
 |---|---|
@@ -32,6 +32,7 @@ GPUドライバーはインストール済みである必要があります。RO
 - 文章モデル: **LFM2.5-1.2B-Instruct-Q8_0.gguf**
 - 画像対応モデル: **LFM2.5-VL-1.6B-Q8_0.gguf**（約1.25 GB）
 - 画像エンコーダー: **mmproj-LFM2.5-VL-1.6b-F16.gguf**（約0.85 GB）
+- Sarashina比較用: **sarashina2.2-vision-3b.Q4_K_M.gguf**（約2.07 GB）または**Q8_0**（約3.57 GB）。mmprojなしのテキスト入力のみ
 - 全配布物のURL・モデルリビジョン・SHA256: [`scripts/runtime.json`](../scripts/runtime.json)
 - 保存先: `.cache/runtime/b11042/<環境>/`、`models/`
 - ランタイム選択結果: `.cache/runtime/selected.json`。`run.sh`と`run_server.sh`が読み込み、GPU版では自動で全レイヤーをオフロードします。
@@ -40,7 +41,7 @@ GPUドライバーはインストール済みである必要があります。RO
 
 VL構成ではモデル本体と画像エンコーダーの計約2.1 GBに加え、選択するランタイム（CUDA版は付属ライブラリ込みで約760 MBのダウンロード）、展開用ディスク、推論用メモリが必要です。初回はGitHubとHugging FaceへのHTTPSアクセスが必要で、取得完了後のデモ推論はローカルで動作します。
 
-モデルの選択は`.cache/runtime/model.json`に保存します。`--model`を省略すると`LFM_PROFILE`、保存した選択、`text`の順に解決します。両モデルを取得済みなら、サーバーを停止し`./run.sh --model text`または`./run.sh --model vision`で起動し直して切り替えます。起動時の指定は保存された選択を変更しません。`run_server.sh`でも同じオプションを使えます。
+モデルの選択は`.cache/runtime/model.json`に保存します。`--model`を省略すると`LFM_PROFILE`、保存した選択、`text`の順に解決します。各モデルを取得済みなら、サーバーを停止し`./run.sh --model text`・`--model vision`・`--model sarashina`・`--model sarashina-q8`で起動し直して切り替えます。起動時の指定は保存された選択を変更しません。`run_server.sh`でも同じオプションを使えます。
 
 ## 起動設定
 
@@ -55,14 +56,15 @@ python3 systemone_client.py --url http://127.0.0.1:8081
 | 設定 | 既定値 | 用途 |
 |---|---|---|
 | `LLAMA_SERVER` | 自動選択した実行ファイル | 別の推論バイナリ |
-| `LFM_PROFILE` | 保存した選択、未設定なら`text` | `text` / `vision`。CLIの`--model`が優先 |
-| `LFM_MODEL` | 選択したモデルの絶対パス | 既存GGUF。標準モデル選択を上書き |
-| `LFM_MMPROJ` | `vision`のみ標準mmproj、`text`はなし | 画像エンコーダー。空文字で無効化 |
+| `LFM_PROFILE` | 保存した選択、未設定なら`text` | `text` / `vision` / `sarashina` / `sarashina-q8`。CLIの`--model`が優先 |
+| `LFM_MODEL` | 選択したモデルの絶対パス | 既存GGUF。標準モデル選択を上書き（変数名は歴史的なもの。Sarashinaにも適用） |
+| `LFM_MMPROJ` | `vision`のみ標準mmproj、他はなし | 画像エンコーダー。空文字で無効化 |
 | `THREADS` | `8` | CPUスレッド数 |
 | `CTX_SIZE` | `8192` | 全slotの合計コンテキスト |
 | `GPU_LAYERS` | GPU版は`all`、CPU版は`0` | 自動設定を上書き |
 | `GPU_DEVICE` | 未指定 | GPU版で明示する場合のデバイス名 |
 | `SLOT_CACHE_DIR` | `.cache/slots`の絶対パス | 一時状態の保存先 |
+| `JEV_BACKEND_LOG` | `.cache/llama-server.log` | `run.sh`のbackendログ。実験ランチャーは専用パスを指定 |
 | `JEV_API_KEY` | `local-dev` | サーバー・クライアント共通のローカルキー |
 
 環境変数はシェルで`export`するか、コマンドの前に指定します。`.env`の自動読み込みはありません。パスに空白がある場合は引用符で囲んでください。

@@ -1,0 +1,219 @@
+--- a/ggml/src/ggml-cuda/fattn.cu
++++ b/ggml/src/ggml-cuda/fattn.cu
+@@ -289,6 +289,10 @@
+         case 128:
+             GGML_ASSERT(V->ne[0] == 128);
+             ggml_cuda_flash_attn_ext_mma_f16_switch_ncols2<128, 128>(ctx, dst);
++            break;
++        case 160:
++            GGML_ASSERT(V->ne[0] == 160);
++            ggml_cuda_flash_attn_ext_mma_f16_switch_ncols2<160, 160>(ctx, dst);
+             break;
+         case 192: {
+             // MiMo-V2.5 / V2.5-Pro / V2-Flash: gqa_ratio is 8 (SWA) or 16 (full attn)
+@@ -558,6 +562,7 @@
+         case 128:
+         case 112:
++        case 160:
+         case 256:
+             if (V->ne[0] != K->ne[0]) {
+                 return BEST_FATTN_KERNEL_NONE;
+             }
+--- a/ggml/src/ggml-cuda/fattn-tile.cu
++++ b/ggml/src/ggml-cuda/fattn-tile.cu
+@@ -33,6 +33,10 @@
+             GGML_ASSERT(V->ne[0] == K->ne[0]);
+             ggml_cuda_flash_attn_ext_tile_case<128, 128>(ctx, dst);
+         } break;
++        case 160: {
++            GGML_ASSERT(V->ne[0] == K->ne[0]);
++            ggml_cuda_flash_attn_ext_tile_case<160, 160>(ctx, dst);
++        } break;
+         case 192: {
+             GGML_ASSERT(V->ne[0] == 128);
+             ggml_cuda_flash_attn_ext_tile_case<192, 128>(ctx, dst);
+--- a/ggml/src/ggml-cuda/fattn-tile.cuh
++++ b/ggml/src/ggml-cuda/fattn-tile.cuh
+@@ -19,6 +19,11 @@
+     }                                                                                                 \
+ 
+ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_nvidia_fp16(const int DKQ, const int DV, const int ncols) {
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  2,  64, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  4, 128, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  8, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 16, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 32, 256, 2,  32,  80)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  2,  64, 2,  64,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  4, 128, 2,  64,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  8, 256, 2,  64,  40)
+@@ -88,6 +93,11 @@
+ }
+ 
+ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_nvidia_fp32(const int DKQ, const int DV, const int ncols) {
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  2,  64, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  4, 128, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  8, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 16, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 32, 256, 2,  32,  80)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  2,  64, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  4, 128, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  8, 256, 2,  32,  40)
+@@ -157,6 +167,11 @@
+ }
+ 
+ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_amd(const int DKQ, const int DV, const int ncols) {
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  2,  64, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  4, 128, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  8, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 16, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 32, 256, 2,  32,  80)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  2,  64, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  4, 128, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  8, 256, 2,  32,  40)
+@@ -235,6 +250,11 @@
+ }
+ 
+ static constexpr __host__ __device__ uint32_t ggml_cuda_fattn_tile_get_config_amd_rdna(const int DKQ, const int DV, const int ncols) {
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  2,  64, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  4, 128, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160,  8, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 16, 256, 2,  32,  80)
++    GGML_CUDA_FATTN_TILE_CONFIG_CASE(160, 160, 32, 256, 2,  32,  80)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  2,  64, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  4, 128, 2,  32,  40)
+     GGML_CUDA_FATTN_TILE_CONFIG_CASE( 40,  40,  8, 256, 2,  32,  40)
+@@ -583,7 +603,8 @@
+     constexpr int cpw   = ncols > nwarps ? ncols/nwarps : 1; // Q columns per warp
+     constexpr int np    = nwarps > ncols ? nwarps/ncols : 1; // number of parallel warps per Q column
+ 
+-    constexpr int DVp = (DV + 2*warp_size - 1) & ~(2*warp_size - 1); // DV padded to multiple of 2*warp_size.
++    // The vectorized copies need four half2 registers per lane for DV == 160.
++    constexpr int DVp = DV == 160 ? 256 : (DV + 2*warp_size - 1) & ~(2*warp_size - 1);
+ 
+     // KQ_cs == KQ chunk size, number of KQ values in j direction to store as one contiguous chunk in memory.
+     // KQ is originally 2D but uses a Z-shaped 3D memory pattern like KQ[ncols/KQ_cs][DVp][KQ_cs].
+@@ -874,7 +895,7 @@
+     static_assert(nbatch_fa % (np*warp_size) == 0, "nbatch_fa % (np*warp_size) != 0");
+ 
+     constexpr int DKQp = (DKQ + 2*warp_size - 1) & ~(2*warp_size - 1); // DKQ padded to multiple of 2*warp_size.
+-    constexpr int DVp  = (DV  + 2*warp_size - 1) & ~(2*warp_size - 1); // DV  padded to multiple of 2*warp_size.
++    constexpr int DVp  = DV == 160 ? 256 : (DV + 2*warp_size - 1) & ~(2*warp_size - 1);
+ 
+     // Q_tmp == SRAM buffer to hold Q data for the entire lifetime of the kernel.
+     // KV_tmp == SRAM buffer to hold fragments of K/V data while iterating over ne11.
+@@ -1348,6 +1369,7 @@
+ extern DECL_FATTN_TILE_CASE( 96,  96);
+ extern DECL_FATTN_TILE_CASE(112, 112);
+ extern DECL_FATTN_TILE_CASE(128, 128);
++extern DECL_FATTN_TILE_CASE(160, 160);
+ extern DECL_FATTN_TILE_CASE(192, 128);
+ extern DECL_FATTN_TILE_CASE(256, 256);
+ extern DECL_FATTN_TILE_CASE(320, 256);
+--- a/ggml/src/ggml-cuda/fattn-mma-f16.cuh
++++ b/ggml/src/ggml-cuda/fattn-mma-f16.cuh
+@@ -62,6 +62,11 @@
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 32, 128, 2,  64,  64,  64,  64, 2, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 64, 128, 2,  64,  64,  64,  64, 2, true);
+ 
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160,  8, 128, 2,  64,  80,  80,  80, 2, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 16, 128, 2,  64,  80,  80,  80, 2, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 32, 128, 2,  64,  80,  80,  80, 2, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 64, 128, 2,  64,  80,  80,  80, 2, true);
++
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128,  8,  64, 4,  64,  96,  64,  64, 2, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128, 16,  64, 4,  32,  96,  64,  64, 2, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128, 32, 128, 2,  32,  96,  64,  64, 2, true);
+@@ -151,6 +156,11 @@
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 32, 128, 2,  64,  64,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 64, 128, 2,  64,  64,  64,  64, 1, true);
+ 
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160,  8,  64, 2,  32,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 16,  64, 2,  32,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 32, 128, 2,  64,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 64, 128, 2,  64,  80,  80,  80, 1, true);
++
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128,  8,  64, 2,  32,  96,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128, 16,  64, 2,  32,  96,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128, 32, 128, 2,  64,  96,  64,  64, 1, true);
+@@ -202,6 +212,11 @@
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 16, 256, 2,  64,  64,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 32, 256, 2,  64,  64,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(128, 128, 64, 256, 2,  64,  64,  64,  64, 1, true);
++
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160,  8, 256, 1,  64,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 16, 256, 1,  64,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 32, 256, 1,  64,  80,  80,  80, 1, true);
++    GGML_CUDA_FATTN_MMA_CONFIG_CASE(160, 160, 64, 256, 1,  64,  80,  80,  80, 1, true);
+ 
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128,  8, 256, 1,  64,  64,  64,  64, 1, true);
+     GGML_CUDA_FATTN_MMA_CONFIG_CASE(192, 128, 16, 256, 1,  64,  64,  64,  64, 1, true);
+@@ -2084,6 +2099,7 @@
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 96,  96,   8)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(112, 112,   8)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(128, 128,   8)
++DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(160, 160,   8)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(256, 256,   8)
+ 
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 64,  64,  16)
+@@ -2091,6 +2107,7 @@
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 96,  96,  16)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(112, 112,  16)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(128, 128,  16)
++DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(160, 160,  16)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(256, 256,  16)
+ 
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 64,  64,  32)
+@@ -2098,6 +2115,7 @@
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 96,  96,  32)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(112, 112,  32)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(128, 128,  32)
++DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(160, 160,  32)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(256, 256,  32)
+ 
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 64,  64,  64)
+@@ -2105,6 +2123,7 @@
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2( 96,  96,  64)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(112, 112,  64)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(128, 128,  64)
++DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(160, 160,  64)
+ DECL_FATTN_MMA_F16_CASE_ALL_NCOLS2(256, 256,  64)
+ 
+ extern DECL_FATTN_MMA_F16_CASE(512, 512,  4,  2);
+--- a/ggml/src/ggml-cuda/template-instances/generate_cu_files.py
++++ b/ggml/src/ggml-cuda/template-instances/generate_cu_files.py
+@@ -3,7 +3,7 @@
+ from glob import glob
+ import os
+ 
+-HEAD_SIZES_KQ = [40, 64, 72, 80, 96, 112, 128, 192, 256, 320, 512, 576]
++HEAD_SIZES_KQ = [40, 64, 72, 80, 96, 112, 128, 160, 192, 256, 320, 512, 576]
+ 
+ # DKQ -> DV override for asymmetric head dims.
+ HEAD_SIZES_V_OVERRIDE = {576: 512, 320: 256, 192: 128}
+--- a/tests/test-backend-ops.cpp
++++ b/tests/test-backend-ops.cpp
+@@ -10646,6 +10646,24 @@
+         }
+     }
+ 
++    // Sarashina decode/prefill, KV views, sequence batches, and sparse masks.
++    for (int nb : {1, 2, 3, 7, 8, 9, 16, 31, 32, 109, 423, 512}) {
++        for (int ns : {1, 4}) {
++            for (int kv : {113, 256, 512, 2048, 8192}) {
++                for (auto permute : {std::array<int32_t, 4>{0, 1, 2, 3}, std::array<int32_t, 4>{0, 2, 1, 3}}) {
++                    test_cases.emplace_back(new test_flash_attn_ext(160, 160, 8, {2, ns}, kv, nb,
++                        true, false, 0, 0, GGML_PREC_F32, GGML_TYPE_F16, GGML_TYPE_F16, permute,
++                        true, false, kv == 8192 ? 2048 : 0));
++                }
++            }
++        }
++    }
++    for (int nb : {1, 7, 32, 423}) {
++        for (int kv : {113, 512, 2048}) {
++            test_cases.emplace_back(new test_flash_attn_ext(160, 160, 8, {2, 1}, kv, nb, false));
++        }
++    }
++
+     // prefill-shaped cases with long KV (nb >= 32, kv >= 1024): covers the
+     // XMX/GEMM-accelerated SYCL FA path which only activates for these shapes.
+     for (int kv : { 1024, 2048, }) {

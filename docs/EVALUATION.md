@@ -37,6 +37,7 @@ python3 -m tools.evaluate --json-baseline --output results/with_json.json
 
 - `python3 -m tools.evaluate_heldout_tasks --url ... --output results/heldout`: ModernBERTの学習に使っていないタスク（livedoorニュース分類・JMMLU・手作り顧客対応16例）をAPI経由で採点。LFMとModernBERTの汎化を同条件で比較します（[結果](MODERNBERT.md#学習に使っていないタスクでの汎化)）。
 - [JGLUE評価](JGLUE.md): JNLI / JCommonsenseQAの固定splitをAPI経由で評価。`--url`を変えれば[ModernBERTバックエンド](MODERNBERT.md)にも同じ手順で使えます。
+- [Sarashinaと全方式の比較](SARASHINA.md): LFM text / VL・Sarashina Q4 / Q8・ModernBERTを同じテキスト入力で測定。画像修正、数値照合、GPU FA160、画像エンコード再利用の同一ビルド比較も記録。
 - [共通Stateの計測](STATE_CACHE.md): 専用バックエンドで保存・復元の効果を測定。
 - `python3 -m tools.probe_prefix`: 過去の回答prefix探索用ツール。
 
@@ -51,6 +52,8 @@ python3 -m tools.verify_vision --url http://127.0.0.1:8080
 ```
 
 赤・青のPNGをコードで生成して送り、画像に応じた回答と、テキストStateキャッシュとの同時実行を確認します。外部の画像ファイルは不要です。APIは`--state-cache auto`または`shared`で起動してください。
+
+Sarashinaはこの単色テストを参照クローンでも誤答します。専用の`tools.verify_sarashina_vision`は図形・画像順・再送・テキストとの同時実行を検証し、既知の失敗も記録して非ゼロ終了します。前処理/embeddingの数値照合は`tools.verify_sarashina_embeddings`、参照生成との比較は`tools.verify_sarashina_reference`。依存と許容誤差・実行許可の条件は[Sarashinaの再検証手順](SARASHINA.md#再検証コマンド)を参照してください。
 
 ### 手元の画像で応答時間を測る
 
@@ -91,3 +94,5 @@ python3 -m tools.benchmark_image_cache \
 ```
 
 必要なROCm共有ライブラリがシステムにない場合は、`LD_LIBRARY_PATH`を設定してから実行します。同じ実験バイナリを無効→有効→有効→無効の順に起動し、初回と再送時を分けて記録します。この比較ツールはChoice質問用です。`--workers 1`で逐次実行、`--port`・`--backend-port`で使用ポート、`--output`で保存先を指定できます。初期値の19080/19097は測定用で、通常の8080/8097や手動起動例の18080/18097とは別です。
+
+Sarashinaの修正版では`--model sarashina`（または`--model sarashina-q8`）、専用`--server`・`--mmproj`を明示します。FA単独の比較には`tools.benchmark_sarashina_fa`を使用してください。[測定範囲の違いとコマンド](SARASHINA.md#再検証コマンド)を参照してください。

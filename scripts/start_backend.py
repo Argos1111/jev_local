@@ -7,14 +7,14 @@ from pathlib import Path
 import sys
 
 if __package__:
-    from .setup_runtime import ROOT, runtime_env, model_profile, model_specs
+    from .setup_runtime import ROOT, MODEL_PROFILES, runtime_env, model_profile, model_specs
 else:
-    from setup_runtime import ROOT, runtime_env, model_profile, model_specs
+    from setup_runtime import ROOT, MODEL_PROFILES, runtime_env, model_profile, model_specs
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model', choices=['text', 'vision'])
+    parser.add_argument('--model', choices=MODEL_PROFILES)
     options, extra = parser.parse_known_args()
     profile = model_profile(ROOT, options.model)
     selected = ROOT/'.cache/runtime/selected.json'
@@ -22,9 +22,11 @@ def main():
     explicit = os.environ.get('LLAMA_SERVER')
     server = Path(explicit) if explicit else ROOT/selection.get('server', '.cache/runtime/llama/llama-server')
     lock = json.loads((ROOT/'scripts/runtime.json').read_text())
-    model = Path(os.environ.get('LFM_MODEL', str(ROOT/'models'/model_specs(lock, profile)[0]['filename'])))
+    specs = model_specs(lock, profile)
+    model = Path(os.environ.get('LFM_MODEL', str(ROOT/'models'/specs[0]['filename'])))
     # An explicit custom model needs its own projector; never pair it with ours.
-    projector = os.environ.get('LFM_MMPROJ', '' if 'LFM_MODEL' in os.environ or profile == 'text' else str(ROOT/'models'/lock['mmproj']['filename']))
+    default_projector = str(ROOT/'models'/specs[1]['filename']) if len(specs) > 1 and 'LFM_MODEL' not in os.environ else ''
+    projector = os.environ.get('LFM_MMPROJ', default_projector)
     if not server.is_file() or not os.access(server, os.X_OK):
         sys.exit(f'llama-server not found: {server}. Run ./setup.sh or set LLAMA_SERVER.')
     if not model.is_file():

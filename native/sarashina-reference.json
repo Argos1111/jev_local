@@ -1,0 +1,56 @@
+{
+  "repository": "AnalyticPudding/sarashina2.2-vision-3b-clone",
+  "revision": "05710ee40ae41ff322da991298ab893cf54ce110",
+  "official_repository": "sbintuitions/sarashina2.2-vision-3b",
+  "notice": "Public clone, not an authenticated official checkpoint. Full weight equivalence is unverified. Official files required access approval (HTTP 401) during investigation.",
+  "files": {
+    "config.json": {
+      "sha256": "d0d60df2cadef8686039771e551e0eb98947c73b697105545d98b5dd80276df8",
+      "size": 1577
+    },
+    "configuration_sarashina2_vision.py": {
+      "sha256": "4647f49bbe1e6ec89c0cf52ab2b95ff123c0b8b364891d934eca78311a7e5048",
+      "size": 2921
+    },
+    "modeling_sarashina2_vision.py": {
+      "sha256": "dd7b93cb63afd785fd2c1122284b979d87477963e7085d59f0048a087046a195",
+      "size": 11691
+    },
+    "model.safetensors.index.json": {
+      "sha256": "a8f7a09a9fa2735eb2eaf14b698301f9ee00a21b898f000c9dabc7d8b2bbe724",
+      "size": 50177
+    },
+    "model-00001-of-00008.safetensors": {
+      "sha256": "c27d2a010d6cfc0925bee17bd644dca8441fd8dc433e90c488f49bf88631e972",
+      "size": 891766400
+    },
+    "model-00002-of-00008.safetensors": {
+      "sha256": "a7afec0f6cce3bdf4e817b6db7c81d52d04bee3cca70eb8020abea17e46576a6",
+      "size": 963402528
+    },
+    "model-00003-of-00008.safetensors": {
+      "sha256": "a4c9cb8bd18bd0ffef428da4819bdb48c458f83d14b2d86452202a05808c093e",
+      "size": 996214648
+    },
+    "model-00004-of-00008.safetensors": {
+      "sha256": "3374d40e2a997d57dc25dc495df6f44026f0c7214a0bc67f183837dad55d2d94",
+      "size": 996204208
+    },
+    "model-00005-of-00008.safetensors": {
+      "sha256": "09fa1f65f6369e1a824e5ef1c5c850186375f8adca454767057fc3790c75fcb5",
+      "size": 970000424
+    },
+    "model-00006-of-00008.safetensors": {
+      "sha256": "9927a8f6c062faa2cee55126043f21d57b302ea041a8dadb9c2159a7fc72b94f",
+      "size": 976543184
+    },
+    "model-00007-of-00008.safetensors": {
+      "sha256": "8b2dfdae7270cd2cf1343759bb92e4df090580515bb309f4ec66127de166ff22",
+      "size": 970000424
+    },
+    "model-00008-of-00008.safetensors": {
+      "sha256": "998ee0e470c12ec45fd622d71d0d3df204b6691fd7c9ed89ed1965964a6df68a",
+      "size": 838888280
+    }
+  }
+}

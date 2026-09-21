@@ -1,6 +1,6 @@
 # TypeSafe / Jev互換のローカルAPI
 
-2026-09-19時点の[公式HTTP API](https://docs.typesafe.ai/api)、[Choice](https://docs.typesafe.ai/primitives/choice)、[Score](https://docs.typesafe.ai/primitives/score)、[Noul](https://docs.typesafe.ai/primitives/noul)、[公式Python SDK](https://docs.typesafe.ai/sdk/python/api/clients/sync)を参照した入出力互換アダプターです。**Jev本体ではなくLFM2.5を実行します。**
+2026-09-19時点の[公式HTTP API](https://docs.typesafe.ai/api)、[Choice](https://docs.typesafe.ai/primitives/choice)、[Score](https://docs.typesafe.ai/primitives/score)、[Noul](https://docs.typesafe.ai/primitives/noul)、[公式Python SDK](https://docs.typesafe.ai/sdk/python/api/clients/sync)を参照した入出力互換アダプターです。**Jev本体ではなく、LFM2.5・Sarashina・ModernBERTのローカル判定器を実行します。**
 
 ## 起動
 
@@ -46,7 +46,7 @@ curl http://127.0.0.1:8080/v1/systemone \
 - Choiceは1〜255候補、Scoreは2〜10段階です。単一Choiceは推論せず唯一の候補を返します。
 - Choiceのキーと説明を両方プロンプトに含めます。質問IDは推論には渡しません。
 - instructions・criteriaの説明は文字列・object・arrayに対応し、Choiceの説明はnullも受け付けます。SDKに合わせinstructionsの省略/nullも許容し、Noulはinstructionsまたはcriteriaを必要とします。
-- 選択肢が27個以上の場合は0〜254の数字ラベルに割り当て、単一トークンであることをバックエンドで確認します。
+- 選択肢が27個以上の場合、llama.cpp版は0〜254の数字ラベルに割り当て、単一トークンであることをバックエンドで確認します。Sarashinaは複数桁の数字が単一トークンにならないため、**Choiceは26候補まで**です。27以上は422を返し、候補を切り捨てません。LFMとModernBERTは255候補まで対応します。
 
 ```bash
 curl http://127.0.0.1:8080/v1/models \
@@ -57,7 +57,7 @@ curl http://127.0.0.1:8080/v1/models \
 
 ## 公式SDK
 
-`typesafe-sdk==0.7.0`の同期・非同期クライアントで実通信を確認しました。混在3種・構造化入力・27択・255択を検証しています。サーバー自身にはSDKのインストールは不要です。
+`typesafe-sdk==0.7.0`の同期・非同期クライアントでLFMとの実通信を確認しました。混在3種・構造化入力・27択・255択を検証しています。Sarashinaの上限は26択なので、27択を含む`tools.verify_api --sdk`の全項目には対応しません。サーバー自身にはSDKのインストールは不要です。
 
 ```python
 from typesafe_sdk import TypeSafeClient, Choice, Score, Noul
@@ -118,7 +118,7 @@ python3 systemone_client.py --format json
 - **モデル品質・校正・内部アーキテクチャはJevと異なります。** 複数質問は個別の入力として処理するため、質問を増やすと処理量が増えます。
 - **confidenceの厳密な数値互換は保証しません。** [公式Confidenceページ](https://docs.typesafe.ai/confidence)では分布から計算すると説明されていますが、確認した資料には計算式の定義がありません。本アダプターは従来の`1 − H(p)/ln(K)`を使います。`X-Jev-Local-Confidence`ヘッダーにも方式を記載します。
 - `usage`はllama-serverが報告した入力・生成トークンの合計です。再利用済みprefixを含む各質問の論理的な入力長、共通prefixの準備、候補確率の再取得も含み、公式の課金カウントとは異なります。実際の評価量は`X-Jev-Local-Processed-Tokens`で確認できます。
-- 構造化したJSONは文字列化してLFMに渡します。公式モデルの構造化入力エンコードを再現するものではありません。
+- 構造化したJSONは文字列化してローカル判定器に渡します。公式モデルの構造化入力エンコードを再現するものではありません。
 
 参考資料は冒頭の公式ドキュメントを参照してください。文書の説明とSDK型定義で差がある箇所（省略可能instructions、構造化criteria/legend）はSDK型も参照して実装しました。
 
@@ -134,7 +134,7 @@ python3 systemone_client.py --format json
 
 ## 画像入力（ローカル拡張）
 
-既定モデルはLFM2.5-VL-1.6B Q8_0とF16のmmprojです。`state`・`questions`に加えて、トップレベルに任意の`images`配列を指定できます。各画像は全質問へ、配列の順番で渡されます。これは独自拡張で、公式SDKの画像互換を意味しません。
+画像用の標準モデルはLFM2.5-VL-1.6B Q8_0とF16のmmprojです（`--model vision`）。Sarashinaの通常プロファイルはテキスト専用ですが、[修正版projectorと専用ランチャーによる画像実験](SARASHINA.md#画像経路の修正実験機能)を追加しています（単色・複数画像・候補順に制約あり）。`state`・`questions`に加えて、トップレベルに任意の`images`配列を指定できます。各画像は全質問へ、配列の順番で渡されます。これは独自拡張で、公式SDKの画像互換を意味しません。
 
 ```json
 {

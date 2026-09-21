@@ -81,5 +81,17 @@
     "revision": "6767265158422fb8a19c62ceb45f16f05363615b",
     "url": "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/6767265158422fb8a19c62ceb45f16f05363615b/LFM2.5-1.2B-Instruct-Q8_0.gguf",
     "sha256": "f6b981dcb86917fa463f78a362320bd5e2dc45445df147287eedb85e5a30d26a"
+  },
+  "sarashina_model": {
+    "filename": "sarashina2.2-vision-3b.Q4_K_M.gguf",
+    "revision": "18b014396fa28c005d0551146558240189fc9ce8",
+    "url": "https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/resolve/18b014396fa28c005d0551146558240189fc9ce8/sarashina2.2-vision-3b.Q4_K_M.gguf",
+    "sha256": "6b66009e6cc2ed0be5061589475137a8c1b996c5d311ca79c746852589c95603"
+  },
+  "sarashina_q8_model": {
+    "filename": "sarashina2.2-vision-3b.Q8_0.gguf",
+    "revision": "18b014396fa28c005d0551146558240189fc9ce8",
+    "url": "https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/resolve/18b014396fa28c005d0551146558240189fc9ce8/sarashina2.2-vision-3b.Q8_0.gguf",
+    "sha256": "ddaa9565c7b3c9cb47d855730421ff9c9ce7b5076c600cf884a84ff40d7feef6"
   }
 }

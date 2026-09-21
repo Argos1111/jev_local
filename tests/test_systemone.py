@@ -1,7 +1,7 @@
 import json
 import unittest
 from unittest.mock import patch
-from systemone import SystemOne, ValidationError, to_spec, validate
+from systemone import AdapterBackend, SystemOne, ValidationError, to_spec, validate
 from api_server import parse_json
 from jev_local import distribution_confidence
 
@@ -17,6 +17,25 @@ class FakeBackend:
         best=max(range(n),key=probs.__getitem__)
         return {'value':spec['choices'][best], 'probabilities':[{'value':v,'probability':p} for v,p in zip(spec['choices'],probs)],
                 **distribution_confidence(probs), 'usage':{'input_tokens':10,'output_tokens':1}}
+
+class LabelTokenizationTests(unittest.TestCase):
+    def test_multidigit_tokenizer_rejects_large_choice_as_validation_error(self):
+        backend = AdapterBackend()
+        spec = to_spec({'type': 'choice', 'criteria': {str(i): None for i in range(27)}})
+        with patch.object(backend, 'post', side_effect=lambda path, data: {'tokens': list(data['content'])}):
+            with self.assertRaisesRegex(ValidationError, 'one token') as error:
+                backend.prepare({'questions': {'large': spec}})
+        self.assertEqual(error.exception.detail[0]['loc'], ['body', 'questions', 'large', 'criteria'])
+        self.assertNotIn('10', backend.ids)
+
+    def test_letter_labels_and_supported_numeric_labels_still_work(self):
+        for n in (26, 27, 255):
+            backend = AdapterBackend()
+            spec = to_spec({'type': 'choice', 'criteria': {str(i): None for i in range(n)}})
+            with patch.object(backend, 'post', side_effect=lambda path, data: {'tokens': [data['content']]}):
+                backend.prepare({'questions': {'q': spec}})
+            self.assertEqual(len(backend.ids), n)
+
 
 class ContractTests(unittest.TestCase):
     def setUp(self):

@@ -15,6 +15,14 @@ import tempfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+# Sarashina uses the Vision model's language weights only. Its published mmproj
+# fails the image smoke test with b11042; do not enable it implicitly.
+MODEL_PROFILES = {
+    'text': ('text_model',),
+    'vision': ('model', 'mmproj'),
+    'sarashina': ('sarashina_model',),
+    'sarashina-q8': ('sarashina_q8_model',),
+}
 
 
 def sha256(path):
@@ -168,18 +176,18 @@ def model_profile(root, explicit=None):
     profile = explicit or os.environ.get('LFM_PROFILE')
     if not profile:
         profile = json.loads(saved.read_text())['profile'] if saved.exists() else 'text'
-    if profile not in ('text', 'vision'):
-        raise RuntimeError(f'Unknown model profile: {profile}; use text or vision')
+    if profile not in MODEL_PROFILES:
+        raise RuntimeError(f'Unknown model profile: {profile}; use {", ".join(MODEL_PROFILES)}')
     return profile
 
 
 def model_specs(lock, profile):
-    return [lock['text_model']] if profile == 'text' else [lock['model'], lock['mmproj']]
+    return [lock[key] for key in MODEL_PROFILES[profile]]
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model', choices=['text', 'vision'], help='Model profile (saved for subsequent launches)')
+    parser.add_argument('--model', choices=MODEL_PROFILES, help='Model profile (Sarashina profiles: text input only; saved for subsequent launches)')
     parser.add_argument('--model-only', action='store_true', help='Only download the model')
     parser.add_argument('--backend', choices=['auto', 'cpu', 'cuda', 'rocm', 'metal'], default='auto')
     parser.add_argument('--dry-run', action='store_true', help='Show detected runtime candidates without downloading')
