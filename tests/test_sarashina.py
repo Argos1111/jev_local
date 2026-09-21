@@ -287,7 +287,7 @@ class ExperimentalLaunchTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         self.base = self.root/'experiment'
         (self.root/'scripts').mkdir()
         (self.root/'scripts/runtime.json').write_text((setup_runtime.ROOT/'scripts/runtime.json').read_text())

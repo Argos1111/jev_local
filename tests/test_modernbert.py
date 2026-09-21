@@ -156,12 +156,29 @@ class SetupTests(unittest.TestCase):
     def test_pip_arguments_pin_torch_per_backend(self):
         from unittest.mock import patch
         from scripts import setup_modernbert
-        with patch.object(setup_modernbert, 'detect_backend', return_value=('rocm', ['gfx1201'])), \
-             patch.object(setup_modernbert.sys, 'argv', ['setup', '--dry-run']), \
-             patch('builtins.print') as printed:
-            setup_modernbert.main()
-        commands = [str(call.args[0]) for call in printed.call_args_list]
-        self.assertTrue(any('torch[device-gfx1201]==2.13.0+rocm10.0.0' in c for c in commands))
+        cases = [
+            ('Linux', 'rocm', ['gfx1201'], '--index-url https://stable.repo.amd.com/rocm/whl-next/ '
+             '--extra-index-url https://pypi.org/simple torch[device-gfx1201]==2.13.0+rocm10.0.0'),
+            ('Linux', 'cuda', [], '--index-url https://download.pytorch.org/whl/cu126 '
+             '--extra-index-url https://pypi.org/simple torch==2.13.0+cu126'),
+            ('Linux', 'cpu', [], '--index-url https://download.pytorch.org/whl/cpu '
+             '--extra-index-url https://pypi.org/simple torch==2.13.0+cpu'),
+            ('Darwin', 'cpu', [], '--index-url https://pypi.org/simple torch==2.13.0'),
+            ('Windows', 'cuda', [], '--index-url https://download.pytorch.org/whl/cu126 '
+             '--extra-index-url https://pypi.org/simple torch==2.13.0+cu126'),
+            ('Windows', 'cpu', [], '--index-url https://download.pytorch.org/whl/cpu '
+             '--extra-index-url https://pypi.org/simple torch==2.13.0+cpu'),
+        ]
+        for system, backend, gfx, arguments in cases:
+            with self.subTest(system=system, backend=backend), \
+                 patch.object(setup_modernbert.platform, 'system', return_value=system), \
+                 patch.object(setup_modernbert, 'detect_backend', return_value=(backend, gfx)), \
+                 patch.object(setup_modernbert.sys, 'argv', ['setup', '--dry-run']), \
+                 patch('builtins.print') as printed:
+                setup_modernbert.main()
+                commands = [str(call.args[0]) for call in printed.call_args_list
+                            if str(call.args[0]).startswith('pip install ')]
+                self.assertEqual(commands, ['pip install ' + arguments])
 
 
 if __name__ == '__main__':
