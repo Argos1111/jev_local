@@ -6,9 +6,9 @@
 |---|---|---|---|
 | モデル | LFM2.5-1.2B Instruct / LFM2.5-VL-1.6B（Q8_0） | Sarashina2.2 Vision 3B（Q4_K_M / Q8_0） | ModernBERT-Ja 310Mをcross-encoderとしてfine-tune |
 | 判定方式 | 回答先頭トークンのlogprob（zero-shot） | 同左（llama.cpp） | (質問＋State, 候補)ペアの採点（学習済み重みを配布） |
-| 入力 | 文章・JSON・画像 | 文章・JSON。**画像は別ビルドの実験機能** | 文章・JSON |
+| 入力 | 文章・JSON・画像 | 文章・JSON。**画像は配布済みの対応ランタイムで** | 文章・JSON |
 | 強いところ | 知識・未知の分類体系・自由な指示文 | 今回の比較では常識QA・知識・ニュース分類がLFMより高い | 日本語の意図・関係判定と速度。候補順に依存しない |
-| 追加依存 | なし（バイナリを自動取得） | 標準文章構成はなし。実験版は追加ビルド（画像はmmproj変換も必要） | torch＋transformers（別venv） |
+| 追加依存 | なし（バイナリを自動取得） | 文章はなし。画像は[配布済みmmproj（HF）](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)と[対応ランタイム（Releases）](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)を手動配置 | torch＋transformers（別venv） |
 | JGLUE test | JNLI 17% / JComQA 69% | Q4: JNLI 34% / JComQA 86% | JNLI 93% / JComQA 92%（trainで学習） |
 
 クライアント・評価ツール・API仕様は共通です。まずLFMで動かしてから、[Sarashina比較バックエンド](docs/SARASHINA.md)や[ModernBERTバックエンド](docs/MODERNBERT.md)を追加できます。学習条件と量子化が異なるため、上表は同一APIでの実用比較であり、モデル能力の公平な順位付けではありません。
@@ -132,17 +132,24 @@ python3 systemone_client.py
 
 **通常のプロファイルは文章専用で、公開mmprojを自動取得・有効化しません。** SarashinaではChoiceは26候補までです（27以上は422）。Q4でも今回の常識QA・知識・ニュース分類はLFMより高い一方、JNLIと候補順への依存は課題です。
 
-画像には、projectorの欠落LayerNorm・前処理・境界tokenを修正した**別の実験ビルド**を追加しました。CUDA/HIP向けの160次元GPU Flash Attentionと画像エンコード再利用も利用できます。GPU型番での利用制限はなく、未検証環境からのフィードバックも受け付けます。変換・ビルド済みなら:
+### Sarashinaで画像を使う
+
+画像入力には、修正版mmprojと対応ランタイム（Linux x86_64 / WSL2。CPU・AMD GPU・NVIDIA GPU）を使います。どちらも配布済みで、ビルドもHFログインも不要です。
+
+1. 言語GGUFを取得: `./setup.sh --model sarashina --model-only`（上記と同じ）
+2. [HF: argos1111/sarashina2.2-vision-3b-mmproj-jev-f16](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)から`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`と同名`.gguf.json`を`models/`へ置く
+3. [対応ランタイム（Pre-release）](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)から環境に合うアーカイブを展開
 
 ```bash
-python3 scripts/run_sarashina.py --port 18080 --backend-port 18097
-# CUDA版をビルドした場合: --backend cuda --device CUDA0
-# Q8: --model sarashina-q8
+# 展開先を --build に指定。AMD GPUは --backend hip、NVIDIA GPUは --backend cuda
+python3 scripts/run_sarashina.py --backend cpu --build /path/to/llama-b11042-jev-sarashina-pre1-linux-x86_64-cpu
+# 別ターミナル
+python3 systemone_client.py --input examples/vision.json --image /path/to/photo.jpg
 ```
 
-RTX 4090向けビルドは`python3 scripts/build_sarashina.py --backend cuda --cuda-architectures 89`（Linux／WSL2＋CUDA Toolkit）。RTX 5090など他世代の指定・mmproj変換・任意検査は[再現手順](docs/SARASHINA.md#実験版のビルドと起動)、報告するログは[フィードバック案内](docs/SARASHINA.md#gpu数値検査とフィードバック)を参照してください。**CUDAはsm_89向けビルド確認済み、実機推論は未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。ビルド済みCPU / HIP / CUDA版と、[HFでPublic公開した公式由来mmproj](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)の取得・起動は[Pre-releaseの利用案内](docs/SARASHINA_RELEASE.md)を参照してください。
+コマンド付きの手順とアーカイブの選び方は[Sarashina画像入力のセットアップ](docs/SARASHINA_RELEASE.md)にまとめています。通常の`run.sh`の設定は変わりません。
 
-公式checkpointからmmprojを再生成し、公式AutoProcessorに合わせて前処理を追加修正しました。R9700での元解像度文書＋4問の再送はQ4で約2.15秒→0.69秒、Q8で約2.05秒→0.60秒（同一ビルド内の画像キャッシュOFF/ON比較）。文書12問は両者12/12ですが、単色・複数画像の失敗と、言語GGUFの公式tokenizerとの分割差が残ります。旧成果物は保存し、**通常設定は変更せず、制約付きの実験機能**として提供します。[検証範囲・更新した変換／ビルド手順](docs/SARASHINA.md)を参照してください。
+このランタイムはllama.cpp b11042に、projectorの欠落LayerNorm・公式前処理・画像境界tokenの修正と、画像エンコード再利用・CUDA/HIP向けGPU Flash Attentionを加えたものです。元解像度の文書画像12問は12/12でしたが、単色・複数画像の失敗と候補順への依存が残り、**CUDA版はNVIDIA実機で未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。他のGPU向けビルド・mmprojの再変換・検証結果は[詳細](docs/SARASHINA.md)を参照してください。
 
 ## API
 

@@ -20,7 +20,31 @@ GPUのコンパイル対象はこのアーカイブの内容であって、実�
 
 ## 利用方法
 
-配布ページから該当アーカイブと`SHA256SUMS`をダウンロードし、検査してから任意の場所へ展開します。以下の`RUNTIME`は展開ディレクトリへ置き換えてください。
+Jev Localのルートで作業します（`git clone https://github.com/Argos1111/jev_local.git`、Python 3.12以上）。HFログイン・ビルド・追加Pythonパッケージは不要です。
+
+### 1. モデルファイルを`models/`へ置く
+
+言語GGUFは[mradermacher/sarashina2.2-vision-3b-GGUF](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)のQ4_K_M（約2.07 GB）を使います。次のコマンドで取得し、SHA256を検証します。ランタイム選択は変更しません。
+
+```bash
+./setup.sh --model sarashina --model-only
+```
+
+Q8_0（約3.57 GB）を使う場合は`--model sarashina-q8`を指定します。
+
+mmprojは[argos1111/sarashina2.2-vision-3b-mmproj-jev-f16](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)（Public）から次の2ファイルを取得します。
+
+```bash
+HF=https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main
+curl -L -o models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf      "$HF/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf"
+curl -L -o models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json "$HF/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json"
+```
+
+同じ場所の`SHA256SUMS`で照合できます。配布済みmmprojを使う場合、公式checkpointの取得・変換は不要です。
+
+### 2. ランタイムを展開する
+
+配布ページから環境に合うアーカイブと`SHA256SUMS`をダウンロードし、検査してから任意の場所へ展開します。以下はCPU版の例で、`RUNTIME`は展開ディレクトリです。
 
 ```bash
 sha256sum -c SHA256SUMS --ignore-missing
@@ -31,23 +55,20 @@ RUNTIME="$PWD/llama-b11042-jev-sarashina-pre1-linux-x86_64-cpu"
 "$RUNTIME/bin/llama-server" --list-devices
 ```
 
-Jev Localをこのリリースに対応するソースへ更新し、言語GGUFと公式由来mmproj・同名`.gguf.json`を`models/`へ置いて起動します。
+HIP / CUDA版はROCm / CUDAのライブラリとドライバーが別途必要です。標準パスにない場合は`LD_LIBRARY_PATH`を設定してください。ROCmの分割SDKでは`ROCBLAS_TENSILE_LIBPATH` / `HIPBLASLT_TENSILE_LIBPATH`も必要な場合があります。**ビルドしたマシンのライブラリパスは配布manifestへ埋め込んでいません。**
+
+### 3. 起動して画像で質問する
 
 ```bash
-# Jev Localのルートで実行
+# Jev Localのルートで実行。backendはアーカイブに合わせる（cpu / hip / cuda）
 python3 scripts/run_sarashina.py --backend cpu --build "$RUNTIME"
+# Q8_0を使う場合: --model sarashina-q8 を追加
+
+# 別ターミナル
+python3 systemone_client.py --input examples/vision.json --image /path/to/photo.jpg
 ```
 
-HIP / CUDAはbackendとアーカイブを合わせます。ライブラリが標準パスにない場合は、その利用者のインストール先を`LD_LIBRARY_PATH`へ指定してください。ROCmの分割SDKでは`ROCBLAS_TENSILE_LIBPATH` / `HIPBLASLT_TENSILE_LIBPATH`も必要な場合があります。**ビルドしたマシンのライブラリパスは配布manifestへ埋め込んでいません。**
-
-`--build`指定の起動はログ・slot cacheをmanifestのhashごとに隔離し、既存のビルド・通常の保存済みモデル/ランタイム選択を変えません。バイナリ・projectorの整合性と前処理の互換性は検査します。
-
-公式由来mmprojは[HFの専用リポジトリ](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)で**Public公開済み**です。認証なしで取得できます。次の2ファイルをJev Localの`models/`へ配置してください。
-
-- [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf)（約893 MB）
-- [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json)
-
-言語GGUFは[mradermacher/sarashina2.2-vision-3b-GGUF](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)のQ4_K_M / Q8_0で、`./setup.sh --model sarashina --model-only`（Q8_0は`--model sarashina-q8`）で`models/`へ取得します。ログイン不要で、SHA256を検証し、ランタイム選択は変更しません。配布済みmmprojを使う場合、公式checkpointの取得・変換は不要です。ランタイムにはモデル重みを含みません。
+APIは`http://127.0.0.1:8080`で待ち受けます。`--build`指定の起動はログ・slot cacheをmanifestのhashごとに隔離し、既存のビルド・通常の保存済みモデル/ランタイム選択を変えません。バイナリ・projectorの整合性と前処理の互換性は起動時に検査します。ランタイムにはモデル重みを含みません。
 
 ## 今回の配布ビルドの検査
 
