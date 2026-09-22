@@ -7,7 +7,7 @@
 **公式checkpoint由来のmmprojをPublic公開済み**です。公開後、認証・既存HFキャッシュを使わずに全ファイルを再取得し、約893 MBのGGUF全体を含めてSHA256一致を確認しました。利用だけならHFのREADMEもしくは[対応ランタイムとモデルの取得手順](SARASHINA_RELEASE.md#利用方法)を参照してください。
 
 - 配布先: [argos1111/sarashina2.2-vision-3b-mmproj-jev-f16](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)
-- 現在のrevision: `e50e2ab74109f785e52ba3cdb58470648be5c830`（公開時は`aabea115c03f21dbd5b0018c24770f632cb8c93d`）
+- 現在のrevision: `09ce275e3473c2127c5d1211a1a644fd93e5b03b`（公開時は`aabea115c03f21dbd5b0018c24770f632cb8c93d`）
 - 公開状態: **Public、ゲートなし**。利用者の明示的な承認を受け、このリポジトリだけPrivateから切り替えました。
 - 配布ファイルは`mmproj-jev-official-f16.gguf`（SHA256 `7c170758...`）と同名`.gguf.json`。重み・変換manifest・LICENSEは初回の公式由来版revision `0261fe2a2e9974fe533710d075196eade265d4a8`から変更していません。
 - READMEは利用者向けの手順（clone・モデル取得・ランタイム取得・起動・画像での質問）に書き直し、NOTICEのソースを`5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`へ固定しました。

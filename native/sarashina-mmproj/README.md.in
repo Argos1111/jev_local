@@ -46,13 +46,13 @@ curl -L -o models/$filename.json \
   https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/$filename.json
 ```
 
-言語GGUF（Q4_K_M、約2.07 GB）は次のコマンドで`models/`へ取得します。ログイン不要で、SHA256を検証します。
+言語GGUFは[mradermacher/sarashina2.2-vision-3b-GGUF](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF)のものを使います。次のコマンドで`sarashina2.2-vision-3b.Q4_K_M.gguf`（約2.07 GB）を`models/`へ取得します。ログイン不要で、SHA256を検証します。
 
 ```bash
 ./setup.sh --model sarashina --model-only
 ```
 
-Q8_0（約3.57 GB）を使う場合は`--model sarashina-q8`を指定します。
+Q8_0（`sarashina2.2-vision-3b.Q8_0.gguf`、約3.57 GB）を使う場合は`--model sarashina-q8`を指定します。自分でダウンロードしたファイルを`models/`へ置いても構いません。
 
 ## 3. ランタイムを取得する
 

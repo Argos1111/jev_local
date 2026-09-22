@@ -59,6 +59,7 @@ class ProjectorBundleTests(unittest.TestCase):
         self.assertIn('releases/tag/sarashina-llama-b11042-pre1', card)
         self.assertIn('--build /path/to/llama-b11042-jev-sarashina-pre1-linux-x86_64-cpu', card)
         self.assertIn('./setup.sh --model sarashina --model-only', card)
+        self.assertIn('https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF', card)
         self.assertNotIn('fetch_sarashina_reference', card)
         self.assertIn('systemone_client.py --input examples/vision.json --image', card)
         self.assertIn(f'resolve/main/{preparation.PROJECTOR_NAME}.json', card)

@@ -47,7 +47,7 @@ HIP / CUDAはbackendとアーカイブを合わせます。ライブラリが標
 - [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf)（約893 MB）
 - [`sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json`](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf.json)
 
-言語GGUFは`./setup.sh --model sarashina --model-only`（Q8_0は`--model sarashina-q8`）で`models/`へ取得します。ログイン不要で、SHA256を検証し、ランタイム選択は変更しません。配布済みmmprojを使う場合、公式checkpointの取得・変換は不要です。ランタイムにはモデル重みを含みません。
+言語GGUFは[mradermacher/sarashina2.2-vision-3b-GGUF](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)のQ4_K_M / Q8_0で、`./setup.sh --model sarashina --model-only`（Q8_0は`--model sarashina-q8`）で`models/`へ取得します。ログイン不要で、SHA256を検証し、ランタイム選択は変更しません。配布済みmmprojを使う場合、公式checkpointの取得・変換は不要です。ランタイムにはモデル重みを含みません。
 
 ## 今回の配布ビルドの検査
 
