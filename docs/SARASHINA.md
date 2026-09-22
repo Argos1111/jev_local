@@ -17,7 +17,7 @@
 | `sarashina2.2-vision-3b.Q4_K_M.gguf` | 2.066 | 標準の比較用。`--model sarashina` |
 | `sarashina2.2-vision-3b.Q8_0.gguf` | 3.568 | 量子化の対照用。`--model sarashina-q8` |
 | `sarashina2.2-vision-3b.mmproj-f16.gguf` | 0.893 | 元の公開projector。調査用に保持、自動取得・有効化しない |
-| `sarashina2.2-vision-3b.mmproj-jev-f16.gguf` | 0.893 | 旧クローン由来の修正版。履歴・比較用に保持 |
+| `sarashina2.2-vision-3b.mmproj-jev-f16.gguf` | 0.893 | 旧クローン由来の修正版。ローカルに履歴・比較用として保持（HFの配布からは削除） |
 | `sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf` | 0.893 | 公式由来の新版。明示的に変換し、新しい実験ランタイムで使用 |
 
 Q4はQ8よりファイル容量が約42%小さくなります。これらは重みのサイズで、VRAMの実測値ではありません。推論にはKVキャッシュ・計算用バッファも必要です。実験画像構成はQ4本体＋修正版mmprojで約2.96 GBです。

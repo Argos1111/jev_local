@@ -4,14 +4,14 @@
 
 このページの準備スクリプトはローカル処理のみです。ログイン・アップロード・Publicへの変更は利用者が明示的に実行します。2026-09-21にCLI `huggingface_hub==1.32.0`のヘルプを確認しました。
 
-**公式checkpoint由来の新版mmprojをPublic公開済み**です。公開後、認証・既存HFキャッシュを使わずに固定revisionの8ファイルを再取得し、約893 MBのGGUF全体を含めてSHA256一致を確認しました。利用だけなら[対応ランタイムとモデルの取得手順](SARASHINA_RELEASE.md#利用方法)を参照してください。
+**公式checkpoint由来のmmprojをPublic公開済み**です。公開後、認証・既存HFキャッシュを使わずに全ファイルを再取得し、約893 MBのGGUF全体を含めてSHA256一致を確認しました。利用だけならHFのREADMEもしくは[対応ランタイムとモデルの取得手順](SARASHINA_RELEASE.md#利用方法)を参照してください。
 
 - 配布先: [argos1111/sarashina2.2-vision-3b-mmproj-jev-f16](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)
-- 公開時revision: `aabea115c03f21dbd5b0018c24770f632cb8c93d`
+- 現在のrevision: `e50e2ab74109f785e52ba3cdb58470648be5c830`（公開時は`aabea115c03f21dbd5b0018c24770f632cb8c93d`）
 - 公開状態: **Public、ゲートなし**。利用者の明示的な承認を受け、このリポジトリだけPrivateから切り替えました。
-- 新版は`mmproj-jev-official-f16.gguf`（SHA256 `7c170758...`）。重み・変換manifest・LICENSEは初回の公式由来版revision `0261fe2a2e9974fe533710d075196eade265d4a8`から変更していません。
-- 公開前にREADMEへ対応Pre-releaseを案内し、NOTICEのソースを`5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`へ固定。変更はREADME・NOTICE・SHA256SUMSのみです。
-- 旧クローン由来の`mmproj-jev-f16.gguf`（SHA256 `094e86c9...`）とmanifest、全コミット履歴を保持しています。旧版の説明はrevision `22f873e5e3f13d997e75fa5d8f41ed1128288b30`で確認できます。
+- 配布ファイルは`mmproj-jev-official-f16.gguf`（SHA256 `7c170758...`）と同名`.gguf.json`。重み・変換manifest・LICENSEは初回の公式由来版revision `0261fe2a2e9974fe533710d075196eade265d4a8`から変更していません。
+- READMEは利用者向けの手順（clone・モデル取得・ランタイム取得・起動・画像での質問）に書き直し、NOTICEのソースを`5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0`へ固定しました。
+- 旧クローン由来の`mmproj-jev-f16.gguf`とmanifestは利用者の指示でHFから削除しました（ローカルの`models/`には残しています）。履歴は保持しており、旧版のrevision `22f873e5e3f13d997e75fa5d8f41ed1128288b30`で確認できます。
 - 公開前の全履歴を点検し、想定外ファイル・認証情報パターンがないことを確認しました。`.gitattributes`、ModernBERTなど他リポジトリ、公式モデルのアクセス設定は変更していません。
 
 初回の送信・再取得記録は`.cache/hf-projector-publication-official/`、公開時の履歴点検・可視性変更・未認証ダウンロードの記録は`.cache/hf-projector-publication-public/`に保存しています。

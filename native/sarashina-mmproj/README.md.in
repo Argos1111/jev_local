@@ -12,33 +12,93 @@ tags:
 - sarashina2vl
 ---
 
-# Sarashina2.2 Vision 3B — mmproj F16
+# Sarashina2.2 Vision 3B — mmproj (F16) for Jev Local
 
-[公式checkpoint](https://huggingface.co/$source_repo/tree/$source_revision)から変換した、[Jev Local](https://github.com/Argos1111/jev_local)向けの画像エンコーダー＋projectorです。最終LayerNormを含む非公式のGGUF変換で、追加学習はしていません。
+[Sarashina2.2 Vision 3B](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)の画像入力をllama.cppで使うための、画像エンコーダー＋projector（mmproj）です。[Jev Local](https://github.com/Argos1111/jev_local)のAPIで、画像に対する選択式・段階式・真偽の判定に使います。
 
-**Sarashina言語GGUFと、公式の画像前処理に対応したJev Localランタイムが必要です。未修正のllama.cppでは使えません。**
+- 動作環境: Linux x86_64 / WSL2。CPU、AMD GPU（ROCm）、NVIDIA GPU（CUDA）
+- 必要なもの: このmmproj、Sarashinaの言語GGUF、Jev Localと対応ランタイム（いずれも以下の手順で取得）
+- 未修正のllama.cppでは動きません
 
-## ファイル
+## 1. Jev Localを用意する
+
+```bash
+git clone https://github.com/Argos1111/jev_local.git
+cd jev_local
+```
+
+Python 3.12以上が必要です。追加のPythonパッケージは不要です。
+
+## 2. モデルファイルを取得する
+
+このリポジトリから次の2ファイルをダウンロードし、`models/`へ置きます。
 
 | ファイル | 内容 |
 |---|---|
-| [`$filename`]($filename) | F16 mmproj（約893 MB） |
-| [`$filename.json`]($filename.json) | 起動時に必要な変換情報 |
-
-同居する`mmproj-jev-f16.gguf`は旧クローン由来の保存用ファイルです。通常は上記の公式由来版を使用してください。
-
-## 使い方
-
-1. 上の2ファイルをJev Localの`models/`へ配置します。
-2. 言語GGUF（Q4_K_M / Q8_0）を[mradermacherの配布元](https://huggingface.co/mradermacher/sarashina2.2-vision-3b-GGUF/tree/18b014396fa28c005d0551146558240189fc9ce8)から取得し、同じフォルダへ配置します。
-3. [対応ランタイムのPre-release](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)から環境に合う版を取得・展開します。[自分でビルド](https://github.com/Argos1111/jev_local/blob/5edbee00dcdd01690cbbd9cd1dd4d8f300862cd0/docs/SARASHINA.md#実験版のビルドと起動)もできます。checkpointの取得・mmprojの変換は不要です。
-
-Jev Localのルートから、展開先を指定して起動します（HIPの例）。
+| [`$filename`]($filename) | mmproj本体（約893 MB） |
+| [`$filename.json`]($filename.json) | 起動時の整合性確認に必要 |
 
 ```bash
-python3 scripts/run_sarashina.py --backend hip --build /path/to/extracted-runtime
+mkdir -p models
+curl -L -o models/$filename \
+  https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/$filename
+curl -L -o models/$filename.json \
+  https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16/resolve/main/$filename.json
 ```
 
-CUDAは`--backend cuda`、CPUは`--backend cpu`を指定します。自分でビルドした場合は`--build`を省略できます。
+言語GGUF（Q4_K_M、約2.07 GB）は次のコマンドで`models/`へ取得します。ログイン不要で、SHA256を検証します。
 
-[出典・変更記録](NOTICE.md) · [SHA256SUMS](SHA256SUMS)
+```bash
+./setup.sh --model sarashina --model-only
+```
+
+Q8_0（約3.57 GB）を使う場合は`--model sarashina-q8`を指定します。
+
+## 3. ランタイムを取得する
+
+[対応ランタイムのリリースページ](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)から環境に合うアーカイブをダウンロードして展開します。
+
+| 環境 | アーカイブ |
+|---|---|
+| CPUのみ | `...-linux-x86_64-cpu.tar.gz` |
+| AMD GPU（ROCm。RX 7900シリーズ、Radeon AI PRO R9700などgfx1100 / gfx1201） | `...-linux-x86_64-hip-gfx1100-gfx1201.tar.gz` |
+| NVIDIA GPU（CUDA 13。RTX 40シリーズ） | `...-linux-x86_64-cuda13-sm89.tar.gz` |
+
+GPU版はROCm / CUDAのライブラリとドライバーが別途必要です。CUDA版はNVIDIA実機での動作を確認できていないため、問題があれば[Issue](https://github.com/Argos1111/jev_local/issues)で知らせてください。ほかのGPUや、AVX2非対応のCPUでは、リリースページの手順でソースからビルドできます。
+
+## 4. 起動する
+
+Jev Localのルートで、展開したディレクトリを`--build`に指定します。
+
+```bash
+# CPU
+python3 scripts/run_sarashina.py --backend cpu --build /path/to/llama-b11042-jev-sarashina-pre1-linux-x86_64-cpu
+
+# AMD GPU
+python3 scripts/run_sarashina.py --backend hip --build /path/to/llama-b11042-jev-sarashina-pre1-linux-x86_64-hip-gfx1100-gfx1201
+
+# NVIDIA GPU
+python3 scripts/run_sarashina.py --backend cuda --build /path/to/llama-b11042-jev-sarashina-pre1-linux-x86_64-cuda13-sm89
+```
+
+Q8_0を使う場合は`--model sarashina-q8`を追加します。APIは`http://127.0.0.1:8080`で待ち受けます。
+
+## 5. 画像で質問する
+
+別のターミナルから、画像（PNG / JPEG、4 MiBまで、最大4枚）を添えて質問します。
+
+```bash
+python3 systemone_client.py --input examples/vision.json --image /path/to/photo.jpg
+```
+
+`examples/vision.json`を編集して質問と選択肢を変えられます。APIの仕様は[Jev LocalのAPIドキュメント](https://github.com/Argos1111/jev_local/blob/main/docs/API.md)を参照してください。
+
+## 注意点
+
+- 選択式の質問は26候補までです。
+- 単色画像や複数枚の画像の扱い、選択肢の順番による結果の変化など、既知の制約があります。詳細は[Sarashinaバックエンドの説明](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md)を参照してください。
+- SB Intuitionsによる公式配布ではありません。
+
+## ライセンス
+
+Sarashina2.2 Vision 3BはMIT License（Copyright (c) 2025 SB Intuitions）、画像エンコーダーの元になったSigLIPはApache-2.0です。両方の全文を[LICENSE.sarashina2.2-vision-3b](LICENSE.sarashina2.2-vision-3b)と[LICENSE.siglip](LICENSE.siglip)として同梱しています。変換元・変更内容は[NOTICE.md](NOTICE.md)、ファイルのSHA256は[SHA256SUMS](SHA256SUMS)を参照してください。
