@@ -46,7 +46,7 @@ ROCm版はPython側のwheelにROCmランタイムが含まれるため、シス�
 | macOS Apple Silicon | MPS（Apple GPU）または CPU | CPU / MPS（低速、推奨しない） | `setup_modernbert.sh`はPyPIのmacOS wheelを入れます。`--device auto`はMPSがあれば選びます。MPS・macOSは実機未検証です |
 | macOS Intel | CPU | CPU（非推奨） | torch 2.13.0にIntel Mac wheelはありません。動作保証外 |
 
-CPU推論の目安（Core Ultra 7 270K Plus、24スレッド、float32）: README 12問サンプル（33ペア）約1.9秒、noul 1問約110 ms。GPUの約90倍遅いですが、少数の質問なら実用範囲です。CPU・MPSではbf16を使わずfloat32で動作します。
+CPU推論の目安（24スレッド、float32）: README 12問サンプル約1.9秒、noul 1問約110 ms。GPUより大幅に遅いですが、少数の質問なら実用範囲です。CPU・MPSではbf16を使わずfloat32で動作します。
 
 学習には1.2 GBのモデルダウンロード（Hugging Face Hub、初回のみ）と、bf16で約20 GBのVRAMが必要です（`--pair-budget 64`なら約10 GB）。推論だけなら約2 GBで動きます。
 
@@ -57,8 +57,6 @@ AMDでは`/sys/class/kfd`からgfxターゲット（例: Radeon AI PRO R9700 = g
 ```bash
 HIP_VISIBLE_DEVICES=1 ./run_modernbert.sh        # 2枚目だけを使う（プロセス内ではcuda:0になる）
 ```
-
-RX 7900 XTX単独では12問サンプルが約23 msで、R9700と同等の速度です。
 
 AMD版torchは一部演算をTriton JITに回すためCコンパイラを要求します。付属スクリプトは`TORCH_DISABLE_NATIVE_JIT=1`を設定して通常カーネルを使います。
 
@@ -74,25 +72,9 @@ AMD版torchは一部演算をTriton JITに回すためCコンパイラを要求�
 
 出力は`models/modernbert-ja-310m-jev/`（約1.26 GB、Git対象外）。`jev_modernbert.json`に学習設定と検証結果を保存します。検証セット（valid）のマクロ平均正解率が最良のステップを保存します。
 
-Radeon AI PRO R9700（bf16 autocast、128ペア/step）で約0.45 s/step、2 epoch（5,386 step）で約41分でした。VRAM使用は約20 GBです。256ペア/stepは32 GBでOOMになりました。
+Radeon AI PRO R9700（bf16、128ペア/step）で2 epochが約41分、VRAM使用は約20 GBです。
 
-検証3,000問での最終ステップの正解率（トレーナー内部の集計）：
-
-| タスク | n | 正解率 | NLL |
-|---|---:|---:|---:|
-| jnli（3択） | 546 | 94.3% | 0.22 |
-| jnli-noul | 292 | 95.2% | 0.13 |
-| jcommonsenseqa（5択） | 271 | 95.9% | 0.30 |
-| jcommonsenseqa-noul | 106 | 92.5% | 0.25 |
-| jsts（6段階を完全一致で採点） | 338 | 60.7% | 0.90 |
-| jcola | 212 | 89.6% | 0.28 |
-| moral | 462 | 87.7% | 0.31 |
-| massive-scenario（18択） | 101 | 86.1% | 0.53 |
-| massive-scenario-subset（2、6択） | 468 | 98.5% | 0.06 |
-| massive-noul | 204 | 98.0% | 0.11 |
-| マクロ平均 | 3,000 | 89.9% | 0.29 |
-
-JSTSは連続値ど0.5単位の丸めを使っているため完全一致は厳しく、Scoreの期待値での評価はしていません。
+学習中はvalidの正解率とNLLをタスクごとに表示し、最終的な検証結果を`jev_modernbert.json`に保存します。配布している重みでは検証3,000問のマクロ平均正解率が約90%です。
 
 ### 学習データ
 
@@ -146,76 +128,29 @@ HF_TOKEN=hf_xxx .venv-modernbert/bin/python scripts/publish_modernbert.py --repo
 
 ## 評価
 
-JGLUE test（学習・検証に未使用）を、LFM 1.2Bと同じ[`tools/benchmark_jglue.py`](JGLUE.md)で同じAPI経由・同じプロンプト文言・同じ4並列で測りました。
+JGLUE test（学習・検証に未使用）を、LFMと同じ[`tools/benchmark_jglue.py`](JGLUE.md)で同じAPI経由・同じプロンプト文言で測れます。ModernBERTはJGLUE trainで学習しているため、`--method`にその旨を記録してください。
 
 ```bash
 python3 -m tools.benchmark_jglue --url http://127.0.0.1:8080 --output results/jglue-test-modernbert \
   --method "fine-tuned on JGLUE train (ModernBERT-Ja 310M cross-encoder)"
 ```
 
-| バックエンド | 条件 | JNLI | JCommonsenseQA | p50応答（4並列） |
-|---|---|---:|---:|---:|
-| LFM2.5-1.2B Instruct Q8_0 / llama.cpp ROCm | zero-shot | 17.15% | 68.87% | 56 / 49 ms |
-| ModernBERT-Ja 310M cross-encoder / torch ROCm bf16 | JGLUE trainで学習 | **92.62%** | **92.40%** | 33 / 32 ms |
+配布している重みの結果はJNLI 92.6% / JCommonsenseQA 92.4%（[READMEの比較表](../README.md)）で、LFMのzero-shotとは条件が異なります。公式モデルカードの値（JNLI 92.93 / JComQA 93.53）はタスク別に専用ヘッドを学習した値で、本リポジトリは全タスクを一つのペア採点器で学習しています。
 
-いずれもRadeon AI PRO R9700です。ModernBERTはJNLI/JCommonsenseQAの**trainスプリットで学習しているため**、LFMのzero-shotとは条件が異なります。「同じAPI形式・同じハードウェアでどの程度の精度・速度になるか」の比較であり、モデルの能力を同条件で比べるものではありません。公式モデルカードの値（JNLI 92.93 / JComQA 93.53）はタスク別に専用ヘッドを学習した値で、本リポジトリは全タスクを一つのペア採点器で学習しています。
-
-その他の確認（すべてR9700、HTTP往復含む）：
-
-- READMEの12問サンプル（33ペアを1バッチ）：中央値約22 ms。1問（noul）は約8 ms。
-- `tools/evaluate.py`の手作り8例（日英の返金要求判定）：8/8。学習データにこのドメインは含まれていませんが、8例では一般化の証拠にはなりません。
-- 候補順を反転しても確率は完全に一致します（ペアごとに独立に採点するため）。
-
-結果は`results/jglue-test-modernbert/`に保存しています（Git対象外・リポジトリには同梱しません）。
-
-### 学習に使っていないタスクでの汎化
-
-JGLUEの数値は学習分布内の性能です。学習に使っていないタスクを同じAPI経由で測るツールを用意しました。LFM（zero-shot）とModernBERT（fine-tuned）を**同じ入力・同じ採点**で比較します。
+学習に使っていないタスクでの汎化は、同じ入力・同じ採点でLFMと比較できます。
 
 ```bash
 python3 -m tools.evaluate_heldout_tasks --url http://127.0.0.1:8080 --output results/heldout-modernbert
 ```
 
-| タスク | 内容 | n | 多数派 | LFM 1.2B zero-shot | ModernBERT fine-tuned |
-|---|---|---:|---:|---:|---:|
-| livedoor | ニュース記事の9カテゴリ分類（説明付き候補）。学習にニュース分類なし | 500 | 14.2% | **46.8%** | 35.6% |
-| JMMLU | 4択の知識問題（解剖学・天文・日本史など10科目）。学習にない科目 | 500 | 28.8% | **43.6%** | 34.8% |
-| synthetic | 手作りの顧客対応16例（README例と同種のnoul/choice/score）。学習に顧客対応ドメインなし | 16 | 25.0% | 56.2% | **93.8%** |
+配布している重みでは、知識・語彙の広さが要るタスク（ニュース分類・JMMLU）はLFMより低く、短い日本語の意図判定（顧客対応の例）はLFMより高い結果でした。**学習したタスク族（NLI・意図分類・段階評価・常識QA）の近傍では汎化するが、汎用的な知識や未知の分類体系はLFMより弱い**という特性です。用途が固定的な業務判定なら、少量のドメインデータを`modernbert/data.py`に追加して再学習するのが最も効きます。
 
-Radeon AI PRO R9700、seed 0、livedoor/JMMLUはランダム抽出500件（[CC BY-ND 2.1 JP](https://www.rondhuit.com/download.html) / [CC BY-SA 4.0](https://github.com/nlp-waseda/JMMLU)）。synthetic 16例は本リポジトリで作成した指標的なもので、統計的な結論には足りません。
-
-読み方：
-
-- **知識・語彙の広さが要るタスク（livedoor, JMMLU）ではLFMの方が高く**、ModernBERTは多数派より上・チャンス（11% / 25%）より上ですが、学習分布から外れると精度が落ちます。livedoorでは記事の約4割を「トピックニュース」「独女通信」に寄せており、未知のカテゴリ説明を読んで分類する力が弱いことが分かります。JMMLUの正解確率は正答時0.77・誤答時0.66で、間違いにも自信を持ちます。
-- **短い日本語の意図判定（synthetic）ではModernBERTの方が高く**、LFMは「返金を要求しているか」のような真偽問で肯定側へ強く寄る傾向（7件中5件がTrue誤答、P=0.89〜1.00）を示しました。ModernBERTのこの結果は、JNLI（含意判定）・MASSIVE（発話の意図分類）・JCommonsenseMoralityで学んだ「文の意図を読む」能力が、顧客対応という未学習ドメインにある程度転移していると解釈できます。ただし「パスワードリセットのメール→billing」のような、ドメイン知識が要る誤りは残ります。
-- 総合すると、ModernBERT版は**学習したタスク族（NLI・意図分類・段階評価・常識QA）の近傍では汎化するが、汎用的な知識や未知の分類体系はLFMより弱い**、という特性です。用途が固定的な業務判定なら少量のドメインデータを追加学習する（`modernbert/data.py`に追加）のが最も効きます。
-
-## 検討した別案：MLMの穴埋めによるzero-shot
-
-fine-tuneせず、事前学習済みのMasked LMヘッドで「答えの数字は`<mask>`だ」を埋めさせる方式も試しました（`sbintuitions/modernbert-ja-310m`そのまま、JGLUE test先頭1,000件、候補トークンだけでsoftmax）。
-
-| タスク | テンプレート | 正解率 | 予測の偏り |
-|---|---|---:|---|
-| JNLI（多数派 neutral 55.6%） | 選択肢「1：含意」「2：矛盾」「3：中立」、答えの数字は`<mask>` | 25.1% | 1に71%、2は0件 |
-| JNLI | 全角①②③ | 55.6% | 全件③（多数派と一致しただけ） |
-| JNLI | 「したがって、『仮説』は`<mask>`」→ 正しい/誤り/不明 | 34.9% | 不明が0件 |
-| JCommonsenseQA | 選択肢列挙 → 答えの数字は`<mask>` | 36.3% | 5に72% |
-| JCommonsenseQA | 「選択肢：1=…、5=…\n質問『…』の正解は`<mask>`番です」 | 79.5% | 均等 |
-| JCommonsenseQA（5候補すべて1トークンの300件） | 「質問 答えは`<mask>`です」に候補語を直接入れる | 81.3% | — |
-
-観察：
-
-- 数字ラベルで「選択肢問題を解く」というタスク自体をMLMは学習していないため、数字の出現頻度・直前の文脈への引きずられ方でテンプレートごとに結果が大きく振れます（JCQAで36%⇄80%）。正解率の高いテンプレートも、候補順を反転すると17%の設問で予測が変わりました。
-- JNLIのような「関係の判定」は語彙の穴埋めに変換しづらく、どのテンプレートでも多数派ベースライン以下でした。
-- 業務ドメイン例（返金要求8例）では「答え：`<mask>`」→はい/いいえで8/8でしたが、数字ラベル版は5/8でP(true)が0.41〜0.50に張り付き、判別になっていません。
-- APIは任意の`instructions`と`criteria`を受けるため、テンプレートを設問ごとに手で調整する前提は取れません。
-
-質問の型が固定された用途（例：候補が単語で、質問文をテンプレートに埋め込める）なら、学習なしで70〜80%程度は出る場面があります。汎用APIとして安定させるにはfine-tuneが必要、という判断で現在の方式にしています。数値はテンプレート探索を含む1,000件のプローブで、モデルの能力の一般的な推定ではありません。
+fine-tuneせずMasked LMの穴埋めでzero-shot判定する方式も検討しましたが、テンプレートによって正解率が大きく振れ、汎用APIとして安定しないため採用していません。
 
 ## 制約
 
 - 指示文（`instructions`）と候補説明（`criteria`）はテキストとして読みますが、学習で見た質問の型から外れると精度は保証されません。新しい判定タスクには、同じ形式のデータを`modernbert/data.py`に追加して再学習する設計です。
 - 1ペアあたり`max_length=512`トークン。長いStateは末尾を切り詰め、`diagnostics.truncated`で通知します（HTTPヘッダーには出ません）。
-- CPU推論はfloat32で動作しますが速度は未測定です。
+- CPU推論はfloat32で動作します。
 - Python 3.14での動作はROCm 10.0 wheel（cp314）で確認済み。CUDA・CPU wheelは`pip install --dry-run`で2.13.0の依存解決が通ることまで確認していますが、実機では未実行です。
 - 学習済みチェックポイント（1.26 GB）はGitリポジトリに含めず、Hugging Face Hubから取得します。`./train_modernbert.sh`で再学習した結果は、乱数シード固定でもGPU・ドライバーの差で完全一致はしません。

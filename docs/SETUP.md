@@ -2,7 +2,7 @@
 
 ## 標準構成
 
-`./setup.sh --model text`は文章用のLFM2.5-1.2B Instruct Q8_0、`./setup.sh --model vision`は画像対応のLFM2.5-VL-1.6B Q8_0とmmprojを取得します。`--model sarashina`はSarashina2.2 Vision 3B Q4_K_M、`--model sarashina-q8`は同Q8_0の言語部分だけを取得します（[通常構成の制約・画像修正版の別ビルド](SARASHINA.md)）。GPUを検出して対応するllama.cpp公式バイナリも導入します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
+`./setup.sh --model text`は文章用のLFM2.5-1.2B Instruct Q8_0、`./setup.sh --model vision`は画像対応のLFM2.5-VL-1.6B Q8_0とmmprojを取得します。`--model sarashina`はSarashina2.2 Vision 3B Q4_K_M、`--model sarashina-q8`は同Q8_0の言語部分だけを取得します（[Sarashinaバックエンド](SARASHINA.md)）。GPUを検出して対応するllama.cpp公式バイナリも導入します。Python 3.12以上とBashを使用し、pip installやコンパイルは不要です。
 
 | 環境 | 自動選択 |
 |---|---|
@@ -94,7 +94,7 @@ GPU_LAYERS=all ./run.sh
 
 モデル本体とmmprojだけ必要なら`./setup.sh --model vision --model-only`（文章モデルは`--model text`）で取得できます。LM Studio同梱バイナリを使う場合も`LLAMA_SERVER`を明示します。必要な共有ライブラリは配布元の手順で設定してください。
 
-macOS用の自動選択は実装済みですが、今回の実機検証対象外です。Windowsは`fcntl`によるファイルロックとBashを使用するため、ネイティブ実行ではなくWSL2を使用してください。検証環境はLinux x86_64（Ubuntu 26.04、Python 3.14）です。ROCm共有ライブラリ未設定時には`libhipblas.so.3`不足によるCPUへの自動切り替えを確認しました。その後、利用可能なROCmライブラリを`LD_LIBRARY_PATH`に設定し、Radeon AI PRO R9700でVLモデル本体・画像エンコーダーのGPU実行を確認しています。CUDA・MetalのGPU実機検証は未実施です。
+Windowsは`fcntl`によるファイルロックとBashを使用するため、ネイティブ実行ではなくWSL2を使用してください。動作確認はLinux x86_64（AMD GPU / ROCm、CPU）で行っています。macOS（Metal）とNVIDIA（CUDA）の自動選択は実装済みですが実機では未確認です。ROCmの共有ライブラリが見つからない場合はCPUへ自動で切り替わるので、`LD_LIBRARY_PATH`にROCmライブラリのパスを設定してください。
 
 バックエンドは`/props`、`/apply-template`、`/tokenize`、`/completion`（`post_sampling_probs=false`のlogprob応答）に対応する必要があります。共通State再利用にはslot保存・復元も必要です。古いllama.cppとの互換性は保証しません。
 
@@ -111,4 +111,4 @@ macOS用の自動選択は実装済みですが、今回の実機検証対象外
 
 APIは既定で`127.0.0.1`に待ち受けます。`/health`はAPIプロセスの生存確認で、推論の確認には`python3 -m tools.verify_api`を使います。
 
-画像の実行には`/props`のvision対応とmedia_marker、および`/completion`のmultimodal_data対応が必要です。b11042 + 上記モデルでPNG画像の実推論を確認しています。画像もコンテキストを消費するため、大きな画像・複数画像で422になる場合は画像を縮小するか`CTX_SIZE`を増やしてください。
+画像の実行には`/props`のvision対応とmedia_marker、および`/completion`のmultimodal_data対応が必要です。画像もコンテキストを消費するため、大きな画像・複数画像で422になる場合は画像を縮小するか`CTX_SIZE`を増やしてください。

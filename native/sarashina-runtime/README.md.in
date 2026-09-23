@@ -27,7 +27,7 @@ Jev Localの`models/`へ言語GGUFと公式由来mmproj・同名`.gguf.json`を�
 python3 scripts/run_sarashina.py --backend $backend --build /path/to/$name
 ```
 
-対応mmproj: `sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`。取得・変換は[Jev Localの手順](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA.md)を参照してください。通常の`run.sh`の選択は変更しません。
+対応mmproj: `sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`。取得先と手順は[Jev Localの案内](https://github.com/Argos1111/jev_local/blob/main/docs/SARASHINA_RELEASE.md)を参照してください。通常の`run.sh`の選択は変更しません。
 
 `bin/llama-server`を直接使う場合も`--model`と`--mmproj`を指定します。CPUでは`-ngl 0`、GPUでは`-ngl all`を指定し、まず`--host 127.0.0.1`で使用してください。Web UI・OpenSSLは無効です。未認証のまま外部公開しないでください。
 

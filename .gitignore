@@ -11,6 +11,8 @@ htmlcov/
 .cache/
 .local/
 results/
+# Local-only experiment records moved out of docs/.
+notes/
 models/
 # Weights, conversion manifests and incomplete downloads (including custom paths).
 *.gguf

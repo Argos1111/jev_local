@@ -57,7 +57,7 @@ curl http://127.0.0.1:8080/v1/models \
 
 ## 公式SDK
 
-`typesafe-sdk==0.7.0`の同期・非同期クライアントでLFMとの実通信を確認しました。混在3種・構造化入力・27択・255択を検証しています。Sarashinaの上限は26択なので、27択を含む`tools.verify_api --sdk`の全項目には対応しません。サーバー自身にはSDKのインストールは不要です。
+`typesafe-sdk==0.7.0`の同期・非同期クライアントで動作を確認しています。サーバー自身にはSDKのインストールは不要です。Sarashinaは26択が上限のため、27択を含む`tools.verify_api --sdk`の全項目は通りません。
 
 ```python
 from typesafe_sdk import TypeSafeClient, Choice, Score, Noul
@@ -134,7 +134,7 @@ python3 systemone_client.py --format json
 
 ## 画像入力（ローカル拡張）
 
-画像用の標準モデルはLFM2.5-VL-1.6B Q8_0とF16のmmprojです（`--model vision`）。Sarashinaの通常プロファイルはテキスト専用ですが、[修正版projectorと専用ランチャーによる画像実験](SARASHINA.md#画像経路の修正実験機能)を追加しています（単色・複数画像・候補順に制約あり）。`state`・`questions`に加えて、トップレベルに任意の`images`配列を指定できます。各画像は全質問へ、配列の順番で渡されます。これは独自拡張で、公式SDKの画像互換を意味しません。
+画像用の標準モデルはLFM2.5-VL-1.6B Q8_0とF16のmmprojです（`--model vision`）。Sarashinaの通常プロファイルはテキスト専用で、画像には[専用の起動方法](SARASHINA_RELEASE.md)を使います。`state`・`questions`に加えて、トップレベルに任意の`images`配列を指定できます。各画像は全質問へ、配列の順番で渡されます。これは独自拡張で、公式SDKの画像互換を意味しません。
 
 ```json
 {

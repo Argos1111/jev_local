@@ -21,8 +21,8 @@ g++ -std=c++17 -Wall -Wextra -Werror -pthread native/test_vision_embedding_cache
 - `sarashina-fa160-b11042.patch`: CUDA/HIP共通の160次元GPU FAと252ケースの任意演算検査。GPU型番のホワイトリストなし。テンプレート生成を含めて適用。
 - `test_sarashina_embedding.cpp`: 正規化画素・画像embeddingを出力し、参照実装と比較する診断プログラム。`pixels-only`ならencoder推論を省略。
 
-ビルドは[`scripts/build_sarashina.py`](../scripts/build_sarashina.py)（`--backend cuda` / `hip` / `cpu` / `stock-rocm`、`--base`で別のビルド先）、変換は[`scripts/convert_sarashina_mmproj.py`](../scripts/convert_sarashina_mmproj.py)、起動は[`scripts/run_sarashina.py`](../scripts/run_sarashina.py)（`--build`で展開した配布版も指定可能）。任意のGPU数値検査は[`tools/verify_sarashina_fa.py`](../tools/verify_sarashina_fa.py)。未検証・検査失敗・別GPUを理由に実行を禁止しません。`.cache/sarashina-official-runtime/`に隔離し、旧Sarashina成果物・通常ランタイム・LFM用キャッシュビルドを書き換えません。[条件・照合結果・再現コマンド](../docs/SARASHINA.md)を参照してください。
+ビルドは[`scripts/build_sarashina.py`](../scripts/build_sarashina.py)（`--backend cuda` / `hip` / `cpu` / `stock-rocm`、`--base`で別のビルド先）、変換は[`scripts/convert_sarashina_mmproj.py`](../scripts/convert_sarashina_mmproj.py)、起動は[`scripts/run_sarashina.py`](../scripts/run_sarashina.py)（`--build`で展開した配布版も指定可能）。任意のGPU数値検査は[`tools/verify_sarashina_fa.py`](../tools/verify_sarashina_fa.py)。未検証・検査失敗・別GPUを理由に実行を禁止しません。`.cache/sarashina-official-runtime/`に隔離し、通常ランタイム・LFM用キャッシュビルドを書き換えません。[ビルド手順](../docs/SARASHINA_BUILD.md)を参照してください。
 
-配布用アーカイブは[`scripts/prepare_sarashina_release.py`](../scripts/prepare_sarashina_release.py)でローカルに梱包します。`sarashina-runtime/`は同梱README / NOTICEのテンプレートです。[検査範囲・依存・公開状況](../docs/SARASHINA_RELEASE.md)を参照してください。
+配布用アーカイブは[`scripts/prepare_sarashina_release.py`](../scripts/prepare_sarashina_release.py)でローカルに梱包します。`sarashina-runtime/`は配布アーカイブ、`sarashina-mmproj/`はHFのmmproj配布に同梱するREADME / NOTICEのテンプレートです。配布物の利用手順は[Sarashinaで画像を使う](../docs/SARASHINA_RELEASE.md)です。
 
-これは本リポジトリ独自の実験パッチです。llama.cpp上流への投稿はしていません。パッチに含まれる上流由来のコードの著作権・MITライセンス表記は[`LICENSE.llama.cpp`](LICENSE.llama.cpp)に収録しています。バイナリ配布時にはこれに加えて第三者コード・同梱GPUライブラリ等の条件確認が必要です（[配布時の確認記録](../docs/SARASHINA_DISTRIBUTION.md)）。上流への変更提案には人間によるレビュー・理解・継続保守と、対象リポジトリのcontribution規約の確認が必要です。
+これは本リポジトリ独自の実験パッチです。llama.cpp上流への投稿はしていません。パッチに含まれる上流由来のコードの著作権・MITライセンス表記は[`LICENSE.llama.cpp`](LICENSE.llama.cpp)に収録しています。バイナリ配布時にはこれに加えて第三者コード・同梱GPUライブラリ等の条件確認が必要で、配布アーカイブには[`licenses/`](../licenses/)とb11042ソース由来の表記を同梱しています。上流への変更提案には人間によるレビュー・理解・継続保守と、対象リポジトリのcontribution規約の確認が必要です。

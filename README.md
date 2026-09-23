@@ -11,7 +11,7 @@
 | 追加依存 | なし（バイナリを自動取得） | 文章はなし。画像は[配布済みmmproj（HF）](https://huggingface.co/argos1111/sarashina2.2-vision-3b-mmproj-jev-f16)と[対応ランタイム（Releases）](https://github.com/Argos1111/jev_local/releases/tag/sarashina-llama-b11042-pre1)を手動配置 | torch＋transformers（別venv） |
 | JGLUE test | JNLI 17% / JComQA 69% | Q4: JNLI 34% / JComQA 86% | JNLI 93% / JComQA 92%（trainで学習） |
 
-クライアント・評価ツール・API仕様は共通です。まずLFMで動かしてから、[Sarashina比較バックエンド](docs/SARASHINA.md)や[ModernBERTバックエンド](docs/MODERNBERT.md)を追加できます。学習条件と量子化が異なるため、上表は同一APIでの実用比較であり、モデル能力の公平な順位付けではありません。
+クライアント・評価ツール・API仕様は共通です。まずLFMで動かしてから、[Sarashinaバックエンド](docs/SARASHINA.md)や[ModernBERTバックエンド](docs/MODERNBERT.md)を追加できます。学習条件と量子化が異なるため、上表は同一APIでの実用比較であり、モデル能力の公平な順位付けではありません。
 
 **Jev本体のモデル・学習・精度を再現するものではありません。** TypeSafeの`/v1/systemone`形式に合わせた非公式アダプターです。画像入力はローカル拡張で、公式SDKの画像互換を意味しません。[APIの互換範囲](docs/API.md)を参照してください。
 
@@ -73,7 +73,7 @@ python3 systemone_client.py \
   --output results/my_vision_gss_4.json
 ```
 
-**LFMで速度を優先する場合は、画像の縦横をともに512px以内に収め（縦横比を維持）、質問を4問に絞る構成を推奨します。** 今回の検証では、512×286px・4問・GPU・画像エンコード再利用の組み合わせが最も速く、同じ画像の再送は中央値約98msでした。4問は4並列の1回分に収まります。画像サイズや質問数を網羅的に比較した結果ではなく、1〜3問より4問が速いことを意味しません。縮小と質問の選定は入力前に行います（自動変換・4問制限はありません）。
+**LFMで速度を優先する場合は、画像の縦横をともに512px以内に収め（縦横比を維持）、質問を4問までに絞る構成を推奨します。** 4問は4並列の1回分に収まります。縮小と質問の選定は入力前に行います（自動変換・4問制限はありません）。Sarashinaの文書読み取りでは縮小すると精度が落ちるため、この推奨はLFM向けです。
 
 - PNG/JPEG、1枚4 MiB、最大4枚。複数枚は`--image`を繰り返します。
 - HTTPではトップレベルの`images`配列にbase64 data URLを渡します。[画像API仕様](docs/API.md#画像入力ローカル拡張)を参照してください。
@@ -91,15 +91,7 @@ python3 systemone_client.py \
 
 このサーバーに送るクライアントでは`--url http://127.0.0.1:18080`を追加します。画像＋stateを読み込むdecoderの処理と各質問の判定は、引き続き質問ごとに実行します。
 
-Radeon AI PRO R9700・512×286 px画像・4問での測定例:
-
-| 条件 | 応答時間 |
-|---|---:|
-| 再利用なし、10回の中央値 | 358 ms |
-| 初回の画像、1回計算＋3回再利用（2回測定） | 192〜212 ms |
-| 同じ画像を再送、10回の中央値 | 98 ms |
-
-モデルロードを除くHTTP応答時間です。1画像での実験値で、速度や正答率を保証するものではありません。[測定条件と精度上の制約](docs/VISION_EVALUATION.md)も参照してください。
+同じ画像を再送した場合で約3.7倍、初回でも約1.9倍応答が速くなります（512×286 px・4問）。選択結果は変わりません。[効果の目安と制約](docs/IMAGE_CACHE.md)を参照してください。
 
 ## ModernBERTバックエンド（文章のみ）
 
@@ -117,9 +109,9 @@ python3 systemone_client.py  # クライアントは共通
 
 画像入力は非対応で、`images`を含むリクエストは422を返します。JGLUEの高い数値は同じデータのtrainで学習した結果です。学習に使っていないタスクでは特性が分かれます：知識を問うタスク（ニュース分類・JMMLU）はLFMの方が高く、短い日本語の意図判定（顧客対応の手作り16例）はModernBERTの方が高い結果でした。数値と条件、学習データとライセンス、OS別の対応状況は[ModernBERTバックエンド](docs/MODERNBERT.md)を参照してください。
 
-## Sarashina比較バックエンド
+## Sarashinaバックエンド
 
-[Sarashina2.2 Vision 3B](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)の言語部分を、LFMと同じ先頭トークンlogprob方式で利用します。追加のPython依存はありません。
+[Sarashina2.2 Vision 3B](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)を、LFMと同じ方式・同じAPIで使います。追加のPython依存はありません。今回の比較では常識QA・知識問題・ニュース分類でLFMより高い正解率でした。
 
 ```bash
 ./setup.sh --model sarashina --model-only  # 既存ランタイムを維持。Q4_K_M、約2.07 GB
@@ -128,9 +120,9 @@ python3 systemone_client.py  # クライアントは共通
 python3 systemone_client.py
 ```
 
-新規環境では`--model-only`を外してランタイムも取得します。量子化の対照用には`--model sarashina-q8`（Q8_0、約3.57 GB）を使えます。`setup.sh`のモデル選択は保存されます。LFMへ戻すには`./run.sh --model text`または`--model vision`で起動してください。
+新規環境では`--model-only`を外してランタイムも取得します。Q8_0（約3.57 GB）は`--model sarashina-q8`です。LFMへ戻すには`./run.sh --model text`または`--model vision`で起動してください。
 
-**通常のプロファイルは文章専用で、公開mmprojを自動取得・有効化しません。** SarashinaではChoiceは26候補までです（27以上は422）。Q4でも今回の常識QA・知識・ニュース分類はLFMより高い一方、JNLIと候補順への依存は課題です。
+`run.sh`のSarashinaは文章・JSON専用です。Choiceは26候補まで（27以上は422）で、含意判定と候補順への依存が弱点です。詳細は[Sarashinaバックエンド](docs/SARASHINA.md)を参照してください。
 
 ### Sarashinaで画像を使う
 
@@ -147,9 +139,7 @@ python3 scripts/run_sarashina.py --backend cpu --build /path/to/llama-b11042-jev
 python3 systemone_client.py --input examples/vision.json --image /path/to/photo.jpg
 ```
 
-コマンド付きの手順とアーカイブの選び方は[Sarashina画像入力のセットアップ](docs/SARASHINA_RELEASE.md)にまとめています。通常の`run.sh`の設定は変わりません。
-
-このランタイムはllama.cpp b11042に、projectorの欠落LayerNorm・公式前処理・画像境界tokenの修正と、画像エンコード再利用・CUDA/HIP向けGPU Flash Attentionを加えたものです。元解像度の文書画像12問は12/12でしたが、単色・複数画像の失敗と候補順への依存が残り、**CUDA版はNVIDIA実機で未検証**です。未検証や検査失敗を理由に起動を禁止せず、警告と記録に留めます。他のGPU向けビルド・mmprojの再変換・検証結果は[詳細](docs/SARASHINA.md)を参照してください。
+コマンド付きの手順は[Sarashinaで画像を使う](docs/SARASHINA_RELEASE.md)、配布版が合わない環境は[ソースからのビルド](docs/SARASHINA_BUILD.md)を参照してください。通常の`run.sh`の設定は変わりません。**CUDA版はNVIDIA実機で未検証**です。単色・複数画像の質問と候補順への依存に制約が残ります。
 
 ## API
 
@@ -203,11 +193,10 @@ CIではPythonテスト・シェル構文と、モデル不要のC++キャッシ
 - [セットアップ詳細](docs/SETUP.md)
 - [API・公式SDK接続](docs/API.md)
 - [画像エンコードキャッシュ](docs/IMAGE_CACHE.md)
-- [画像評価の記録](docs/VISION_EVALUATION.md)
 - [評価ツール・速度測定](docs/EVALUATION.md)
 - [共通Stateの再利用](docs/STATE_CACHE.md)
 - [JGLUE評価](docs/JGLUE.md)
 - [ModernBERTバックエンド](docs/MODERNBERT.md)
-- [Sarashinaバックエンド・全方式の比較](docs/SARASHINA.md)
+- [Sarashinaバックエンド](docs/SARASHINA.md) / [画像を使う](docs/SARASHINA_RELEASE.md) / [ソースからビルド](docs/SARASHINA_BUILD.md)
 
 依存する[llama.cpp](https://github.com/ggml-org/llama.cpp)と[LFM2.5モデル](https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF)、[Sarashina2.2 Vision](https://huggingface.co/sbintuitions/sarashina2.2-vision-3b)・[ModernBERT-Ja](https://huggingface.co/sbintuitions/modernbert-ja-310m)（MIT）は、それぞれの配布元の利用条件に従います。ModernBERTの学習に使う公開データセット（JGLUE・JCoLA・JMMLU: CC BY-SA 4.0、JCommonsenseMorality: MIT、MASSIVE: CC BY 4.0、livedoor: CC BY-ND 2.1 JP）は実行時に取得し、リポジトリには含めません。学習済みモデルを再配布する場合はCC BY-SAの継承条件に留意してください。Gitのソースツリーにバイナリ・モデル重みは同梱しません。

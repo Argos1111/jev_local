@@ -35,13 +35,13 @@ python3 -m tools.evaluate --json-baseline --output results/with_json.json
 
 ## その他
 
-- `python3 -m tools.evaluate_heldout_tasks --url ... --output results/heldout`: ModernBERTの学習に使っていないタスク（livedoorニュース分類・JMMLU・手作り顧客対応16例）をAPI経由で採点。LFMとModernBERTの汎化を同条件で比較します（[結果](MODERNBERT.md#学習に使っていないタスクでの汎化)）。
+- `python3 -m tools.evaluate_heldout_tasks --url ... --output results/heldout`: ModernBERTの学習に使っていないタスク（livedoorニュース分類・JMMLU・手作り顧客対応16例）をAPI経由で採点。LFMとModernBERTの汎化を同条件で比較します（[ModernBERTの評価](MODERNBERT.md#評価)）。
 - [JGLUE評価](JGLUE.md): JNLI / JCommonsenseQAの固定splitをAPI経由で評価。`--url`を変えれば[ModernBERTバックエンド](MODERNBERT.md)にも同じ手順で使えます。
-- [Sarashinaと全方式の比較](SARASHINA.md): LFM text / VL・Sarashina Q4 / Q8・ModernBERTを同じテキスト入力で測定。画像修正、数値照合、GPU FA160、画像エンコード再利用の同一ビルド比較も記録。
+- [Sarashinaバックエンド](SARASHINA.md)にも同じツールを使えます。
 - [共通Stateの計測](STATE_CACHE.md): 専用バックエンドで保存・復元の効果を測定。
 - `python3 -m tools.probe_prefix`: 過去の回答prefix探索用ツール。
 
-過去の個別PC上の測定ログは配布対象に含めません。実験条件と新しい測定結果をセットで保存してください。
+測定結果は条件（モデル・GPU・並列数・入力）と一緒に保存してください。
 
 ## 画像入力と速度測定
 
@@ -53,7 +53,7 @@ python3 -m tools.verify_vision --url http://127.0.0.1:8080
 
 赤・青のPNGをコードで生成して送り、画像に応じた回答と、テキストStateキャッシュとの同時実行を確認します。外部の画像ファイルは不要です。APIは`--state-cache auto`または`shared`で起動してください。
 
-Sarashinaはこの単色テストを公式checkpoint＋AutoProcessorでも誤答しました。専用の`tools.verify_sarashina_vision`は図形・画像順・再送・テキストとの同時実行を検証し、既知の失敗も記録して非ゼロ終了します。前処理/embeddingの数値照合は`tools.verify_sarashina_embeddings`、公式参照生成との比較は`tools.verify_sarashina_reference`。後者は言語GGUFのtokenizerとの差も検出します。どちらの公式参照ツールもコードのレビューと`--allow-reviewed-code`が必要です。[Sarashinaの再検証手順](SARASHINA.md#再検証コマンド)を参照してください。
+Sarashinaの画像ランタイムには専用の`python3 -m tools.verify_sarashina_vision --url ...`があり、図形・画像順・再送・テキストとの同時実行を検査します。既知の制約（単色・複数画像）も検査に含むため、現状は不合格を含む結果を返します。
 
 ### 手元の画像で応答時間を測る
 
@@ -80,7 +80,7 @@ python3 -m tools.evaluate_vision_gss \
   --reverse-choices --output results/vision_gss/reversed_choices.json
 ```
 
-画像あり・なしを比較します。`--reverse-choices`はChoiceの順序だけを反転し、入力ファイルは変更しません。資料に対応するローカル画像が必要です。[測定記録と採点上の制約](VISION_EVALUATION.md)を参照してください。
+画像あり・なしを比較します。`--reverse-choices`はChoiceの順序だけを反転し、入力ファイルは変更しません。資料に対応するローカル画像が必要で、別の画像を使う場合は想定回答との一致数は比較に使えません。
 
 ### 画像エンコード再利用の有無を比較
 
@@ -95,4 +95,4 @@ python3 -m tools.benchmark_image_cache \
 
 必要なROCm共有ライブラリがシステムにない場合は、`LD_LIBRARY_PATH`を設定してから実行します。同じ実験バイナリを無効→有効→有効→無効の順に起動し、初回と再送時を分けて記録します。この比較ツールはChoice質問用です。`--workers 1`で逐次実行、`--port`・`--backend-port`で使用ポート、`--output`で保存先を指定できます。初期値の19080/19097は測定用で、通常の8080/8097や手動起動例の18080/18097とは別です。
 
-Sarashinaの修正版では`--model sarashina`（または`--model sarashina-q8`）、専用`--server`・`--mmproj`を明示します。FA単独の比較には`tools.benchmark_sarashina_fa`を使用してください。[測定範囲の違いとコマンド](SARASHINA.md#再検証コマンド)を参照してください。
+Sarashinaの画像ランタイムで測る場合は`--model sarashina`（または`--model sarashina-q8`）、`--server <展開先>/bin/llama-server`、`--mmproj models/sarashina2.2-vision-3b.mmproj-jev-official-f16.gguf`を指定します。Flash Attention単独の比較には`python3 -m tools.benchmark_sarashina_fa --server ... --device ... --model models/sarashina2.2-vision-3b.Q4_K_M.gguf`を使います。

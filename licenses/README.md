@@ -9,4 +9,4 @@
 
 2026-09-21取得。どちらも取得した原文を変更せず保存しています。llama.cpp自身のMIT原文は[`native/LICENSE.llama.cpp`](../native/LICENSE.llama.cpp)にあります。
 
-[配布時の必要表記・未確認事項](../docs/SARASHINA_DISTRIBUTION.md)を参照してください。実際に配布する重み・バイナリにも該当するLICENSE / NOTICEを同梱する必要があり、このリポジトリにファイルを追加しただけでは配布物への同梱になりません。
+配布する重み・バイナリには該当するLICENSE / NOTICEを同梱する必要があります。`scripts/prepare_sarashina_upload.py`と`scripts/prepare_sarashina_release.py`が、ここに保管した原文を配布物へコピーします。
