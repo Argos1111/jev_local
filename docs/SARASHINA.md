@@ -94,20 +94,22 @@ GPU_LAYERS=all GPU_DEVICE=ROCm0 CTX_SIZE=8192 \
 
 今回の用途は長文生成ではなく、prefill＋1トークン判定です。Q4の省メモリがそのまま速度向上になるわけではなく、実行カーネル・入力長・バッチ条件に依存します。
 
-### 公式b11042でのFlash Attention無効化理由
+### 公式b11042ではFlash Attentionが使えない理由
 
-同日の追加調査で、SarashinaのK/Vヘッド次元は**160**なのに対し、b11042の[CUDA/ROCm共用FAカーネル選択](https://github.com/ggml-org/llama.cpp/blob/b11042/ggml/src/ggml-cuda/fattn.cu)は160に対応していないことを確認しました。GPU全体がFA非対応という意味ではなく、このモデルの形状と実装の組み合わせの問題です。
+**この節は未修正の公式llama.cpp b11042の話です。** 上表の測定でSarashinaのFAが無効だった理由と、公式ビルドでFAを強制しても速くならないことを説明します。Jev Localの修正版ランタイムはこの制約を解消するために160次元対応のGPUカーネルを追加しており、そちらではFAを有効にすると速くなります（[実験版GPU Flash Attention](#実験版gpu-flash-attention)）。
 
-- 既定の`-fa auto`は未対応のFAを無効化し、通常のAttentionに戻ります。前掲の測定でAttentionをCPU実行していた、という意味ではありません。
-- **`-fa on`の強制指定は推奨しません。** このビルドではFAがCPU側に配置され、CPU/GPU間のグラフ分割が2から66に増え、逆に遅くなりました。GPU版を使うには160次元に対応したカーネル・ランタイムが必要です。
+SarashinaのK/Vヘッド次元は**160**なのに対し、b11042の[CUDA/ROCm共用FAカーネル選択](https://github.com/ggml-org/llama.cpp/blob/b11042/ggml/src/ggml-cuda/fattn.cu)は160に対応していません。GPU全体がFA非対応という意味ではなく、このモデルの形状と実装の組み合わせの問題です。公式ビルドでの挙動は次のとおりです。
+
+- 既定の`-fa auto`は未対応のFAを無効化し、通常のAttentionをGPUで実行します。上表の測定はこの状態で、AttentionをCPU実行していたわけではありません。
+- `-fa on`で強制すると、FAだけがCPU側に配置され、CPU/GPU間のグラフ分割が2から66に増えて逆に遅くなります。**公式ビルドでSarashinaを使う場合、`-fa on`は指定しないでください。**
 
 R9700、同じ4 slots・合計context 8192で、常識QAとlivedoorから各1入力を固定し、1件ずつ測定しました。ウォームアップ2回を除く5回の中央値、prompt cacheなし、1トークン判定、同じslotを使用。トークン化・template適用を事前に済ませたバックエンド直接呼び出しなので、前掲の4並列SystemOne API時間と直接比較しないでください。
 
-| Sarashina Q4の設定 | 常識QA 109 tokens | livedoor 423 tokens |
+| 公式b11042でのSarashina Q4の設定 | 常識QA 109 tokens | livedoor 423 tokens |
 |---|---:|---:|
-| `-fa auto`（自動で無効化） | 25.4 ms | 62.0 ms |
+| `-fa auto`（自動で無効化。既定） | 25.4 ms | 62.0 ms |
 | `-fa off` | 24.8 ms | 62.2 ms |
-| `-fa on`（CPU側FA） | 59.3 ms | 241.6 ms |
+| `-fa on`（FAがCPU側に配置される） | 59.3 ms | 241.6 ms |
 
 対照として、FA対応のLFM text（ヘッド次元64）に同じ入力を送ると、短い入力121 tokensはOFF 13.5 → ON 13.2 ms、長めの523 tokensはOFF 37.1 → ON 27.4 msでした。FAに速度改善の余地はありますが、この結果からSarashinaのGPU版FAの改善率は推定できません。
 
@@ -123,6 +125,8 @@ GGUFとロードログで確認した言語モデルの構造:
 **速度差はパラメーター数だけでなく、層数・Attentionの構成・GPUカーネル・並列条件にも依存します。** FAはAttentionのメモリアクセスと中間テンソルを効率化するもので、FFNや投影などの計算は減らしません。入力が長いほど効く余地が増えますが、今回の短いprefill＋1トークン判定で、FAだけによりLFM並みになるとは言えません。処理時間の寄与率を特定するGPUプロファイリングは未実施です。
 
 追加測定の全応答・ログは`results/sarashina-flash-attn/`に保存しています。通常の起動設定は変更していません。
+
+修正版ランタイムではこの制約はなく、同一ビルド内のFA OFF→ONで常識QA 25.2→23.2 ms、livedoor 62.8→52.0 ms（Q4、1並列）と短縮しています。詳細は[実験版GPU Flash Attention](#実験版gpu-flash-attention)を参照してください。
 
 ### 解釈と確率上の注意
 
